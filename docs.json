@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Test Opal",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#0f99B8",
+    "light": "#CAF3F7",
+    "dark": "#0C7997"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -45,8 +45,8 @@
     ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/logo-black.png",
+    "dark": "/logo/logo-white.png"
   },
   "navbar": {
     "links": [
@@ -57,8 +57,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Log in",
+      "href": "https://app.opal.dev"
     }
   },
   "footer": {
