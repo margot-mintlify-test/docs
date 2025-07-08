@@ -41,6 +41,10 @@
       {
         "tab": "Changelog",
         "pages": ["changelog"]
+      },
+      {
+        "tab": "Changelog 2",
+        "pages": ["changelog-2"]
       }
     ]
   },
