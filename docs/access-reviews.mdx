@@ -1,0 +1,87 @@
+---
+title: "Create Access Reviews"
+description: "Learn how to create and configure User Access Reviews in Opal."
+---
+
+[Suggest Edits](/edit/access-reviews)
+
+Opal can be used to automate User Access Reviews (UARs). In Opal, compliance teams can:
+
+1. Snapshot user access when a review is started
+2. Intelligently assign reviews for resource owners to review in a self-service way
+3. Scope reviews by apps and resources
+4. Generate a report to summarize all actions for audit purposes
+
+## Start User Access Reviews
+
+### Assume the Opal Auditor role
+
+To start a user review, you must have the **Opal Auditor role**.
+
+In the **Inventory** tab, select the App **Opal**. Here you'll find the **Opal Auditor** role.
+
+![](/images/docs/92ebba3e9eccf7a02d0de93d15ca2b2731f6a4568d938d47dc0aa8e8ec19c9ca-auditor-role.png "SCR-20230313-luu.png")
+
+If you're an Opal Admin, you can add yourself directly to the resource by navigating to the **User Access** tab and clicking on the **+ Add Users**. If you're not an Opal Admin, you can request access to the role.
+
+### Create User Access Reviews
+
+Start an access review from the **+ Access Review** button in the Ongoing tab.
+
+![](/images/docs/8a1accac9abd34722e2e439218536401dc02b9be007b17bbb078adb5674c7896-access-review-new.png)
+
+#### Scheduled reviews
+
+You can create recurring reviews from the **Schedules** tab, specifying months and . Select **+ Create Schedule** and specify the months and day of the week to run the review. You can edit the review—its groups, users, resources, etc.—at any time, and changes take effect on the next scheduled review.
+
+#### Add general information
+
+In the left panel, enter general details about the review:
+
+* **Name:&#xA0;**&#x20;Customize the name of the review.
+* **Reviewer auto-assignment:** By default, this is set to **Manually assign reviewers**. Click **Select Policy** to choose your auto-assignment configuration.
+* **Self-review:** Enable to allow self-reviews.
+* **Deadline:&#xA0;**&#x20;Set the deadline by which reviewers must complete their reviews.
+* **Time zone:** Set the timezone to be used across reviews.
+
+![](/images/docs/4482bed-CreateAR.png) ![](/images/docs/4b1b2e1-PolicyModal.png)
+
+#### Set visibility
+
+Set the **Group Resource Visibility** to **Strict**, **Moderate**, or **Full visibility**, depending on the sensitivity of the resources and groups being reviewed.
+
+#### Set review scopes
+
+In the **Users** and **Entities** sections, you can filter specific users and entities (resources, groups, and apps) to review. See the preview next to the **Cancel** and **Create** buttons—e.g., 171 resources, 60 groups, 18 apps in the below screenshot—to see affected entities as you update filters.
+
+Consider the following filters when you select what to review:
+
+* **Filter by user**: Include only resources and groups that certain users have access to in the review. The user filter is applied first before any other filters are applied to entities.
+* **Filter by specific entities**: Select specific resources, groups, and apps to include in the review. Note that the entity filter only includes the entity itself. For example, if you specify a resource and want to review the groups who can access the resource, you must add the groups as entities as well.
+* **Filter by apps**: Specify resources and groups to include from certain apps.
+* **Filter by admin**: Include resources and groups owned by specified admins.
+* **Filter by resource and group type**: Include resources and groups of certain types.
+* **Filter by tags**: Include resources and groups with certain tags.
+* **Filter by name**: Include resources and groups whose names match a given substring.
+
+If you use [linked groups](/docs/linked-groups) and would like to include users from source groups in the access review, consider toggling on **Include linked group source groups**.
+
+![](/images/docs/2586fce-ARScope.png)
+
+#### Set notifications
+
+In the left side panel, you can configure the following settings:
+
+* **Access Review Reminders**: Choose a set schedule to send preset campaign reminders to all reviewers with incomplete reviews.
+* **New review notifications**: Enable to notify users on Slack and email when they're assigned a new review.
+
+![](/images/docs/f08e9df-AR-reminders.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [Start User Access Reviews](#start-user-access-reviews)
+
+    * [Assume the Opal Auditor role](#assume-the-opal-auditor-role)
+    * [Create User Access Reviews](#create-user-access-reviews)

@@ -1,0 +1,307 @@
+---
+title: "Azure Real Time Sync Setup"
+description: "Suggest Edits"
+---
+
+With **Opal Real Time Sync**, admins can see access changes to an application's Resources and Groups in near real-time and on an event-driven basis. Instead of waiting for Opal's scheduled syncs, each time an access change event occurs in the remote system (e.g. User added to a Group), Opal automatically syncs and reflect that change.
+
+If you use Opal's **Azure (Entra) Integration**, you can expect to see changes in Opal as quickly as 3 minutes and no later than 10 minutes once you set up this feature.
+
+## Architecture diagram
+
+![](/images/docs/88d08a57d09727cf34f8b39f968a821008ae68442e6bde59f83d7e96aa75507b-EDS_Diagrams_1.png)
+
+## Requirements
+
+* The Azure CLI configured. If you have not already, follow the instructions below.
+
+  * Follow the instructions [here](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)to install the Azure CLI
+  * Follow the instructions [here](https://learn.microsoft.com/en-us/cli/azure/authenticate-azure-cli) to log in to the Azure CLI
+
+* An Azure Subscription
+
+* The following providers must be registered in the Azure Subscription. If they are not registered, do so using: `az provider register --namespace <resource-provider-namespace> --subscription <subscription_id>`
+
+  * `Microsoft.Insights`
+  * `Microsoft.EventHub`
+
+* Administrative access to an Azure Subscription, specifically the permissions listed below.
+
+Required Permissions
+
+* `Microsoft.EventHub/checkNameAvailability/action`
+* `Microsoft.EventHub/register/action`
+* `Microsoft.EventHub/namespaces/write`
+* `Microsoft.EventHub/namespaces/read`
+* `Microsoft.EventHub/namespaces/authorizationRules/read`
+* `Microsoft.EventHub/namespaces/authorizationRules/write`
+* `Microsoft.EventHub/namespaces/eventhubs/write`
+* `Microsoft.EventHub/namespaces/eventhubs/read`
+* `Microsoft.EventHub/namespaces/eventhubs/authorizationRules/read`
+* `Microsoft.EventHub/namespaces/eventhubs/authorizationRules/write`
+
+The [Azure Event Hubs Data Owner](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/analytics#azure-event-hubs-data-owner) role will provide these permissions.
+
+## Using Terraform
+
+### 1. Initialize the Azure EDS Terraform Module
+
+We provide a Terraform module that configures most of the required resources for you. To get started, copy the following Terraform snippet.
+
+<CodeGroup>
+  ```Text terr
+  terraform {
+    required_providers {
+      azurerm = {
+        source  = "hashicorp/azurerm"
+        version = "=4.8.0"
+      }
+    }
+  }
+
+  provider "azurerm" {
+    features {}
+  }
+
+  module "opal_azure_eds" {
+    source = "https://downloads.opal.dev/eds-templates/azure/terraform/tf-v1.zip"
+
+    root_management_group_name = "ExampleRootManagementGroup"
+    resource_group_name        = "ExampleResourceGroup"
+    subscription_id            = "00000000-0000-0000-0000-000000000000"
+  }
+
+  # Outputs configuration information necessary to perform the rest of setup
+  output "opal_eventhub_id" {
+    value = module.opal_azure_eds.opal_eventhub_id
+  }
+
+  output "opal_eventhub_name" {
+    value = module.opal_azure_eds.opal_eventhub_name
+  }
+
+  output "opal_eventhub_namespace_id" {
+    value = module.opal_azure_eds.opal_eventhub_namespace_id
+  }
+
+  output "opal_eventhub_authz_rule_id" {
+    value = module.opal_azure_eds.opal_eventhub_authz_rule_id
+  }
+
+  output "opal_entra_diagnostic_setting_id" {
+    value = module.opal_azure_eds.opal_entra_diagnostic_setting_id
+  }
+  ```
+</CodeGroup>
+
+### 2. Create a diagnostic setting at the root management group
+
+For this step, we will need to use the Azure REST API, as this functionality is not available anywhere else. You can trigger this using any REST client you prefer. An authorization token is required, which you can retrieve from the Azure CLI using the following command:
+
+<CodeGroup>
+  ```Text bash
+  az account get-access-token --query accessToken --output tsv
+  ```
+</CodeGroup>
+
+To create the diagnostic setting, fill in the following fields in the command below.
+
+* `<root-management-group-ID>`: The root management group for your Azure directory
+* `<diagnostic-setting-name>`: Any name
+* `<event-hub-subscription>`: The subscription under which you created your event hub namespace
+* `<event-hub-resource-group>`: The resource group under which you created your event hub namespace
+* `<event-hub-namespace-name>`: The name of your event hub namespace
+* `<authorization-rule-name>`: The name of the authorization rule configured above
+* `<event-hub-name>`: The name of the event hub configured above
+
+```
+token=$(az account get-access-token --query accessToken --output tsv)
+curl -X PUT -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
+https://management.azure.com/providers/microsoft.management/managementGroups/<root-management-group-ID>/providers/microsoft.insights/diagnosticSettings/<diagnostic-setting-name>\?api-version\=2020-01-01-preview \
+-d '{"properties":{"eventHubAuthorizationRuleId":"/subscriptions/<event-hub-subscription>/resourceGroups/<event-hub-resource-group>/providers/Microsoft.EventHub/namespaces/<event-hub-namespace-name>/authorizationrules/<authorization-rule-name>","eventHubName":"<event-hub-name>","logs":[{"category":"Administrative", "enabled":true }, {}]}}'
+```
+
+This configures a [diagnostic setting](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/diagnostic-settings) to export any [Administrative](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/activity-log-schema?source=recommendations#administrative-category) logs from the root management group, and any children, to your event hub.
+
+### 3. Allow the Opal App Registration to read from your Event Hub
+
+Now we need to allow the Opal Service to read from your Azure Event Hub. Fill in the following command:
+
+* `<opal-app-registration-object-id>`: The object ID of the App Registration you use for Opal.
+* `<event-hub-id>`: The ID of the created event hub that was output from your terraform apply
+
+```
+az role assignment create \
+ --assignee <opal-app-registration-object-id> \
+ --role "Azure Event Hubs Data Receiver" \
+  --scope <event-hub-id>
+```
+
+### 4. Connect Opal to your Event Hub
+
+Go to your Azure app in Opal, select **Setup**, and click **Edit** to configure your event hub:
+
+* Event Hub Namespace: This must be the **fully-qualified name** of your event hub namespace. It will be of the form `<your-event-hub-namespace-name>.servicebus.windows.net`
+* Event Hub Name: Your event hub's **name**, as returned from the terraform apply.
+
+![](/images/docs/0518b31504107c8eadbb6648cb9162d25b062b6824d592195fc50e0c9aa510e6-azure-event-hub-example.png)
+
+## Using Azure Portal
+
+### 1. Create an Azure Event Hub Namespace
+
+Go to [Event Hubs](https://portal.azure.com/#browse/Microsoft.EventHub%2Fnamespaces) and click **+Create**.
+
+![](/images/docs/e0483c6d7e63382813a648bdea16f9c0feeef4dcbb14d99a958e231fa8491dae-Screenshot_2024-10-02_at_6.34.37_PM.png)
+
+Configure the following properties on the first page:
+
+* Subscription: The subscription your event hub namespace is only affects where it is billed.
+* Resource Group
+* Namespace name
+* Location
+* Pricing Tier: Note that this affects the length of the data retention periods that you are eligible for
+* [Throughput Units](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#throughput-units): 1 TU is recommended
+
+![](/images/docs/336a25daf048916f90b42be84b0f0e2a99102780508483edc320838d3f6d2a5b-Screenshot_2024-10-03_at_11.25.09_AM.png)
+
+Under the following steps, you can configure any other setup required by your use-case. No further configuration for the event hub namespace is required for integration with Opal. Click "Review + create"
+
+Once created, your event hub will take a few minutes to deploy.
+
+### 2. Create an Event Hub
+
+Once your event hub namespace is deployed, go to it in the Azure UI and click **+ Event Hub**.
+
+![](/images/docs/4df458331a7a4af3f0798068b4b426692c82183483f485a86af41e82f8b55878-Screenshot_2024-10-03_at_11.27.10_AM.png)
+
+On the first page, you will be prompted to configure the following:
+
+* Name
+* Partition Count: We recommend setting the partition count to **1**
+* Cleanup Policy: Controls what happens when events reach their retention limit. We recommend using **Delete**
+* Retention Time: The maximum retention period available to you will differ based on the pricing tier you chose in step 1. We recommend using the longest retention period possible.
+
+![](/images/docs/f126be55d482a6dc4bb0dc8ae4f19773f57928cb154383ec2a275ec72c824060-Screenshot_2024-10-03_at_11.28.21_AM.png)
+
+On the **Capture** tab, if you have a premium-tier namespace, you can enable capturing the data that is streamed by your event hub in Azure Data Lake or Azure Blob Storage. We recommend you keep this off.
+
+Once complete, click **Review + Create**, confirm your configuration and create your event hub.
+
+### 3. Set up authorization rules
+
+Authorization rules allow Azure to push audit and administrative logs to your event hub, [see here](https://learn.microsoft.com/en-us/azure/event-hubs/authorize-access-shared-access-signature) for more details. Fill in the following fields in the command below to create an authorization rule on your namespace
+
+* `<authorization-rule-name>`: Can be any name
+* `<event-hub-namespace-name>`: Name of the event hub namespace configured above
+* `<event-hub-resource-group>`: Resource group under which the event hub namespace was created
+
+<CodeGroup>
+  ```text bash
+  az eventhubs namespace authorization-rule create \
+    --name <authorization-rule-name> \
+    --namespace-name <event-hub-namespace-name> \
+    --resource-group <event-hub-namespace-resource-group> \
+    --rights Manage Send Listen
+  ```
+</CodeGroup>
+
+### 4. Create a diagnostic setting at the root management group
+
+For this step, we will need to use the Azure REST API. You can trigger this via any REST client you would like. An authorization token is required, which you can retrieve from the Azure CLI using the following command:
+
+<CodeGroup>
+  ```Text bash
+  az account get-access-token --query accessToken --output tsv
+  ```
+</CodeGroup>
+
+To create the diagnostic setting, fill in the following fields in the command below to create a diagnostic setting
+
+* `<root-management-group-ID>`: The root management group for your Azure directory
+* `<diagnostic-setting-name>`: Any name
+* `<event-hub-subscription>`: The subscription under which you created your event hub namespace
+* `<event-hub-resource-group>`: The resource group under which you created your event hub namespace
+* `<event-hub-namespace-name>`: The name of your event hub namespace
+* `<authorization-rule-name>`: The name of the authorization rule configured above
+* `<event-hub-name>`: The name of the event hub configured above
+
+```
+token=$(az account get-access-token --query accessToken --output tsv)
+curl -X PUT -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
+https://management.azure.com/providers/microsoft.management/managementGroups/<root-management-group-ID>/providers/microsoft.insights/diagnosticSettings/<diagnostic-setting-name>\?api-version\=2020-01-01-preview \
+-d '{"properties":{"eventHubAuthorizationRuleId":"/subscriptions/<event-hub-subscription>/resourceGroups/<event-hub-resource-group>/providers/Microsoft.EventHub/namespaces/<event-hub-namespace-name>/authorizationrules/<authorization-rule-name>","eventHubName":"<event-hub-name>","logs":[{"category":"Administrative", "enabled":true }, {}]}}'
+```
+
+This configures a [diagnostic setting](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/diagnostic-settings) to export any [Administrative](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/activity-log-schema?source=recommendations#administrative-category) logs from the root management group, and any children, to your event hub.
+
+### 5. Enable Microsoft Entra Logging
+
+Go to [Microsoft Entra](https://entra.microsoft.com/#home) and click **Show More** on the left hand bar.
+
+![](/images/docs/01cb88d5dbdd4eec62e63ebaeca5359255e1f1f5c5f6c7413f028618f1448b24-Screenshot_2024-10-02_at_7.13.34_PM.png)
+
+Expand **Monitoring & health** and select **Diagnostic settings**.
+
+![](/images/docs/1775b25b114303069edf050c98c4f03b27953ad1a81721ac705709bc3ba12744-Screenshot_2024-10-02_at_7.18.25_PM.png)
+
+Select **Add diagnostic setting**.
+
+![](/images/docs/f48df761c4c1bf376d50acf29bb16f177d46741b31e472909f37c2f996ee0764-Screenshot_2024-10-02_at_7.19.49_PM.png)
+
+You will be prompted to configure the following:
+
+* Diagnostic setting name
+* Log Categories: Select **AuditLogs**
+* Destination details: Select **Stream to an event hub**
+  * Select the subscription, event hub namespace, event hub and authorization rule created above
+
+![](/images/docs/c7a2d1dbe59fd54bab2b8b16170d00eb4d20e067a874c01376a25c592d9c5dc9-Screenshot_2024-10-03_at_11.33.43_AM.png)
+
+Once complete, click **Save**.
+
+### 6. Allow the Opal App Registration to read from your Event Hub
+
+Now we need to allow the Opal Service to read from your Azure Event Hub. Fill in the following command:
+
+* `<opal-app-registration-object-id>`: The object ID of the App Registration you use for Opal.
+* `<event-hub-id>`: The ID of the created event hub
+
+```
+az role assignment create \
+ --assignee <opal-app-registration-object-id> \
+ --role "Azure Event Hubs Data Receiver" \
+  --scope <event-hub-id>
+```
+
+### 7. Connect Opal to your Event Hub
+
+Go to your Azure app in Opal, select **Setup** and click **Edit** to configure your event hub:
+
+* Event Hub Namespace: This must be the **fully-qualified** name of your event hub namespace. It will be of the form `<your-event-hub-namespace-name>.servicebus.windows.net`
+* Event Hub Name: Your event hub's name
+
+***
+
+* [Table of Contents](#)
+
+* * [Architecture diagram](#architecture-diagram)
+
+  * [Requirements](#requirements)
+
+  * [Using Terraform](#using-terraform)
+
+    * [1. Initialize the Azure EDS Terraform Module](#1-initialize-the-azure-eds-terraform-module)
+    * [2. Create a diagnostic setting at the root management group](#2-create-a-diagnostic-setting-at-the-root-management-group)
+    * [3. Allow the Opal App Registration to read from your Event Hub](#3-allow-the-opal-app-registration-to-read-from-your-event-hub)
+    * [4. Connect Opal to your Event Hub](#4-connect-opal-to-your-event-hub)
+
+  * [Using Azure Portal](#using-azure-portal)
+
+    * [1. Create an Azure Event Hub Namespace](#1-create-an-azure-event-hub-namespace)
+    * [2. Create an Event Hub](#2-create-an-event-hub)
+    * [3. Set up authorization rules](#3-set-up-authorization-rules)
+    * [4. Create a diagnostic setting at the root management group](#4-create-a-diagnostic-setting-at-the-root-management-group)
+    * [5. Enable Microsoft Entra Logging](#5-enable-microsoft-entra-logging)
+    * [6. Allow the Opal App Registration to read from your Event Hub](#6-allow-the-opal-app-registration-to-read-from-your-event-hub)
+    * [7. Connect Opal to your Event Hub](#7-connect-opal-to-your-event-hub)

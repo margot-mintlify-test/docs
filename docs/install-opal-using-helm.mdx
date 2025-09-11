@@ -1,0 +1,290 @@
+---
+title: "Install Opal using Helm"
+description: "Suggest Edits"
+---
+
+Normally, our distribution platform Replicated uses [KOTS](https://docs.replicated.com/intro-kots) to manage deployments and updates in self-hosted clusters. If you’d prefer to avoid using KOTS, you can alternatively manage deployments yourself using Helm. This will require more work to configure Opal correctly, but will allow greater control over the resources you deploy.
+
+## Initial setup
+
+To start, make sure you finish the Infrastructure Setup sections in the [AWS Setup Guide](/docs/self-host-opal-aws-guide#1-infrastructure-setup) or [GKE Setup Guide](/docs/self-host-opal-gke-guide#1-infrastructure-setup).
+
+Next, you’ll need to access Replicated's customer-facing download portal. This lists the available versions of Opal, and has instructions and credentials for Helm installs. Opal support will provide you with access to this download portal.
+
+Log in to the download portal and select the **Existing cluster with Helm** installation option. It'll look like this:
+
+![download-portal.png](/images/docs/dc322cfa2c3b5d3800de36b9c60029d6f91426a3d3e93c93b16dd6bd3a37ec4b-download-portal_1.png)
+
+From here, you can either
+
+* [Pull images directly](/docs/install-opal-using-helm#pull-images-from-opals-registry) from Opal’s registry OR
+* [Use a private Docker registry](/docs/install-opal-using-helm#use-a-private-docker-registry)
+
+We recommend using Opal’s registry unless you have specific security concerns that require you to use a private registry.
+
+### Pull images from Opal’s Registry
+
+1. Copy the license ID from step 1 in the download portal:
+
+   <CodeGroup>
+     ```shell shell
+     export LICENSE_ID=<license id>
+     ```
+   </CodeGroup>
+
+2. Log in to Replicated’s Helm registry, using the command in step 4 of the download portal:
+
+   <CodeGroup>
+     ```shell shell
+     # check the instructions in the download portal for the email to use here
+     helm registry login registry.replicated.com --username <email> --password $LICENSE_ID
+     ```
+   </CodeGroup>
+
+3. Continue with the following [Configure and Install via Helm](/docs/install-opal-using-helm#configure-and-install-via-helm) steps.
+
+### Use a private Docker registry
+
+1. Create the following repositories in your private registry:
+
+   <CodeGroup>
+     ```bash bash
+     fluent-bit
+     minio
+     opal-migrate
+     opal-ml
+     opal-web_backend
+     redis
+     redis-sentinel
+     ```
+   </CodeGroup>
+
+2. Proceed with *all* of the steps from the Replicated download portal. When you reach steps 6 and 7 to download and edit `values.yaml`, continue with the following [Configure and Install via Helm](/docs/install-opal-using-helm#configure-and-install-via-helm) steps.
+
+# Configure and Install via Helm
+
+Refer to the following annotated `values.yaml` file when you’re ready to configure your values for the Opal chart. Take note of the comments, and fill in anything with `<angle brackets>`.
+
+<CodeGroup>
+  ```yaml yaml
+  env:
+    # These are required for your environment to function correctly, and for us to push feature flags to you
+    environment: on_prem
+    onPremCustomerName: <the `customerName` from your license file>
+
+    # Leave these values as-is
+    ginMode: "release"
+    authIssuer: https://auth.opal.dev/
+    authProvider: AUTH0
+    authAudience: https://opal.dev
+    redisHost: opal-web-redis-master
+    redisPort: 6379
+
+    # This will forward logs from your instance of Opal to us, making it easier for us to debug issues.
+    # Set this to "false" if you'd like to disable log forwarding.
+    # Either way, ensure it's a string, not a raw boolean
+    enableRemoteLogging: "true"
+    
+    # Fill these in appropriately for the db instance you set up
+    postgresUser: postgres
+    postgresPassword: <postgres db password>
+    postgresDb: opal
+    postgresHost: <postgres host>
+    postgresSslMode: "require"
+    postgresPort: 5432
+
+    # Generate secret values for these, and save them somewhere secure.
+    authTokenEncryptionKey: <a random, secure string>
+    csrfAuthenticationKey: <a random, secure string>
+    databaseEncryptionKey:  <a random, secure string>
+    opalApiEncryptionKey:  <a random, secure string>
+    secureCookieHashkey: <a random, secure string>
+    minioAccessKey: <a random, secure string>
+    minioSecretKey: <a random, secure string>
+    minioRootUser:  <a random, secure string>
+    minioRootPassword:  <a random, secure string>
+
+    # A DNS name you own that you will use to access Opal.
+    hostname: <hostname for accessing opal>
+
+    # Optional. Set this to have pods use an existing service account in your cluster. Otherwise, omit this.
+    serviceAccount: <existing service account name>
+
+    # This configures an SMTP provider for your instance of Opal to use for sending email notifications
+    # If set to false, Opal uses its default external service for sending emails
+    smtpEnable: true
+    smtpServer: <smtp server>
+    smtpPort: <smtp port>
+    # You may also enable authentication for your customer SMTP server by setting this to true
+    # If you do this, set the username + password below, and make sure smtpPort is set to 465
+    smtpAuthEnable: false
+    smtpUsername: <username for your SMTP server>
+    smtpPassword: <password for your SMTP server>
+  	# Set smtpEncryptionEnabled to true to enable SMTP encryption. serverPort 465 uses SMTPS and serverPort uses STARTTLS
+  	smtpEncryptionEnabled: false
+
+  image:
+    # Leave these two as-is to use Opal's image registry directly
+    repository: proxy.replicated.com/proxy/opal-onprem/179751979675.dkr.ecr.us-east-2.amazonaws.com
+    useReplicatedPullSecret: true
+    # If using a private image registry, use the following instead:
+    # repository: <your private registry's hostname>
+    # useReplicatedPullSecret: false
+
+  # Set these `registry` values to the same as `image.repository` above
+  redis:
+    image:
+      registry: proxy.replicated.com/proxy/opal-onprem/179751979675.dkr.ecr.us-east-2.amazonaws.com
+  redis-sentinel-event-streaming:
+    image:
+      registry: proxy.replicated.com/proxy/opal-onprem/179751979675.dkr.ecr.us-east-2.amazonaws.com
+    sentinel:
+      image:
+        registry: proxy.replicated.com/proxy/opal-onprem/179751979675.dkr.ecr.us-east-2.amazonaws.com
+
+  # Setting `enabled` to true will deploy an Ingress resource you can use to route traffic to Opal
+  # If you disable this, you will need to create your own ingress that routes traffic to the `opal-web` service
+  ingress:
+    enabled: true
+    # Always leave `override=true`
+    override: true
+    overrideAnnotations:
+      # Here, you should fill in annotations that will link your ingress to the load balancer you created in your cloud provider
+      
+      # For AWS, this will look something like:
+      # kubernetes.io/ingress.class: alb
+      # alb.ingress.kubernetes.io/scheme: internet-facing
+      # alb.ingress.kubernetes.io/certificate-arn: <ACM certificate ARN>
+
+      # For GCP, this will look something like
+      # ingress.gcp.kubernetes.io/pre-shared-cert: opal-replicated
+      # kubernetes.io/ingress.global-static-ip-name: opal-replicated
+
+  # If you need to turn off log-forwarding, set `enabled` to false here, and omit the other fields.
+  log-forwarder:
+    enabled: true
+    customer: <the `customerName` from your license file>
+
+  # Leave the rest of these as-is
+
+  database:
+    migrationDirection: up
+    dataSeedDirection: up
+
+  vault:
+    enabled: false
+  ```
+</CodeGroup>
+
+Once you’ve configured your values.yaml, run the `helm install` command from the final step in your download portal:
+
+![Screenshot 2025-03-26 at 10.54.41 AM.png](/images/docs/e2f2e6146540466955e380cc3fca705dec39c7ceea3b20b28007b5245165b66b-Screenshot_2025-03-26_at_10.54.41_AM.png)
+
+# Update Helm Installations
+
+For subsequent updates to your Opal cluster, log back in to your download portal and select the **Manual Updates** tab at the top. Set the current and update versions from the dropdowns:
+
+![Screenshot 2025-03-26 at 10.56.31 AM.png](/images/docs/b42f764de884aafec3e0161d88791ae501a2f89df2b391762297100c371a2b0a-Screenshot_2025-03-26_at_10.56.31_AM.png)
+
+If you’re using a private registry, you’ll need to re-run the commands to pull, retag, and push images to your private registry. We recommend you run these via a script or other automation.
+
+Finally, run the `helm upgrade` command from the final step in your download portal:
+
+![Screenshot 2025-03-26 at 10.57.26 AM.png](/images/docs/df040856bd399417cb4bac4063de6f722de1e9b96ff3739b3c62476b45cc6769-Screenshot_2025-03-26_at_10.57.26_AM.png)
+
+# Migrate from a KOTS-Based Installation
+
+If you previously installed Opal using KOTS and want to manage your deployment with Helm, you can perform a one-way migration. This will not cause any downtime for your cluster, but **will not** be reversible.
+
+First, follow the [Initial Setup](/docs/install-opal-using-helm#initial-setup) instructions above. Once you reach [Configure and Install via Helm](/docs/install-opal-using-helm#configure-and-install-via-helm), skip that section and follow the steps below instead.
+
+1. Pull your cluster’s current Helm values into a local file:
+
+   <CodeGroup>
+     ```shell shell
+     helm get values opal-web -n <namespace> -o yaml > values-from-kots.yaml
+     ```
+   </CodeGroup>
+
+2. Edit the `image` section in this values file:
+
+   1. If you’re using Opal’s image registry, use the following:
+
+      <CodeGroup>
+        ```yaml yaml
+        image:
+          repository: proxy.replicated.com/proxy/opal-onprem/179751979675.dkr.ecr.us-east-2.amazonaws.com
+          useReplicatedPullSecret: true
+        ```
+      </CodeGroup>
+
+   2. If you’re using a private image registry, use the following:
+
+      <CodeGroup>
+        ```yaml yaml
+        image:
+          repository: <your private registry's hostname>
+          useReplicatedPullSecret: false
+        ```
+      </CodeGroup>
+
+3. Scale down the KOTS pods:
+
+   <CodeGroup>
+     ```shell shell
+     kubectl -n opal-onprem scale deploy kotsadm --replicas=0
+     kubectl -n opal-onprem scale sts kotsadm-minio --replicas=0
+     kubectl -n opal-onprem scale sts kotsadm-rqlite --replicas=0
+     ```
+   </CodeGroup>
+
+4. Use `helm list` to check the currently installed version of opal:
+
+   <CodeGroup>
+     ```bash bash
+     $ helm list -n <namespace>
+     NAME    	NAMESPACE  	REVISION	UPDATED	STATUS  	CHART                       	APP VERSION        
+     opal-web	opal-onprem	1       	-      	deployed	opal-web-1.944.0-sha-8d4530d	1.944.0-sha-8d4530d
+     ```
+   </CodeGroup>
+
+   Copy the value under `APP VERSION` for the step below
+
+5. Run a Helm upgrade to take over the chart’s resources:
+
+   <CodeGroup>
+     ```shell shell
+     helm upgrade opal-web oci://registry.replicated.com/opal-onprem/stable/opal-web -n <namespace> --version <current app version> --values values-from-kots.yaml --take-ownership
+     ```
+   </CodeGroup>
+
+Once this is complete, you can update your Helm installation in the future by following the instructions in [Update Helm Installations](/docs/install-opal-using-helm#update-helm-installations) above.
+
+You can also finish cleaning up the kubernetes resources created by KOTS by running the following:
+
+<CodeGroup>
+  ```shell shell
+  kubectl -n <namespace> delete deployment kotsadm;
+  kubectl -n <namespace> delete statefulset kotsadm-minio;
+  kubectl -n <namespace> delete statefulset kotsadm-rqlite;
+  kubectl -n <namespace> delete service kotsadm;
+  kubectl -n <namespace> delete service kotsadm-minio;
+  kubectl -n <namespace> delete service kotsadm-rqlite;
+  kubectl -n <namespace> delete service kotsadm-rqlite-headless;
+  kubectl -n <namespace> delete persistentvolumeclaim kotsadm-minio-kotsadm-minio-0;
+  kubectl -n <namespace> delete persistentvolumeclaim kotsadm-rqlite-kotsadm-rqlite-0;
+  kubectl -n <namespace> delete role kotsadm-role;
+  kubectl delete clusterrolebinding kotsadm-rolebinding;
+  kubectl delete clusterrole kotsadm-role;
+  kubectl -n <namespace> delete serviceaccount kotsadm;
+  ```
+</CodeGroup>
+
+***
+
+* [Table of Contents](#)
+
+* * * [Initial setup](#initial-setup)
+  * [Configure and Install via Helm](#configure-and-install-via-helm)
+  * [Update Helm Installations](#update-helm-installations)
+  * [Migrate from a KOTS-Based Installation](#migrate-from-a-kots-based-installation)

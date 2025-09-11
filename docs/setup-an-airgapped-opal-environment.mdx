@@ -1,0 +1,220 @@
+---
+title: "Set up an Airgapped Opal Environment"
+description: "Note: This deployment method is part of our premium offering. To learn more about leveraging this, please reach out to ."
+---
+
+[Suggest Edits](/edit/setup-an-airgapped-opal-environment)
+
+If you would like to run Opal in an environment with heightened network restrictions and limit the number of systems Opal integrates with, you may deploy Opal in an Airgapped mode. While this instance of Opal will not be fully disconnected from networks, it will only integrate with other services that you explicitly choose (for example, it will only integrate with a service like Slack if you setup that connection). You will **not** need to add any of the hosts listed in [the required outbound hosts section](/docs/self-host-overview#outbound-hosts-required) to your allowlist.
+
+The main limitations of this deployment mode are:
+
+* SAML authentication is not supported. Authentication will only be possible via OIDC, and you will need to provide your own OIDC Provider (more details below).
+* Opal's support team will have a slower path to turn features on and off for you. While we normally use LaunchDarkly for this, you will instead have a replacement service called [RelayProxy](https://docs.launchdarkly.com/sdk/relay-proxy) that you may need to manually update to a new image to bring in new flag values.
+* Opal's support team will have less ability to help you debug issues, as we won't receive any logs or metrics from your instance.
+
+# Prerequisite: Set up an OIDC Provider
+
+Opal by default uses an [OpenID Connect](https://openid.net/developers/how-connect-works/) flow to authenticate users. Normally, we use Auth0 as the auth provider for this; in an airgapped environment, you will need to create your own OIDC provider and integrate it with your instance of Opal.
+
+You should create an OIDC Provider in your Identity Provider, or another similar system that your users will be able to authenticate with. We will require the following from your OIDC Provider:
+
+* Support for the basic `authorization_code` grant type
+
+* Support for the following scope: `openid email profile`
+
+* The following allowed sign-in redirect URIs:
+
+  * `https://<opal hostname>/callback`
+  * `https://<opal hostname>/callback/oidc`
+
+* Your sign-out redirect URI set to `https://<opal hostname>/sign-in`
+
+* If you would like to use our CLI, you will also need an OIDC provider that supports the Device Authorization grant (specifically, the `urn:ietf:params:oauth:grant-type:device_code` grant type)
+  * Note that many IDPs will not let you create a single OIDC Application that supports by the device code and authorization code grant. This is fine - you can have two separate OIDC Providers for these, as long as they're both in the same IDP
+
+* You are responsible for configuring and requiring MFA for your users in this OIDC Application.
+  * In particular, Opal can be configured to require MFA when requesting or connecting to certain resources. In order for these settings to work as expected, your OIDC provider should require MFA on every `/authorize` call made to it.
+
+Take note of the provider's Issuer URL, Client ID, and Client Secret - you'll need those when configuring your instance below.
+
+# Deploying your Airgapped Environment
+
+Before deploying your instance of Opal, you will need to setup infrastructure - see either [these instructions for AWS](/docs/self-host-opal-aws-guide#1-infrastructure-setup), or [these instructions for GCP](/docs/self-host-opal-gke-guide#1-infrastructure-setup). Additionally, you will need to create the following image repositories:
+
+```
+dex
+fluent-bit
+kotsadm
+kotsadm-migrations
+local-volume-provider
+minio
+opal-ld-relay-proxy
+opal-migrate
+opal-ml
+opal-web_backend
+redis
+redis-sentinel
+rqlite
+```
+
+Once your infrastructure is ready, you have two options for deploying Opal - an airgapped installation with KOTS, or an airgapped installed with Helm.
+
+Each of these will rely on accessing Replicated's customer-facing download portal, which has instructions and download links for airgap installs. Opal support will provide you with access to this download portal.
+
+## Airgapped Installation with KOTS
+
+Our distribution platform Replicated uses [KOTS](https://docs.replicated.com/intro-kots) to provide an admin portal that simplifies configuring and updating your instance of Opal.
+
+This approach will require running several containers provided by Replicated; however, your cluster will still be able to pull images from your own private image repositories.
+
+Follow [Replicated's instructions here](https://docs.replicated.com/enterprise/installing-existing-cluster-airgapped). Note that you'll want to download the application bundle and kotsadm from your Replicated download portal, which should look something like this:
+
+![](/images/docs/21c44027ab7b37e7e1bc653d6664a84ebada7c4cc531c698c794bc5c79c20689-Screenshot_2024-12-16_at_9.51.01_AM.png)
+
+Once your admin portal is running and you see a configuration screen, you can follow our normal instructions for configuring Opal - [AWS](/docs/self-host-opal-aws-guide#3-configure-and-deploy-opal) or [GCP](/docs/self-host-opal-gke-guide#3-configure-and-deploy-opal).
+
+Ensure "Enable Full Airgap" is checked, and fill out the required fields below it:
+
+![](/images/docs/f8e69483564a9a0ede2e552a318f090b5f884490df4598eefc5d56d04baaba54-Screenshot_2024-12-16_at_10.54.08_AM.png)
+
+## Airgapped Installation with Helm
+
+You can avoid running kots and directly install Opal as a helm chart. This will require more work to configure Opal correctly, but will allow greater control over the resources you deploy.
+
+Visit your download portal in Replicated and select the "Existing Cluster with Helm" installation option. It'll look like this:
+
+![](/images/docs/f0359a250cfec8bcc3650ada54e47e688ffa2aa40652aaf596f29c605e057903-Screenshot_2024-12-18_at_9.24.11_AM.png)
+
+Follow those instructions. Once you are ready to configure a `values.yaml` file for Opal's helm chart, refer to the annotated values.yaml below for which fields you need to set, and how to set them. Fill in anything with `<angle brackets>`
+
+<CodeGroup>
+  ```yaml yaml
+  env:
+    # These are required for your environment to function correctly, and for us to push feature flags to you
+    environment: on_prem
+    onPremCustomerName: <the `customerName` from your license file>
+    ginMode: "release"
+
+    # Providing "false" here will prevent your instance of Opal from exporting error logs
+    enableRemoteLogging: "false"
+
+    # Set the authIssuer based on the OIDC provider you created.
+    authIssuer: <OIDC Auth Issuer>
+    # Leave the authProvider and authAudience as these values
+    authProvider: GENERIC_OIDC
+    authAudience: https://opal.dev
+    
+    # Fill these in appropriately for the db instance you setup
+    postgresUser: postgres
+    postgresPassword: <postgres db password>
+    postgresDb: opal
+    postgresHost: <postgres host>
+    postgresSslMode: "require"
+    postgresPort: 5432
+
+    # Generate secret values for these, and save them somewhere secure.
+    authTokenEncryptionKey: <a random, secure string>
+    csrfAuthenticationKey: <a random, secure string>
+    databaseEncryptionKey:  <a random, secure string>
+    opalApiEncryptionKey:  <a random, secure string>
+    secureCookieHashkey: <a random, secure string>
+    minioAccessKey: <a random, secure string>
+    minioSecretKey: <a random, secure string>
+    minioRootUser:  <a random, secure string>
+    minioRootPassword:  <a random, secure string>
+
+    # Set the <namespace> to the kubernetes namespace you're deploying opal into
+    redisHost: opal-web-redis-master.<namespace>.svc.cluster.local
+    redisPort: 6379
+
+    # A DNS name you own that you will use to access Opal.
+    hostname: <hostname for accessing opal>
+
+    # This configures an SMTP provider for your instance of Opal to use for sending email notifications
+    # If set to false, Opal would use its default external service for sending emails
+    smtpEnable: true
+    smtpServer: <smtp server>
+    smtpPort: <smtp port>
+  	# Set smtpEncryptioonEnabled to true to enable SMTP encryption. serverPort 465 uses SMTPS and serverPort uses STARTTLS
+  	smtpEncryptionEnabled: false
+
+  fullAirGap:
+    # This is what tells Opal to run as an Airgapped instance
+    enabled: true
+    # Use the Client ID and Client Secret of the OIDC provider you created
+    # If you had to create 2 OIDC providers, this one should be the one that supports the Authorization Code grant
+    authClientID: <client id>
+    authClientSecret: <client secret>
+
+    # This is a human-readable name you can provide as a label for your auth provider
+    # When signing in, your users will see a button that reads "Signin with <authProviderName>"
+    authProviderName: <auth provider name>
+
+  image:
+    # The private image repository you setup for Opal images
+    repository: <image repo url>
+    
+  # Set these `registry` values to the same as `image.repository` above  
+  redis:
+    image:
+      registry: <image repo url>
+  redis-sentinel-event-streaming:
+    image:
+      registry: <image repo url>
+    sentinel:
+      image:
+        registry: <image repo url>
+
+  # Setting `enabled` to true will deploy an Ingress resource you can use to route traffic to Opal
+  # If you disable this, you will need to create your own ingress that routes traffic to the `opal-web` service
+  ingress:
+    enabled: true
+    # Always leave `override=true`
+    override: true
+    overrideAnnotations:
+      # Here, you should fill in annotations that will link your ingress to the load balancer you created in your cloud provider
+      
+      # For AWS, this will look something like:
+      # kubernetes.io/ingress.class: alb
+      # alb.ingress.kubernetes.io/scheme: internet-facing
+      # alb.ingress.kubernetes.io/certificate-arn: <ACM certificate ARN>
+
+      # For GCP, this will look something like
+      # ingress.gcp.kubernetes.io/pre-shared-cert: opal-replicated
+      # kubernetes.io/ingress.global-static-ip-name: opal-replicated
+
+  # This controls RelayProxy, our replacement service for LaunchDarkly that provides feature flags to your cluster
+  ld-relay:
+    image:
+      repository: <image repo url>/opal-ld-relay-proxy
+      # You may also set a `tag` attribute here if you need to override the version of the proxy to run
+      # Otherwise, it'll default to the same version as your application
+
+  # Providing "false" here will prevent your instance of Opal from exporting application logs
+  log-forwarder:
+    enabled: false
+
+  # Leave the rest of these as-is
+
+  database:
+    migrationDirection: up
+    dataSeedDirection: up
+
+  vault:
+    enabled: false
+  ```
+</CodeGroup>
+
+Once your values are configured, you can install Opal using the install command in your download portal
+
+***
+
+* [Table of Contents](#)
+
+* * [Prerequisite: Set up an OIDC Provider](#prerequisite-set-up-an-oidc-provider)
+
+  * [Deploying your Airgapped Environment](#deploying-your-airgapped-environment)
+
+    * [Airgapped Installation with KOTS](#airgapped-installation-with-kots)
+    * [Airgapped Installation with Helm](#airgapped-installation-with-helm)

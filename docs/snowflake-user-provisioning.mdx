@@ -1,0 +1,43 @@
+---
+title: "Snowflake User Provisioning"
+description: "Suggest Edits"
+---
+
+By default, users must exist in Snowflake before they can be added to any roles or resources in Opal, and attempting to grant access to a non-existent user results in a propagation error.
+
+Opal supports the provisioning of users into Snowflake automatically via SCIM, which requires additional setup. After following the steps below, users that are not found in Snowflake when granting access will be automatically provisioned to Snowflake beforehand.
+
+Note that users are only provisioned into Snowflake, not anywhere else. If your Snowflake instance is set up to require SSO for logins, users must also request access to the SSO app to log in.
+
+## 1. Create a SCIM integration in Snowflake
+
+Follow the Snowflake documentation for [creating custom SCIM integrations](https://docs.snowflake.com/en/user-guide/scim-custom).
+
+<CodeGroup>
+  ```sql sql
+  USE ROLE ACCOUNTADMIN;
+  CREATE OR REPLACE SECURITY INTEGRATION OPAL_SCIM_PROVISIONING
+      type=scim
+      scim_client='generic'
+      run_as_role='OPALSERVICE';
+      
+  -- Allow Opal to create users.
+  GRANT CREATE USER ON ACCOUNT TO ROLE OPALSERVICE;
+    
+  -- Allow Opal to create API tokens through the SCIM integration.
+  GRANT OWNERSHIP ON INTEGRATION 'OPAL_SCIM_PROVISIONING' TO ROLE 'OPALSERVICE' REVOKE CURRENT GRANTS;
+  ```
+</CodeGroup>
+
+## 2. Enable provisioning In Opal
+
+Edit the Snowflake app in Opal, and toggle on **Push Snowflake user to connection**.
+
+![](/images/docs/b740bdac61d34ec667d06b99611f8bd331ded50226b0e706fd231cd6eb9c7f4c-Screenshot_2025-08-05_at_11.08.13_AM.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Create a SCIM integration in Snowflake](#1-create-a-scim-integration-in-snowflake)
+  * [2. Enable provisioning In Opal](#2-enable-provisioning-in-opal)

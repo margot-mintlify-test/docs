@@ -1,0 +1,36 @@
+---
+title: "PagerDuty"
+description: "Learn how to connect PagerDuty to Opal."
+---
+
+[Suggest Edits](/edit/5526196-pagerduty)
+
+Use this guide to connect PagerDuty to Opal as a productivity integration. To connect PagerDuty as an app integration, see the [app integration guide](/docs/pagerduty) instead.
+
+With our PagerDuty integration, you can link on-call schedules with Opal groups. We will automatically add whoever is currently on-call to all the resources associated with that group so they can effectively diagnose and solve live issues. Once they're no longer on-call, Opal will automatically remove their privileges.
+
+<Info>
+  Opal always syncs access for whoever is currently on-call, including current overrides.
+</Info>
+
+## 1. Create a PagerDuty token
+
+Opal requires a "read-only" PagerDuty API token. Go to your PagerDuty dashboard and create an API token by following [the official PagerDuty documentation](https://support.pagerduty.com/docs/generating-api-keys#generating-a-general-access-rest-api-key).
+
+## 2. Add your token to Opal
+
+To enable the PagerDuty integration, in the Opal dashboard, go to **Configuration** > **Settings** > **Productivity Integrations**. Select **PagerDuty** and enter your API token from the previous step.
+
+## 3. Create a PagerDuty group
+
+Any group in Opal can be synchronized with a PagerDuty schedule. Edit the group and select schedules to sync.
+
+![](/images/docs/be6d7d639c931cbba252e9f0cd7576b8cfa05d0600d2eba705fe66643b6eeb34-oncall-schedules.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Create a PagerDuty token](#1-create-a-pagerduty-token)
+  * [2. Add your token to Opal](#2-add-your-token-to-opal)
+  * [3. Create a PagerDuty group](#3-create-a-pagerduty-group)

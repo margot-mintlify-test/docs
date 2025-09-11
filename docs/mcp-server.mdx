@@ -1,0 +1,57 @@
+---
+title: "Model Context Protocol (MCP) Server"
+description: "Learn how to install and use Opal's MCP server."
+---
+
+[Suggest Edits](/edit/mcp-server)
+
+Opal offers an [Model Context Protocol (MCP) server](https://modelcontextprotocol.io/introduction) to allow your AI agents to interact with Opal, on top of Opal's REST API.
+
+The MCP server is a standardized way for AI systems to interact with external tools and services. The [opal-mcp](https://github.com/opalsecurity/opal-mcp/) package provides a fully-featured MCP server implementation that allows AI assistants like Claude, GitHub Copilot, and other LLM-based tools to securely interact with Opal. With this MCP server, AI assistants can:
+
+* Retrieve information about users, groups, resources, and access policies
+* Create and manage access requests
+* Automate identity and access management workflows
+
+For example, you can ask an AI assistant connected to this MCP server:
+
+> "Show me all users in the Engineering group." "Create an access request for the Production database." "Review the recent access changes for our AWS resources." "Get information about which users have access to the financial reporting resources."
+
+The AI assistant will use the appropriate SDK functions through the MCP server to retrieve or modify data in your Opal environment, making it easy to manage access control through natural language conversations.
+
+## Demo
+
+The MCP server provides access to various Opal [operations](https://github.com/opalsecurity/opal-mcp?tab=readme-ov-file#available-resources-and-operations) as tools. For example, in this demo, the `groups-get-groups` tool maps to the [getGroups](https://github.com/opalsecurity/opal-mcp/blob/main/docs/sdks/groups/README.md#getgroups) operation.
+
+By default, you must approve each tool the MCP server attempts to call.
+
+## Requirements
+
+The MCP server runs on your local machine, translating AI requests to Opal API calls.
+
+To set up the MCP server, you'll need:
+
+* Opal Admin permissions
+* An Opal [API key](/reference/authentication#generating-an-api-token)
+* [Claude Desktop](https://claude.ai/download) or [Cursor](https://cursor.com/en/downloads) downloaded
+
+If you'd like your server to create or modify any objects, set the API key scope to **Full access**.
+
+## Installation
+
+See the [README in GitHub](https://github.com/opalsecurity/opal-mcp?tab=readme-ov-file#opal-mcp) for installation steps and example usage.'
+
+## Audit requests performed by MCP agents
+
+Requests and actions performed by MCP agents are logged the same as requests performed by users—you can filter the [events](/docs/event-types) table by API key to see requests made by the given agent.
+
+You may want to add context to your request reasons to indicate they're created by the MCP server. For example, with Cursor, you could add a [rule](https://docs.cursor.com/en/context/rules) to include a message in all request reasons that the request was created by an MCP agent.
+
+***
+
+* [Table of Contents](#)
+
+* * [Demo](#demo)
+  * [Requirements](#requirements)
+  * [Installation](#installation)
+  * [Audit requests performed by MCP agents](#audit-requests-performed-by-mcp-agents)

@@ -1,0 +1,72 @@
+---
+title: "Best practices for access requests"
+description: "Learn about best practices for organizing and configuring resources."
+---
+
+[Suggest Edits](/edit/best-practices-for-access-requests)
+
+As you onboard to Opal, these best practices will help position you for success throughout the configuration, management, troubleshooting, and scaling of access request workflows.
+
+## Ensure high-quality user attributes
+
+A powerful user access request workflow requires high-quality user attributes to inform access decisions, both manual and automatic. Dedicate time to reviewing user attributes in your IDP/HRIS to ensure that attributes and their set of values are well-understood and consistently applied. High-quality data ensures streamlined onboarding, and helps with later troubleshooting.
+
+Attributes such as `Cost Center`, `Organization` , and `Title` are often used for automated approvals and day-1 access provisioning. Unexpected changes in attributes and their values can have cascading downstream impacts that affect access. Be able to answer:
+
+* Who sets this attribute on a user?
+* How often do the values change?
+* Is there an established process to cascade change notifications downstream?
+* What happens when a value is renamed? (e.g., `Organization=Sales & Support` is renamed to `Organization=Customer Success`)
+
+You may also need to:
+
+* Ensure that any secondary user emails are [correctly merged](/docs/importing-user-secondary-email)
+* [Re-sync](/docs/sync-schedules-and-triggers) [users and user attributes](/docs/add-your-first-idphr-provider#import-attributes) in Opal to reflect changes your upstream systems
+
+## Clearly name resources
+
+Simple, clear naming of resources improves discoverability and reduces access friction when end-users view the Opal catalog.
+
+* A name should represent the resource and/or data being exposed, and, combined with the resource description and role, indicate the level of access it represents
+* Use [catalog names](/docs/organize-access-via-tags) if underlying resource names are less meaningful to your end users
+* Limit visible catalog resources to a small set of commonly requested items to improve discoverability and reduce friction for end-users
+
+<Info>
+  Note that visible resources are not necessarily requestable—[visibility settings](/docs/organize-access-via-tags#visibility) determine whether resources appear in the catalog, and [request configurations](/docs/configure-reviewers) determine whether users can request them
+</Info>
+
+## Define resource types based on levels of approval
+
+Not all resources look alike—aim to configure approvals based on the sensitivity of information held by a resource and the level of access granted to the resource. For example:
+
+* *Auto-approve*: Use for resources that don’t require security scrutiny, e.g., access to sandbox accounts
+* *Manager approval required*: Use for resources that are not sensitive, but still require review, e.g., read-only SaaS tools
+* *Admin approval required*: Use for sensitive resources or resources you’ll need to audit for compliance, e.g., AWS resources
+* *Custom approval by security team*: Use for production systems or highly sensitive assets, e.g., your production codebase
+
+Codifying these categories—defining a `request_type` in Terraform, for example—helps avoid inconsistencies across resource configurations.
+
+## Group or bundle resources together
+
+If certain resources are often requested together, you can use [bundles](/docs/bundles) to stack requests together, or add [resources to a group](/docs/manage-groups-in-opal#add-resources-to-groups) or [nest groups](/docs/nested-groups), and allow the group to be requestable. **Bundles** are an organizational tool, while **groups** are resources a user can access indefinitely or with time-bound access.
+
+* Use bundles if you want to grant *direct* access to resources, but you want to stack requests together. With bundles, requests are still evaluated individually.
+* Add resources to a group if you’re comfortable granting *indirect* access to resources via the group. This can lead to possible overexposure via group access, but might be more ergonomic for your review process.
+
+## Codify and reuse common settings
+
+Use orchestration tools, such as [Terraform](/docs/use-terraform-with-opal) and Opal’s [REST API](/reference/authentication), to maintain settings in code and enforce version control and visibility on your Opal instance.
+
+Using Terraform, you may want to set global variables and modules to codify common resource types.
+
+To reuse common settings—MFA access, types of reviewers required, etc.—across similar resources, use [configuration templates](/docs/configuration-templates). You can map tags to configuration templates to automatically apply templates to tagged resources—for example, apply the same approval settings to all AWS resources tagged `prod`.
+
+***
+
+* [Table of Contents](#)
+
+* * [Ensure high-quality user attributes](#ensure-high-quality-user-attributes)
+  * [Clearly name resources](#clearly-name-resources)
+  * [Define resource types based on levels of approval](#define-resource-types-based-on-levels-of-approval)
+  * [Group or bundle resources together](#group-or-bundle-resources-together)
+  * [Codify and reuse common settings](#codify-and-reuse-common-settings)

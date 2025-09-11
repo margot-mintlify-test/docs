@@ -1,0 +1,20 @@
+---
+title: "Connect Apps and Infrastructure"
+description: "Suggest Edits"
+---
+
+See the section **Set Up App and Infra Integrations** in the sidebar for detailed instructions for every integration.
+
+To add an integration:
+
+1. Go to the **Inventory** tab.
+2. Click on the **+ App** icon on the top right.
+3. Find the connection type, then select **+ Connect**.
+
+![2262](/images/docs/5f496a64c499f2a80114f69cf2abe7ea7616a6937e94e756a69e84047de2e93d-opal-101-apps-add-app.png "SCR-20230313-lbx.png")
+
+Once you connect an app, you can import resources, e.g. AWS IAM roles, GitHub repos, Salesforce permissions, etc. that you want to manage access to.
+
+For each resource that you import, you can view the list of users that have access to that resource, [configure approval workflows](/docs/5564113-configure-approvals), and [conduct periodic access reviews](/docs/5694200-uar-getting-started).
+
+After you import an app, Opal reflects any changes made on the end system from that point forward. Opal does this by running a periodic sync with the end system to pull changes made on the end system into Opal.

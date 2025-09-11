@@ -1,0 +1,37 @@
+---
+title: "Manage break-glass access"
+description: "Learn how to set up groups and users to support break-glass access paths."
+---
+
+[Suggest Edits](/edit/manage-breakglass-access)
+
+To give end users temporary access to sensitive resources, you can use either break-glass users, or configure [nested groups](/docs/nested-groups).
+
+## Break-glass users
+
+Admins and group owners can add **break-glass users** to groups by editing the group, then select **Break-glass users** in the sidebar.
+
+![](/images/docs/8c6b3cfd523e57e9478a1f8230c6e5ad6e6c8672aa92f4ad0d60eb6b5390cc95-break-glass-req-config.png)
+
+These users can give themselves temporary, 12-hour access to the group using an option to **Break Glass** on the group in the catalog.
+
+![](/images/docs/0aff13e9055e5a1ae32d1c94d24ba5652778d5786a683aaf6130c1403a7cc6a0-break-glass-catalog.png)
+
+You can only set break-glass users on groups, not other resources.
+
+## Nested groups and break-glass access
+
+You can alternatively achieve break-glass functionality using nested groups and request configurations. To do so:
+
+1. Let the group you want to expose access to be **Target-group** and dedicate another group as **Breakglass-target-group**. From the **Inventory** under **Breakglass-target-group**, select **+Group** in the **Assets** tab and add **Target-group**. Users in **Breakglass-target-group** now have access to **Target-group**.
+2. Set a resource configuration for **Breakglass-target-group** to be requestable and auto-approved for a group determined from on-call schedules, or however you need to populate the break-glass users.
+3. You can set the **Target-group** request configuration independently for everyday access to the resource.
+
+This option gives you a separate break-glass access path, while letting you retain existing request configurations.
+
+***
+
+* [Table of Contents](#)
+
+* * [Break-glass users](#break-glass-users)
+  * [Nested groups and break-glass access](#nested-groups-and-break-glass-access)

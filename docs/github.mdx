@@ -1,0 +1,138 @@
+---
+title: "GitHub"
+description: "Connect Opal to your GitHub organization to manage and review access."
+---
+
+[Suggest Edits](/edit/github)
+
+Learn how to connect GitHub to Opal to manage access to your GitHub organization's repositories and teams.
+
+## Supported resources
+
+<Info>
+  Opal does not yet support personal repositories. Opal also does not yet support access management for GitHub users that are not members of your organization.
+</Info>
+
+| Resource                  | Read | Grant and revoke access | Available in Risk Center |
+| ------------------------- | ---- | ----------------------- | ------------------------ |
+| GitHub teams              | ✔️   | ✔️                      | ✔️                       |
+| GitHub repositories       | ✔️   | ✔️                      | ✔️                       |
+| GitHub organization roles | ✔️   | ✔️                      | ✔️                       |
+
+When users request access to GitHub repositories, they can also request to assume specific roles.
+
+## 1. Create an Opal app
+
+To set up a new connection, go to the **Inventory** page and select the **+ App** button on the top right. Then select the GitHub tile.
+
+![2312](/images/docs/d3f81ff2cea628f8be3639d0fd709c037c117798254939c17942fee06317f3c9-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+To upgrade an existing Opal app, go to the **Setup** tab in the **Inventory** and select **Register App**.
+
+## 2. Create the GitHub App
+
+<Info>
+  Ensure you have permissions to create a GitHub App in your GitHub organization.
+</Info>
+
+If you're creating the app for the first time, enter an app name, GitHub organization name, app admin, and description.
+
+After you create the Opal app or select **Register App** for an existing integration, you'll be directed to GitHub to create the [GitHub App](https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/about-creating-github-apps).
+
+## 3. Link GitHub identities to Opal accounts
+
+To use Opal to manage access to GitHub, each user must link their GitHub account to their Opal account.
+
+Opal requires this step because GitHub only makes the email address of a GitHub account available via its API if a user has elected to publicly display their email address. Thus, Opal needs another way to match GitHub identities with Opal accounts. For security reasons, we ask users to log in to both Opal and GitHub to link their accounts.
+
+<Info>
+  For the following steps, the GitHub account you wish to integrate **must have a verified email address corresponding to your Opal email address**.
+</Info>
+
+1. In the bottom left, click your **User** > **Account Settings**.
+
+![2312](/images/docs/4e79763950a98f0951e04d61e55ddfd9aa2ab7c855f89e3dff4a1f8f622813c6-account-settings.png "SCR-20230313-o39.png")
+
+2. Click **Identities** > **Connect** next to the GitHub integration.
+
+![2312](/images/docs/dc23c3d0b51c9d042dfbe7d2bf461e57b2ff0492e3d28310610f126eabeb533f-connect-github.png "SCR-20230313-o3n.png")
+
+3. You will be redirected to a GitHub page, which will prompt you to log into your GitHub account.
+
+### Programmatically map GitHub usernames
+
+If your end users cannot manually link accounts—e.g., if you're connecting service accounts to Opal—you can alternatively set the GitHub username as an attribute in your IdP and [import it as a user attribute]().
+
+![](/images/docs/5009eb9341d0454f8e61f7c65d7b3a9cf5e1a3837deea1b909aa25d7e29a2166-Screenshot_2025-06-30_at_11.40.16_AM.png)
+
+## Self-hosted versions earlier than 1.1026.0
+
+On earlier versions of Opal, the GitHub integration authenticates using personal access tokens and OAuth apps. Use the following steps to connect if you're on a self-hosted version of Opal earlier than 1.1026.0.
+
+### 1. Create a GitHub organization owner account and owner personal access token
+
+For Opal to manage your GitHub organization on your behalf, you need to create a GitHub owner account for your organization with proper permission scopes.
+
+1. It's recommended you create a new GitHub account for this purpose by [following GitHub's documentation](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github). A fresh account is preferred because Opal needs to use the personal access token corresponding to this account.
+
+2. Log into the GitHub organization you want to integrate with Opal. You should be an owner of that organization. Next, [appoint the account](https://docs.github.com/en/organizations/managing-peoples-access-to-your-organization-with-roles/maintaining-ownership-continuity-for-your-organization#appointing-an-organization-owner) you just created as a co-owner of the organization.
+
+3. [Generate a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-token) for the owner account you just created. When creating the personal access token:
+
+   1. Enable the **repo** permission.
+   2. To manage *Github Organization Roles*, additionally enable the **admin:org** permission. If you use fine-grained access tokens, enable **Read-only** access for **Custom organization roles** permission, and **Read and write** access for the **Members** permission.
+
+4. Save this access token, which you will use for the **Admin Token** field in Step 4.
+
+Note that the permissions granted to the token do not permit Opal to delete repositories in your organization.
+
+### 2. Create a GitHub organization OAuth app
+
+Opal requires an OAuth app in your GitHub organization for matching GitHub accounts with Opal user accounts.
+
+Follow [GitHub's documentation](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app) to create an OAuth app for your GitHub organization. Note that **this is an OAuth app, not a GitHub app**. It is easy to confuse the two: you should not create a GitHub app.
+
+Use the following fields during the OAuth app creation process:
+
+| Field                      | Value                                           | Example                                |
+| -------------------------- | ----------------------------------------------- | -------------------------------------- |
+| Application Name           | Opal or any name you prefer                     | *Opal*                                 |
+| Homepage URL               | Domain for your Opal instance                   | `https://app.opal.dev`                 |
+| Authorization callback URL | Your domain name followed by `/callback/github` | `https://app.opal.dev/callback/github` |
+
+After you create your app, record the Client ID and generate a new client secret. Save the generated client secret. These will be input into the **Client ID** and **Client Secret** fields in Step 4.
+
+### 3. Enter your GitHub organization's credentials into Opal
+
+For **Organization Name**, you must input your actual GitHub organization name.
+
+For **Admin Token**, use the personal access token from Step 2.
+
+For **Client ID** and **Client Secret**, use the generated credentials from Step 3.
+
+If this step is successful, you have completed setting up the GitHub organization connection information required as the GitHub organization owner.
+
+To complete the entire process and permit access management to your repositories via Opal, users will need to link their [GitHub identities to Opal accounts](#3-link-github-identities-to-opal-accounts).
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+
+  * [1. Create an Opal app](#1-create-an-opal-app)
+
+  * [2. Create the GitHub App](#2-create-the-github-app)
+
+  * [3. Link GitHub identities to Opal accounts](#3-link-github-identities-to-opal-accounts)
+    * [Programmatically map GitHub usernames](#programmatically-map-github-usernames)
+
+  * [Self-hosted versions earlier than 1.1026.0](#self-hosted-versions-earlier-than-110260)
+
+    * [1. Create a GitHub organization owner account and owner personal access token](#1-create-a-github-organization-owner-account-and-owner-personal-access-token)
+    * [2. Create a GitHub organization OAuth app](#2-create-a-github-organization-oauth-app)
+    * [3. Enter your GitHub organization's credentials into Opal](#3-enter-your-github-organizations-credentials-into-opal)

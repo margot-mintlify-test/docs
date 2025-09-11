@@ -1,0 +1,47 @@
+---
+title: "Connect Identity or HR Providers"
+description: "Suggest Edits"
+---
+
+Connecting your IDP/HR system allows Opal to sync your organization's identities and attributes from a predefined source of truth, whether your IDP, your HRIS system, or both. Opal allows you to aggregate your identities and their metadata across disparate systems to provide a centralized, complete picture of users in one view.
+
+## How Opal interacts with IDP/HR providers
+
+When you connect Opal to your **Identity Provider (IDP)** or **HR Information System (HRIS)**, Opal creates users for your employees and syncs helpful information about them.
+
+* Opal automatically imports your organization's user list
+* Opal can import user information such as manager and title, along with custom attributes you specify
+* Opal can revoke user access when accounts are terminated in the IDP
+
+<Warning>
+  Note that Opal does NOT currently automatically create Opal users for every individual in your IDP. Opal users are only created when they're also part of an imported app.
+</Warning>
+
+## Supported Identity/HR providers
+
+Opal currently supports the following IDP/HRIS providers. See these guides for more information:
+
+* [Okta Identity Provider](/docs/okta-idphris-integration)
+* [Google Identity Provider](/docs/google-idphris-integration)
+* [Azure AD Identity Provider](/docs/azure-entra-idphris-integration)
+* [Workday HR Provider](/docs/workday-idphris-integration)
+
+## User deprovisioning
+
+When users are deprovisioning in your IDP/HRIS provider, you can enable settings in Opal to automatically remove any access to end systems provisioned by Opal, as well as remove the user's access to Opal. If you enable both settings, end system access will be removed first.
+
+Go to **Configuration** > **Organizational Settings** and select the appropriate deprovisioning settings.
+
+![](/images/docs/92ec47f6a77b68219e062ae47fcdfcc525981457616e97e74aa15e3a627adb45-idp-deprovisioning.png)
+
+***
+
+What’s Next
+
+Get started by connecting your first IDP/HR Provider
+
+* [Table of Contents](#)
+
+* * [How Opal interacts with IDP/HR providers](#how-opal-interacts-with-idphr-providers)
+  * [Supported Identity/HR providers](#supported-identityhr-providers)
+  * [User deprovisioning](#user-deprovisioning)

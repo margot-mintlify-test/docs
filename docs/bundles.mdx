@@ -1,0 +1,82 @@
+---
+title: "Bundles"
+description: "Learn how to use bundles to group commonly used resources."
+---
+
+[Suggest Edits](/edit/bundles)
+
+Admins can create bundles—collections of resources and groups, contextualized by anticipated usage—to allow users to easily request access to common collections, without over-provisioning access.
+
+A bundle is a wrapper for resources. Any resource or group contained in a bundle retains its established policies and configurations. Adding an item to a bundle does not change its admin, owner, approval policies, or visibility settings.
+
+For example, given:
+
+* Bundle B contains resources X and Y
+* Resource X is only visible and requestable to users in group G
+
+If user U is not in group G, they can request access to bundle B, but only resource Y will be visible and requestable in the bundle.
+
+You can manage bundles in the Opal dashboard, using the [REST API](/reference/getbundles), or with [Terraform](https://registry.terraform.io/providers/opalsecurity/opal/latest/docs).
+
+## Create and manage bundles
+
+You must be an Opal admin to create a bundle.
+
+### Create bundles
+
+Go to the **Inventory** and select the **Bundles** tab.
+
+![](/images/docs/baafe4559cd4502f78611183d694bc36915e60a3fd630ede1382ad5486b08a59-inventory-bundle-tab.png)
+
+Click on the **+ Bundle** button.
+
+![](/images/docs/aa82783a1ce550cdfa4eb2d9fab2dc699086c971b0c0ce766a6c2325645ce4d8-inventory-bundle-new.png)
+
+Name your bundle and add an optional description:
+
+![](/images/docs/428116b-ScreensCreate-bundlehot_2024-03-01_at_12.03_1.png)
+
+### Set an admin
+
+Select an Opal Owner to own adding and removing items from the bundle.
+
+The admin does not gain permission to directly add users to any resources and groups contained in the bundle.
+
+![](/images/docs/d7a0cad-bundle-setAdmin.png)
+
+### Add resources and groups
+
+After you create the bundle, use the **Resources** and **Groups** tabs to add items to the bundle.
+
+## User flow: request bundles
+
+Go to the **Catalog** and select the **Bundles** tab. Click on the appropriate bundle.
+
+### Bulk select
+
+Select the resources you need Opal to bulk request.
+
+![](/images/docs/df213b0dcea23d79f49dc89afb785c681104bc6db132fa3b60eb6056cd5fa2a9-request-bundle.png)
+
+### Bulk request
+
+In the request form, delete any resources you don't need and submit your bulk request.
+
+![](/images/docs/c86a2d8d763c8c12d94c543401cab4d7d2e740fba47258531d757347dce39e12-bundle-request.png)
+
+Approved access from bundle requests is propagated only after all items in the bundle have been approved.
+
+***
+
+* [Table of Contents](#)
+
+* * [Create and manage bundles](#create-and-manage-bundles)
+
+    * [Create bundles](#create-bundles)
+    * [Set an admin](#set-an-admin)
+    * [Add resources and groups](#add-resources-and-groups)
+
+  * [User flow: request bundles](#user-flow-request-bundles)
+
+    * [Bulk select](#bulk-select)
+    * [Bulk request](#bulk-request)

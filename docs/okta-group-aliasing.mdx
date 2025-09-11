@@ -1,0 +1,42 @@
+---
+title: "Group aliasing"
+description: "Suggest Edits"
+---
+
+You can hide, rename, and add groups in Opal that you imported from your IDP, without affecting the group in your underlying IDP. This can be useful to clarify to end users which apps they should request to access, and helps simplify the Catalog experience.
+
+## Hide groups in Opal
+
+You may want to hide groups that certain users should belong to, but which you don’t intend for other users to access—for example, an engineering group **Engineering Birthright** may not make sense for users outside of that organization. Hiding a group does not alter its display in your IDP—Okta, Azure, Workday, etc.—and hidden groups are still visible to admins and owners in the **Inventory**.
+
+![](/images/docs/78108b689ae3731596da339a673be22c1927ff62309273baa38f77455339b7dc-Screenshot_2024-11-12_at_6.07.08_PM.png)
+
+To hide a group in Opal, go to the **Inventory** page and find the group. Select the eye icon in the far right column, then confirm the modal.
+
+![](/images/docs/6f3030422d5e747900eff92eaebdf8a464c2c8e2f5925df996800fa4c2481167-hide-okta-group.png)
+
+## Rename groups in Opal
+
+Renaming a group can help you clarify to end users the effects of requesting access.
+
+For example, you may have an Okta group named **Design Tooling**, which you don’t want to rename in Okta but only want to use in Opal for Figma access. Select **Edit Catalog Name** to rename the group—in this example, to *Figma Editor*—so users know what they’re requesting. The name in the **Inventory** then remains the same.
+
+![](/images/docs/2441e60d584002fe250f1b96a6575ca8b0ea2045bfc14ee5ca5fafe7b71c6ff5-Screenshot_2024-11-14_at_2.22.37_PM.png)
+
+![](/images/docs/a8fc0d633d4b97ca1cc3908c50c6c1ae46e6b3419342dc3ff3a6b2bf101b1a51-Screenshot_2024-11-14_at_2.22.45_PM.png)
+
+## Add groups as resources in Opal
+
+You may want to create groups in Opal which do not have access relationships in your IDP. For example, Okta [push groups](https://help.okta.com/en-us/content/topics/users-groups-profiles/usgp-about-group-push.htm) may need to be requested by end users to associate the group and app, but the group should not have direct access to Okta apps. For these cases, you can add groups as resources from the app's **Inventory** page by selecting **Add Resources**.
+
+![](/images/docs/e1d8d5e961fd1e47c702e81a21840450e98ad223f84a3b298afed65d81db1a1e-Screenshot_2024-12-23_at_10.41.15_AM.png)
+
+![](/images/docs/760837552fe59d882af6176668ac1f9e4943716e227f612ec4d2576df8a2478c-image.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [Hide groups in Opal](#hide-groups-in-opal)
+  * [Rename groups in Opal](#rename-groups-in-opal)
+  * [Add groups as resources in Opal](#add-groups-as-resources-in-opal)

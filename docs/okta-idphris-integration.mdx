@@ -1,0 +1,37 @@
+---
+title: "Okta IDP/HRIS Integration"
+description: "Suggest Edits"
+---
+
+If your organization uses Okta as an Identity Provider, you can additionally designate it as an [IDP/HRIS Integration](/v3.2/docs/add-your-first-idphr-provider). Doing so allows Opal to sync your Okta identities and their attributes, on top of syncing and managing access to entitlements (e.g. Okta Groups, Okta Apps, etc).
+
+## Getting started
+
+Before you set up Okta as your IDP, you must first create an Okta Directory App in Opal. To do this, [follow the Okta integration guide](/docs/5525158-okta-directory-getting-started).
+
+Next, set up Okta as your IDP using the following guides:
+
+* [Add Your First IDP/HR Provider](/v3.2/docs/add-your-first-idphr-provider)
+* [Add Additional IDP/HR Providers](/v3.2/docs/add-additional-idphr-providers)
+
+![](/images/docs/45bd8df50e4f01184cc7b53321b99e572bd033a3dd1ba369ab58088877811610-idp-hris-setup.png)
+
+Your Okta IDP setup is now complete.
+
+## Import user manager
+
+You can configure Opal to automatically import user manager information from Okta and match the imported string to an Opal user.
+
+There are two ways to do this:
+
+1. Set the `manager` attribute in an Okta user's profile to an Okta user's email. If there is a matching Opal user associated with this Okta user email, the user's manager in Opal will be updated to this user.
+2. Set the `managerId` attribute in an Okta user's profile to an Okta user ID. If there is a matching Opal user associated with this Okta user ID, the user's manager in Opal will be updated to this user. The Okta user ID can be found by navigating to the user from the **People** section in a browser, then observing the Okta user ID at the end of the URL (below, the Okta user ID is `00u1835qib5TKa8Ri5d7`).
+
+![](/images/docs/6c3c750-okta_5.png "okta_5.png")
+
+***
+
+* [Table of Contents](#)
+
+* * [Getting started](#getting-started)
+  * [Import user manager](#import-user-manager)

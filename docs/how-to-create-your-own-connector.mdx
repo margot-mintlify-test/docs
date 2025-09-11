@@ -1,0 +1,190 @@
+---
+title: "Create your own connector"
+description: "Learn how to build custom connectors to connect Opal with any end system."
+---
+
+[Suggest Edits](/edit/how-to-create-your-own-connector)
+
+To bootstrap development, Opal provides an [OpenAPI spec](https://github.com/OAI/OpenAPI-Specification) to help you automatically generate a server using [OpenAPI Generator](https://github.com/openapitools/openapi-generator).
+
+This guide provides instructions to implement the [required endpoints](/docs/api-spec) to use in a custom Opal app, then connect these endpoints to a custom Opal app. See Opal's [custom DataDog connector](https://github.com/opalsecurity/opal-datadog-connector) for an example server implementation.
+
+## 1. Bootstrap connector server
+
+1. If you use MacOS and [Homebrew](https://brew.sh/), use the following command to install OpenAPI Generator.
+
+   ```
+   brew install openapi-generator
+   ```
+
+   See [OpenAPI Generator README](https://github.com/openapitools/openapi-generator?tab=readme-ov-file#1---installation) for ways to install the generator app if you're not on MacOS.
+
+2. Save the [Opal Custom App Connector API spec](https://raw.githubusercontent.com/opalsecurity/opal-connector-spec/main/openapi-connector-spec.yaml) as a YAML file.
+
+3. Choose a server generator from the [OpenAPI Generator documentation](https://openapi-generator.tech/docs/generators/#server-generators). Opal's example uses `go-gin-server`.
+
+4. Generate the connector server stub, replacing `go-gin-server` with your preferred server generator. See the available configuration options for your chosen server generator to tweak the output of the generated code.
+
+   ```
+   openapi-generator generate \
+     -g go-gin-server \
+     -i openapi-connector-spec.yaml \
+     -o opal-myconnector-connector
+   ```
+
+## 2. Implement Custom Connector API endpoints
+
+1. After you generate the boilerplate code, navigate into the generated code directory. In the DataDog example:
+
+```
+cd opal-myconnector-connector
+```
+
+See the generated `README.md` file for instructions on how to run the code. You can change how you run and deploy the code based on your requirements and needs.
+
+2. On your server, implement the endpoints specified in Opal's [Custom Connector API Spec](/docs/api-spec). Your implementation will vary based on your server and end system. Note the [Nested Resources in connectors](/docs/how-to-create-your-own-connector#nested-resources-in-connector) section as you implement the `/resources` endpoint.
+
+In the DataDog example, the `/resources` endpoints are implemented in the `api_resources.go` [file](https://github.com/opalsecurity/opal-datadog-connector/blob/main/datadogconnector/api_resources.go), and uses DataDog's [Go API client](https://github.com/DataDog/datadog-api-client-go) to connect to DataDog.
+
+3. To verify requests originate in Opal, it's strongly recommended you validate requests using the `X-Opal-Signature` header. See more in the [Signatures](/docs/api-spec#signature) section, and in `routes.go` in the [example DataDog connector](https://github.com/opalsecurity/opal-datadog-connector/blob/main/datadogconnector/routers.go).
+
+### Nested Resources in connectors
+
+Due to how hierarchical resources work in other systems, Opal assumes the following:
+
+* If a user has access to a parent resource, the user also has access to all its child resources.
+* If a child resource is imported into Opal, all its parent resources will also be imported.
+
+If you enable **Nested Resources** in the [connector setup](#4-create-a-custom-app), Opal assumes the following behavior:
+
+* `GET /resources`: instead of listing ALL the available resources in the connector, only the resources **without a parent** (root resources) are returned. Returning a resource that has a parent in this call might result in duplicate resources or errors.
+* `GET /resources?parent_id=<id>`: when passing the ID of a resource as a query param, only the immediate children of this resource need to be returned. If no children belong to this resource, an empty list should be returned instead.
+
+For example, given this resource structure:
+
+![](/images/docs/38b844a-image.png)
+
+Opal expects the following responses, given the following calls, to and from the connector.
+
+| Query                                   | Response                                  |
+| --------------------------------------- | ----------------------------------------- |
+| `GET /resources`                        | `[resource_a, resource_b, resource_c]`    |
+| `GET /resources?parent_id=resource_a`   | `[resource_aa]`                           |
+| `GET /resources?parent_id=resource_aa`  | `[]`                                      |
+| `GET /resources?parent_id=resource_b`   | `[]`                                      |
+| `GET /resources?parent_id=resource_c`   | `[resource_ca, resource_cb, resource_cd]` |
+| `GET /resources?parent_id=resource_ca`  | `[]`                                      |
+| `GET /resources?parent_id=resource_cb`  | `[resource_cba]`                          |
+| `GET /resources?parent_id=resource_cd`  | `[]`                                      |
+| `GET /resources?parent_id=resource_cba` | `[]`                                      |
+
+### Example request from Opal to the connector
+
+The following is a snapshot of requests made from Opal to a generic connector implementation, containing the raw path with query parameters, method, body, and example of signatures. You can use this to unit test your connector implementation.
+
+<CodeGroup>
+  ```Text csv
+  URL|path|raw_query|method|headers|body|signing_secret|timestamp|signature
+  http://localhost:8080/resources?app_id=dsdd|/resources|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/resources/1/users?app_id=dsdd|/resources/1/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/resources/1/access_levels?app_id=dsdd|/resources/1/access_levels|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/resources/2/users?app_id=dsdd|/resources/2/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/resources/2/access_levels?app_id=dsdd|/resources/2/access_levels|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/resources/3/users?app_id=dsdd|/resources/3/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/resources/3/access_levels?app_id=dsdd|/resources/3/access_levels|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups?app_id=dsdd|/groups|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups/1/users?app_id=dsdd|/groups/1/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups/1/resources?app_id=dsdd|/groups/1/resources|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups/2/users?app_id=dsdd|/groups/2/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups/2/resources?app_id=dsdd|/groups/2/resources|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups/3/users?app_id=dsdd|/groups/3/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups/3/resources?app_id=dsdd|/groups/3/resources|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/users?app_id=dsdd|/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835750"],"X-Opal-Signature":["896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835750|896277c63817aadbbdfea1f4fff18359b40e5ec5bd2b9dfc9aa449ee84c07ce4
+  http://localhost:8080/groups/1/resources/3?app_id=dsdd|/groups/1/resources/3|app_id=dsdd|DELETE|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835866"],"X-Opal-Signature":["0c2044d2396e84917dc8050b1cb54cecaab5bc96ba814133eecf2adc9d6d4de8"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835866|0c2044d2396e84917dc8050b1cb54cecaab5bc96ba814133eecf2adc9d6d4de8
+  http://localhost:8080/groups/1/users/1?app_id=dsdd|/groups/1/users/1|app_id=dsdd|DELETE|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835879"],"X-Opal-Signature":["244ae2057b438e7145df029bfd9a311f1be075b13d239b76c80f7223b90110d4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835879|244ae2057b438e7145df029bfd9a311f1be075b13d239b76c80f7223b90110d4
+  http://localhost:8080/groups/1/users/3?app_id=dsdd|/groups/1/users/3|app_id=dsdd|DELETE|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835879"],"X-Opal-Signature":["244ae2057b438e7145df029bfd9a311f1be075b13d239b76c80f7223b90110d4"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835879|244ae2057b438e7145df029bfd9a311f1be075b13d239b76c80f7223b90110d4
+  http://localhost:8080/groups/1/users|/groups/1/users||POST|{"Accept":["application/json"],"Content-Type":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835889"],"X-Opal-Signature":["9a7fc343b92665839500263b0c6f14ff00bd33bdf1af37985525b2d51a12b7a1"]}|{"app_id":"dsdd","user_id":"5"}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835889|9a7fc343b92665839500263b0c6f14ff00bd33bdf1af37985525b2d51a12b7a1
+  http://localhost:8080/resources/3/users/3?access_level_id=2&app_id=dsdd|/resources/3/users/3|access_level_id=2&app_id=dsdd|DELETE|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835901"],"X-Opal-Signature":["93030371458e338ba2f3b835854e3433bdef3ad4012659418977f58d42bc806f"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835901|93030371458e338ba2f3b835854e3433bdef3ad4012659418977f58d42bc806f
+  http://localhost:8080/resources/3/users/3?access_level_id=1&app_id=dsdd|/resources/3/users/3|access_level_id=1&app_id=dsdd|DELETE|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835901"],"X-Opal-Signature":["93030371458e338ba2f3b835854e3433bdef3ad4012659418977f58d42bc806f"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835901|93030371458e338ba2f3b835854e3433bdef3ad4012659418977f58d42bc806f
+  http://localhost:8080/groups/1/resources/3?access_level_id=2&app_id=dsdd|/groups/1/resources/3|access_level_id=2&app_id=dsdd|DELETE|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690835924"],"X-Opal-Signature":["04d5c6cad627f37263b957d8bce37c5fd743a480b927359f4af2171724d47970"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690835924|04d5c6cad627f37263b957d8bce37c5fd743a480b927359f4af2171724d47970
+  http://localhost:8080/groups/2?app_id=dsdd|/groups/2|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690836017"],"X-Opal-Signature":["8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690836017|8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6
+  http://localhost:8080/groups/2/users?app_id=dsdd|/groups/2/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690836017"],"X-Opal-Signature":["8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690836017|8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6
+  http://localhost:8080/groups/2/resources?app_id=dsdd|/groups/2/resources|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690836017"],"X-Opal-Signature":["8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690836017|8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6
+  http://localhost:8080/users?app_id=dsdd|/users|app_id=dsdd|GET|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690836017"],"X-Opal-Signature":["8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690836017|8d4b1c5bc918740859f51378fc4601642f653bb996a8debc1bf986b2cc632bf6
+  http://localhost:8080/groups/2/resources/2?app_id=dsdd|/groups/2/resources/2|app_id=dsdd|DELETE|{"Accept":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690836024"],"X-Opal-Signature":["4581cba15df55453490bd42e26a73265dd442c87fcc9808bc9babef63268352a"]}|{}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690836024|4581cba15df55453490bd42e26a73265dd442c87fcc9808bc9babef63268352a
+  http://localhost:8080/groups/2/resources|/groups/2/resources||POST|{"Accept":["application/json"],"Content-Type":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690836045"],"X-Opal-Signature":["a18c00f9d430e65b340a86007572511c834d0d29717650c166ccfc65e1d78647"]}|{"access_level_id":"1","app_id":"dsdd","resource_id":"3"}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690836045|a18c00f9d430e65b340a86007572511c834d0d29717650c166ccfc65e1d78647
+  http://localhost:8080/groups/2/users|/groups/2/users||POST|{"Accept":["application/json"],"Content-Type":["application/json"],"User-Agent":[""],"X-Opal-Request-Timestamp":["1690836053"],"X-Opal-Signature":["39add5b34eaaed4776f7172bf0ec036d7e2ab6eb3a564671f079a6bf28730046"]}|{"app_id":"dsdd","user_id":"5"}|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt|1690836053|39add5b34eaaed4776f7172bf0ec036d7e2ab6eb3a564671f079a6bf28730046
+  ```
+</CodeGroup>
+
+### Example of X-Opal-Signatures
+
+To test `X-Opal-Signature`, you can use the following replay of some requests made to a connector with method, signature, hash and encryption key to build unit tests for your validation functions.
+
+<CodeGroup>
+  ```Text CSV
+  method|path|signature|timestamp|hash|encryption_key
+  GET|/resources/3|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/3/users|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/3/access_levels|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/2|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/2/users|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/2/access_levels|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/1|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/1/users|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/resources/1/access_levels|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  GET|/users|v0:1689194685:{}|1689194685|874d6f7810ae9611b816a1da9ed2ac6d38f6fef8b8b8770e5786727803146506|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  POST|/resources/1/users|v0:1689194631:{"app_id":"dsdd","user_id":"4"}|1689194631|2152942fccf3086d59de4cbbc708ee1861f87be76506560b755184d8ba90e8cc|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  POST|/resources/1/users|v0:1689194697:{"app_id":"dsdd","user_id":"4"}|1689194697|0f5dd435832cba2b26bcf98b775182deaacaf445334d403430969d42396a156d|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  POST|/resources/1/users|v0:1689194697:{"app_id":"dsdd","user_id":"5"}|1689194697|e4f572398bf72098a84f4f505a3a59b3429dcf64775df6032e3d348376ecc02a|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  DELETE|/resources/1/users/1|v0:1689194853:{}|1689194853|4700807ac9853cb813aaf6b6161f93634c6427bc4ea1625cd82fc42f3a8d2c5a|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  DELETE|/resources/1/users/4|v0:1689194853:{}|1689194853|4700807ac9853cb813aaf6b6161f93634c6427bc4ea1625cd82fc42f3a8d2c5a|f3XX78hHLiqEQ0F5SjHkEt7RxYeNKmKt
+  ```
+</CodeGroup>
+
+## 3. Test a local connector implementation with Opal
+
+If you're developing a connector and you want to test it out with your Opal instance before deploying it to a public server (or your own network), you can use [ngrok](https://ngrok.com/) to make a local server available with a public hostname. With a connector running locally on port `:8080`, run `ngrok` with:
+
+```
+ngrok http 8080
+```
+
+Now you can use the `ngrok` endpoint in your Connector app configuration in Opal.
+
+## 4. Create a custom app
+
+In Opal, go to the **Inventory** page and select **+ App**. Select the **Custom App** tile, then the **Use custom app connector** option.
+
+![](/images/docs/1e62f5dc2e48a8a4b9a56f93378d6d24dccff15a2f941e8fa6ab074d29ed7dc8-custom-connector.png "SCR-20230313-n1j.png")
+
+Fill in the form with using the following settings to create the Opal custom app.
+
+| Field            | Setting                                                                                                                                                                                                                         | Required |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Identifier       | Use any value you need, depending on how you use the `app_id` parameter from the [API spec](/docs/api-spec).                                                                                                                    | Yes      |
+| Base URL         | Your connector hostname and port, including protocol. For example, `https://customconnector.company.com:8090`.                                                                                                                  | Yes      |
+| Connector Groups | Enable this option if you've implemented the `/groups` endpoints. If your connector does not require groups, leave it disabled.                                                                                                 | No       |
+| Nested Resources | [Enable](/docs/how-to-create-your-own-connector#nested-resources-in-connectors) this option if your connector requires nested resources. Ensure your connector implements the spec correctly, otherwise side effects may arise. | No       |
+| Nested Groups    | Enable this option if you use [nested groups](/docs/nested-groups) and have implemented the `/groups` endpoints.                                                                                                                | No       |
+| Event Ingestion  | Enable this option if you've implemented the `/events` endpoint.                                                                                                                                                                | No       |
+
+Select **Generate** to generate a signing secret, and use this code into your connector to verify that the `X-Opal-Signature` header is correct and authentic. See [Signatures](/docs/api-spec#signature) for more.
+
+Select **Create Custom App** to verify that the connector is properly set up. If successful, the connection will be created and you can now manage your access with Opal.
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Bootstrap connector server](#1-bootstrap-connector-server)
+
+  * [2. Implement Custom Connector API endpoints](#2-implement-custom-connector-api-endpoints)
+
+    * [Nested Resources in connectors](#nested-resources-in-connectors)
+    * [Example request from Opal to the connector](#example-request-from-opal-to-the-connector)
+    * [Example of X-Opal-Signatures](#example-of-x-opal-signatures)
+
+  * [3. Test a local connector implementation with Opal](#3-test-a-local-connector-implementation-with-opal)
+
+  * [4. Create a custom app](#4-create-a-custom-app)

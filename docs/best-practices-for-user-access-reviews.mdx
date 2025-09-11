@@ -1,0 +1,58 @@
+---
+title: "Best practices for access reviews"
+description: "Suggest Edits"
+---
+
+Use this guide before you configure User Access Reviews (UARs) in Opal to set yourself up for a scalable review process.
+
+## Scope reviews appropriately
+
+As you think about access reviews, focus on **risk mitigation:** in your reviews, exclude systems that don’t expose access to sensitive assets. For example, your read-only SaaS apps may not be necessary to audit.
+
+To keep audits clean and access control transparent, only include users and groups that require review. For example, if you include Okta apps in your access reviews, don’t use Okta groups to manage visibility to resources, since they’ll then be unnecessarily included in the review. Instead, use [Opal groups](/docs/opal-101#groups) to manage visibility, and audit Okta apps for actual access.
+
+Your needs may vary based on your compliance requirements. For example, privacy compliance requirements may require a revise of who can read customer data, while this is not a concern for SOX regulation for public companies.
+
+### Use access rules to optimize the review process
+
+You may need to review all users who have access to a resource, but in larger environments this can be costly, and review criteria may be identical across many users who have valid reasons to have standing access.
+
+To optimize the review process, you can use Opal [access rules](/docs/access-rules) to manage access to resources, rather than direct access. Consult the access rule's conditions first to ensure it properly gates users by attributes. In the subsequent access review, you'll only need to review the single rule, rather than users with direct access.
+
+### Tag resources
+
+To keep scopes narrowly focused and easily collect resources, [tag resources and groups](/docs/opal-101#tags), e.g., `Audit:UAR`, then set the review's scope to include items with a given tag. To automate this approach, use [Terraform](https://registry.terraform.io/providers/opalsecurity/opal/latest/docs/resources/tag) or the [REST API](/reference/add_group_tag) to manage tags. You can also ingest tags from group attributes in Okta.
+
+### Import non-Opal resources as CSVs
+
+If Opal doesn’t provide a native integration for a resource you want to review, you can:
+
+1. Create a [custom](/docs/custom-integrations-overview#push-only-apps-and-webhooks-overview) **Push-only app** without a webhook configured.
+2. In the app, import your [resource from a CSV](/docs/import-and-configure-resources-and-groups#import-resources-from-csvs).
+3. Include the resource in your access review.
+
+## Determine review frequency based on your needs
+
+Your needs will vary based on your organization’s size, maturity, structure, and industry. For example, for higher levels of FEDRAMP access reviews, you may need to produce monthly access review evidence.
+
+In general, auditors will likely need to see full access review and remediation completed within a few days or weeks after the access review was created.
+
+## Set up review reminders
+
+By default, Opal sends notifications about incomplete access reviews one week before, three days before, one day before, and the day of your review deadline.
+
+To get ahead of reviews, you may want to notify reviewers about new reviews assigned to them, and send reminders to their managers. Opal lets you configure these when you create the access review.
+
+***
+
+* [Table of Contents](#)
+
+* * [Scope reviews appropriately](#scope-reviews-appropriately)
+
+    * [Use access rules to optimize the review process](#use-access-rules-to-optimize-the-review-process)
+    * [Tag resources](#tag-resources)
+    * [Import non-Opal resources as CSVs](#import-non-opal-resources-as-csvs)
+
+  * [Determine review frequency based on your needs](#determine-review-frequency-based-on-your-needs)
+
+  * [Set up review reminders](#set-up-review-reminders)

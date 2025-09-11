@@ -1,0 +1,49 @@
+---
+title: "Add additional IDP/HR providers"
+description: "Suggest Edits"
+---
+
+Opal allows customers to ingest identities and their attributes from multiple IDP/HR systems. If your organization uses multiple IDPs, multiple HR systems, or you simply want to combine user metadata from disparate sources, you can simultaneously connect to each and rank priority on a per-attribute basis.
+
+## Add additional providers
+
+To add an additional provider, you must first configure the provider as an Opal App. Go to the **Inventory** page, select **+ App**, and complete the flow.
+
+Next, go to the **Configuration** > **Settings** page, then **Identity and HR Integrations**. Select **+ IDP/HRIS Connection** to add another provider.
+
+## Import attributes
+
+Attributes from any connected provider can be imported as either:
+
+* **User Tags**—custom attributes
+* **Opal System Attributes**—such as the user's Name, Manager, or Position
+
+![](/images/docs/fa68a3b891985dac9d9aba93376b8d2fa02964b62fc8cddf06ef805ef0968370-imported-user-attributes.png)
+
+**User Tags (custom attributes)** are linked to the IDP or HRIS provider they are imported from. The source provider for each user tag will be visible after import.
+
+## Handle system attribute conflict
+
+Opal's built-in attributes, such as title, first name, last name, and manager, can be imported from any connected IDP or HRIS. These attributes are not directly tied to the originating provider, so you need to specify which provider takes precedence if a user is active in multiple systems. You can configure this priority in the **Attribute Mapping** tab.
+
+![](/images/docs/3656559c165ebadc8ca98dcb6b1bd93a19013a07d12c17bdb54b60cd29f34e15-attribute-mapping.png)
+
+### Handle email changes
+
+If a user's email changes in the IDP, Opal updates the user's email in Opal to match the new email in the connected system, while preserving all existing links with remote systems.
+
+**Note:** Updating the email in only some IDPs may cause unintended state drift. You can configure which IDP takes precedence for email changes in the **Attribute Mapping** tab.
+
+## Secondary emails
+
+When multiple IDP/HRIS providers are configured, secondary emails imported from them will be merged for the corresponding user.
+
+***
+
+* [Table of Contents](#)
+
+* * [Add additional providers](#add-additional-providers)
+  * [Import attributes](#import-attributes)
+  * [Handle system attribute conflict](#handle-system-attribute-conflict)
+    * [Handle email changes](#handle-email-changes)
+  * [Secondary emails](#secondary-emails)

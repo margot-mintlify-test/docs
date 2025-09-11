@@ -1,0 +1,172 @@
+---
+title: "Overview"
+description: "Learn how to connect your Workday tenant to Opal."
+---
+
+[Suggest Edits](/edit/workday)
+
+Opal's integration with Workday lets you [leverage HRIS data](/docs/workday-idphris-integration) as an additional source of truth for users, employee metadata, and their attributes. The integration also allows you to manage access to entitlements such as [Workday Security Groups and Roles](/docs/workday-groups-and-roles).
+
+## Supported resources
+
+| Resource                                    | Read | Grant and revoke access | Available in [Risk Center](/docs/least-privilege-posture-management) |
+| ------------------------------------------- | ---- | ----------------------- | -------------------------------------------------------------------- |
+| Workday Users and user attributes (as HRIS) | ✔️   | ✔️                      | ✔️                                                                   |
+| Workday User Security Groups                | ✔️   | ✔️                      | ✔️                                                                   |
+| Workday Roles                               | ✔️   | ✔️                      | ✔️                                                                   |
+
+The Workday integration does not currently support syncing Workday service users.
+
+## 1. Create an Opal app
+
+To get started, go to the **Inventory** > **Apps** page, select **+App** at the top right, and select **+Connect** under the **Workday** tile.
+
+![2312](/images/docs/8d504c08cb84637c4803fd3a5d8f07dd167944c6b30ce1c7ddcba62b3589bad5-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+Because Workday configures permissions on the field level, the set up process involves creating a **Workday Integration System User** and **Workday Integration Security Group** to ensure it has the necessary permissions.
+
+## 2. Create an Integration System User (ISU)
+
+In the Workday Search bar, enter **Create Integration System User**, and select the corresponding **Task**.
+
+![2312](/images/docs/c28350a-Screenshot_2024-08-08_at_10.41.06_AM.png "SCR-20230313-n1j.png")
+
+In the **Create Integration System User** modal, enter the **Account Information**, including User Name, Password. Set the **Session Timeout Minutes** to 0 to prevent session expiry, as it may lead to the integration timing out before completion.
+
+![2312](/images/docs/e75c96c-Screenshot_2024-08-08_at_10.42.29_AM.png "SCR-20230313-n1j.png")
+
+## 3. Create a Security Group and assign it an ISU
+
+In the Workday Search bar, enter **Create Security Group**, and select the corresponding Task.
+
+![2312](/images/docs/3760765-Screenshot_2024-08-08_at_10.38.48_AM.png "SCR-20230313-n1j.png")
+
+In the Create Security Group modal, for the Type of Tenanted Security Group, select **Integration System Security Group (Unconstrained)** and enter a name to represent the ISU.
+
+![2312](/images/docs/c7e1e2c-Screenshot_2024-08-08_at_10.44.10_AM.png "SCR-20230313-n1j.png")
+
+Once created, Edit the Security Group to associate it with the **Integration System User** you created in Step 2.
+
+![2312](/images/docs/bc7be54-Screenshot_2024-08-08_at_10.54.09_AM.png "SCR-20230313-n1j.png")
+
+## 4. Configure Domain Security Policy Permissions
+
+In the Workday Search bar, enter **Maintain Permissions for Security Group**, and select the corresponding Task.
+
+![2312](/images/docs/0dc8eee-Screenshot_2024-08-08_at_10.55.08_AM.png "SCR-20230313-n1j.png")
+
+In the task modal, first set the **Operation** to **Maintain** and set the **Source Security Group** to the Security Group you created in Step 3.
+
+![2312](/images/docs/4454c3a-Screenshot_2024-08-08_at_10.56.01_AM.png "SCR-20230313-n1j.png")
+
+Then, edit the **Domain Security Policy Permissions** and add the following GET ONLY operations:
+
+| View/Modify Access | Domain Security Policy                    | Required                                     | Reason                                |
+| ------------------ | ----------------------------------------- | -------------------------------------------- | ------------------------------------- |
+| GET ONLY           | Worker Data: Public Worker Reports        | Required                                     | Used to import users within resources |
+| GET ONLY           | Worker Data: Workers                      | Required                                     | Used to import users within resources |
+| GET ONLY           | Security Configuration                    | Required                                     | Used to check for permissions         |
+| GET ONLY           | Worker Data: Current Staffing Information | Required if you use Workday as your IDP/HRIS | Used to retrieve user statuses        |
+| GET ONLY           | Integration Build                         | Required if you use Workday as your IDP/HRIS | Used to retrieve user statuses        |
+| GET ONLY           | Worker Data: Employment Data              | Required if you use Workday as your IDP/HRIS | Used to import user attributes        |
+| GET ONLY           | Worker Data: All Positions                | Required if you use Workday as your IDP/HRIS | Used to import user attributes        |
+
+In Workday, you can add each by clicking on the **+** button on the top left of the table. For example:
+
+![2312](/images/docs/2cb8fd3-Screenshot_2024-08-08_at_2.34.56_PM.png "SCR-20230313-n1j.png")
+
+## 5. Activate Security Policy Changes
+
+In the Workday Search bar, enter **Activate Pending Security Policy Changes**, and select the corresponding Task.
+
+![2312](/images/docs/98e45f7-Screenshot_2024-08-08_at_11.30.26_AM.png "SCR-20230313-n1j.png")
+
+Review and check the **Confirm** box to activate the Security Policy Changes.
+
+![2312](/images/docs/9fe4883-Screenshot_2024-08-08_at_2.50.22_PM.png "SCR-20230313-n1j.png")
+
+## 6. Manage Authentication Policies
+
+In the Workday Search bar, enter **Manage Authentication Policies**, and select the corresponding Report.
+
+![2312](/images/docs/b0a0c53-Screenshot_2024-08-08_at_11.35.09_AM.png "SCR-20230313-n1j.png")
+
+Depending on your policy set up, you can choose to edit an existing policy or create a new one.
+
+To create a new one:
+
+1. select **Add Authentication Policy** on the page.
+2. Select from the dropdown the corresponding **Environment** you would like the policy to apply to.
+3. In the table below, add an **Authentication Ruleset** by selecting the **+** button on the top left.
+4. Provide an **Authentication Rule Name** and set the **Security Group** to the one you created in Step 2. For the **Authentication Conditions**, select **Any**. For **Allowed Authentication Types**, select **User Name Password**.
+
+![2312](/images/docs/db53a40-Screenshot_2024-08-08_at_11.43.04_AM.png "SCR-20230313-n1j.png")
+
+## 7. Activate All Pending Authentication Policy Changes
+
+In the Workday Search bar, enter **Activate All Pending Authentication Policy Changes**, and select the corresponding Task.
+
+![2312](/images/docs/40b3c1d-Screenshot_2024-08-08_at_3.04.13_PM.png "SCR-20230313-n1j.png")
+
+Add any comments, review, and check the **Confirm** box to activate the Authentication Policy Changes
+
+![2312](/images/docs/7dfed4a-Screenshot_2024-08-08_at_3.04.56_PM.png "SCR-20230313-n1j.png")
+
+## 8. Obtain the Web Services Endpoint for tenant
+
+In the Workday Search bar, enter **Public Web Services**, and select the corresponding Report.
+
+![2312](/images/docs/6929615-Screenshot_2024-08-08_at_3.08.10_PM.png "SCR-20230313-n1j.png")
+
+In the table, locate the **Human Resources (Public)** Web Service, hover over it and click on the **...** to the right of the text. Under **Web Service**, select **View WSDL**. This will open another page in the browser.
+
+![2312](/images/docs/41f75db-Screenshot_2024-08-08_at_11.46.55_AM.png "SCR-20230313-n1j.png")
+
+In the new page containing the document tree, you can use Cmd + F / Ctrl + F to find `/service`, and you should see a URL address that looks like the following:
+
+![2312](/images/docs/5ae1dbd-Screenshot_2024-08-08_at_11.48.28_AM.png "SCR-20230313-n1j.png")
+
+The corresponding highlighted URL segment up to the `/service` path is your **Workday Web Services Endpoint**. Note that each tenant may have a different endpoint, so a new endpoint would need to be created for each environment you would like to connect. The text directly after `/service` should represent your **Workday Tenant Name**. As an example, if your Workday log in URL is `https://impl.workday.com/HelloWorld`, your Workday Tenant Name would be `HelloWorld`.
+
+## 9. Complete the Opal form to connect Workday
+
+In Opal, enter the details based on the Workday items you configured in the previous steps:
+
+* Workday Integration System User username (Step 2)
+* Workday Integration System User password (Step 2)
+* Workday tenant URL subdomain (Step 8)
+* Workday tenant name
+
+![2312](/images/docs/23fc33f-Screenshot_2024-08-08_at_1.45.51_PM.png "SCR-20230313-n1j.png")
+
+Once you've completed the form, select **Create**, and your connection should be set up and running.
+
+See [Workday Groups and Rules](/docs/workday-groups-and-roles) to learn how to manage access to Workday entities such as User Security Groups and Organization Roles, and the [Workday IDP/HRIS Integration](/docs/workday-idphris-integration) guide to learn how to sync Workday entities and attributes.
+
+## Run app validation checks
+
+After you save your app, you can view existing sync issues from the **Setup** tab on the app detail page. Missing permissions and sync issues show in the **App Validations** section. Select the refresh icon to rerun validation checks.
+
+![](/images/docs/efb2b39c7496b8b1c0c3117c658987fda980b4596eba6a5ef080f93ca9295d99-connection-health-ux.png)
+
+You can hover over the validation icons to learn why Opal needs a given permission. To correctly sync your app to Opal, ensure you address any sync errors, marked with the red ! icon. Inspect warnings on a case-by-case basis: warnings might impact features you’re not using and may be safely ignored, but this depends on your use case.
+
+***
+
+What’s Next
+
+Check out how to use Workday as an IDP/HRIS integration
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [1. Create an Opal app](#1-create-an-opal-app)
+  * [2. Create an Integration System User (ISU)](#2-create-an-integration-system-user-isu)
+  * [3. Create a Security Group and assign it an ISU](#3-create-a-security-group-and-assign-it-an-isu)
+  * [4. Configure Domain Security Policy Permissions](#4-configure-domain-security-policy-permissions)
+  * [5. Activate Security Policy Changes](#5-activate-security-policy-changes)
+  * [6. Manage Authentication Policies](#6-manage-authentication-policies)
+  * [7. Activate All Pending Authentication Policy Changes](#7-activate-all-pending-authentication-policy-changes)
+  * [8. Obtain the Web Services Endpoint for tenant](#8-obtain-the-web-services-endpoint-for-tenant)
+  * [9. Complete the Opal form to connect Workday](#9-complete-the-opal-form-to-connect-workday)
+  * [Run app validation checks](#run-app-validation-checks)

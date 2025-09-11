@@ -1,0 +1,49 @@
+---
+title: "Nested groups"
+description: "Learn how to set up nested groups in Opal."
+---
+
+[Suggest Edits](/edit/nested-groups)
+
+In Opal, you can use nested groups (also called “group-group propagation”) to add a group to another group and automatically sync memberships between the groups.
+
+## Use cases
+
+### Connect role and resource groups
+
+Use nested groups to easily manage access to resources while maintaining existing user group structures. You can:
+
+* Define requestable groups containing resources; for example, a group called *Prod Resources*, composed of prod AWS and PagerDuty resources
+* Define non-requestable groups containing users; for example, a group called *Software Engineers* pulled from an Okta group rule
+* From the *Prod Resources* detail page under **Group Access**, add the *Software Engineers* group as a nested group, and set an access duration
+
+In this example, users in the *Software Engineers* group are then automatically granted access to resources within the *Prod Resources* group, and changes in group membership are automatically pulled from Okta.
+
+### Connect disparate groups
+
+You can also use nested groups to connect disparate groups that require access to the same resources, e.g., a Google Group and Okta group, two Okta groups, etc.
+
+## Configuration
+
+To set up a nested group:
+
+1. Go to **Inventory** > **Apps** and find the group you’d like to serve as the containing group. The *containing group* contains the *member group* you’ll add.
+2. Go to the **Group Access** tab on the containing group.
+3. Select **Add Groups** and search for the *member group(s)* to add.
+4. Optionally, set the access to be timebound.
+5. Select **Add Groups** to save the group.
+
+Users in the *member group* are now automatically granted access to any resources or groups in the *containing group.*
+
+![](/images/docs/ff245c724a037209c8557c94cc110574aed0d92ac679581ae873b9881aeb632b-add-member-groups.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [Use cases](#use-cases)
+
+    * [Connect role and resource groups](#connect-role-and-resource-groups)
+    * [Connect disparate groups](#connect-disparate-groups)
+
+  * [Configuration](#configuration)

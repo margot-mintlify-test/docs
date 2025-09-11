@@ -1,0 +1,77 @@
+---
+title: "Configure reviewers"
+description: "Learn how to configure required reviewers for access requests."
+---
+
+[Suggest Edits](/edit/configure-reviewers)
+
+All resources and groups in Opal can be requestable with configurable approval options and reviewers. Use this guide to learn how admins can configure the reviewers of access requests.
+
+## Owners
+
+Owners are users who can be:
+
+* **Reviewers**: Users who can review and approve access requests
+* **Admins**: Users who can manage the full configuration of policies for resources and groups
+
+You can manage owners from the **Inventory** > **Owners** tab. There, you can find the following settings for reviewers:
+
+1. **Reviewer Escalation Policy:**
+
+* **Notify everyone**: As the default option, Opal notifies all required reviewers at once. Opal requires just one approval from all required reviewers to complete the request.
+* **Reviewer escalation policy**: Once configured, Opal creates an explicit escalation order. In this example, Opal notifies the first reviewer. After the escalation time has passed, Opal notifies the next reviewer, and so on.
+
+2. **Linked reviewer Slack channel:** Opal creates a channel that receives a message for every access request.
+
+3. **Source group:** Opal keeps the user list for this owner synchronized with a group of your choice. You can still edit the escalation path in the Users tab, but you can't add or remove users from this owner directly.
+
+![2262](/images/docs/c30d98ca7d1deab35cef4945a47293f0c32c62d8ac2a1d68ef933483065b6c23-edit-api-owner.png "SCR-20230313-lny.png")
+
+### Empty owner notifications
+
+Access reviews that require owner approval will fail when owner groups are empty. To receive [notifications](/docs/notifications) about empty owner groups, enable **Error notification setting** in **Configuration** > **Organization Settings** > **Advanced**.
+
+## Approval workflows
+
+For resources and groups, the **Request Configuration** section gives admins an overview of the approval logic. You can create multiple request configurations if you want to apply different approval logic for different requesting users, groups, or roles.
+
+![2262](/images/docs/32cb76c-reqconfig.png "SCR-20230313-loc.png")
+
+### Custom notification text
+
+To send users notifications when they are approved for resources or groups, check the **Include custom notification text with approvals** checkbox in the request configuration or template, then specify a custom message.
+
+![](/images/docs/2f63c57859fe473948967c2d7c5b7b9c60de54a9351ad9702f60731c9de993cf-Screenshot_2024-10-14_at_4.28.52_PM.png)
+
+### Approval flow
+
+In the **Approval Flow** section, admins can:
+
+1. Set approval logic to **Auto-Approve**. When this setting is enabled, access requests are automatically approved.
+
+![2262](/images/docs/b8de301-auto-approve.png "SCR-20230313-lor.png")
+
+2. Configure an **Approval Workflow**.
+
+* You can include up to three approval **stages**.
+
+* Within each stage, approvers can be the resource's **Manager** or **Owner**.
+
+* If multiple approvers are selected, admins can choose to require **All** or **Any** reviewers.
+
+  > * **All**: All reviewers must approve the access request to proceed to the next stage. This is **AND** logic.
+  > * **Any**: Any reviewers can approve before the access request proceeds to the next stage. This is **OR** logic.
+
+  ![2262](/images/docs/49b885a-stages.png "SCR-20230313-lp5.png")
+
+***
+
+* [Table of Contents](#)
+
+* * [Owners](#owners)
+    * [Empty owner notifications](#empty-owner-notifications)
+
+  * [Approval workflows](#approval-workflows)
+
+    * [Custom notification text](#custom-notification-text)
+    * [Approval flow](#approval-flow)

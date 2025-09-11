@@ -1,0 +1,81 @@
+---
+title: "Manage access with ticketing"
+description: "Suggest Edits"
+---
+
+Sometimes after a user’s access is approved or revoked in an end system, additional manual work is necessary to provision or update access. Opal lets you use ticketing systems—[Jira](/docs/jira), [Linear](/docs/5662665-linear), or [ServiceNow](/docs/servicenow)—to propagate access and gain visibility into what requires manual provisioning.
+
+In Opal, you can:
+
+* [Reference](#reference-existing-tickets-on-access-requests) existing tickets—require that every access request includes a link to an existing ticket
+* [Audit](#create-audit-tickets) access by creating a ticket for every request or revocation
+* [Propagate](#propagate-access-with-tickets) access using tickets—Opal can automatically file tickets when access is approved, revoked, or both, and sync access to end systems when tickets are closed
+
+## Requirements
+
+To integrate with your ticketing provider in any form, you must first connect it as a [Productivity Integration](/docs/connect-your-productivity-tools). Opal supports [Jira](/docs/jira), [Linear](/docs/5662665-linear), and [ServiceNow](/docs/servicenow) as ticketing providers.
+
+You can connect to your ticketing provider to any resource, including [custom](/v3.2/docs/setup-connector-app-in-opal) resources, that a user can request to access.
+
+## Reference existing tickets on access requests
+
+To require users to connect to existing tickets when they request access, first go to the **Inventory**, then the **Edit** page for the resource in question. In the **Request configuration** section under **Request Information**, set **Must link ticket that auto-expires access setting** to **Required**.
+
+![](/images/docs/2e72fc58d0ac9afdd5d340651d53b0b07766913eddfa193f9b492ed7d0a21e90-reference-ticketing-req.png)
+
+When users request access to the resource, they must now select a ticket to submit the request. Access is automatically revoked and propagated when the ticket closes or when the selected time interval has elapsed.
+
+You can also enable this setting for your entire organization. Go to **Settings** > **Access Requests**, then select **Requests must link ticket that auto-expires access**.
+
+## Create audit tickets
+
+To create an audit ticket for every access request in Opal, go to **Settings** > **Access Requests** and select **Create audit ticket for all access requests**, then enter your [ticket provider](/docs/connect-your-productivity-tools) details.
+
+![](/images/docs/a332b2d0c339b9481ffda7267a82783447eee0c532bce17ecc9f51e1cb1db6e2-audit-requests.png)
+
+Whenever a user requests access in Opal, Opal creates a ticket in your ticketing provider, allowing you to audit every access request in your own system. Audit tickets are auto-closed by Opal when access expires. You can manually close audit tickets in your provider, but this has no effect in Opal.
+
+## Propagate access with tickets
+
+When ticket propagation is enabled, Opal files a ticket on your ticket provider when users are granted access, have access revoked, or both. When tickets are completed or marked **Done** in the ticketing provider, Opal propagates the access state to any connected remote systems.
+
+### Example
+
+Suppose Josh requests access to a custom resource called **My Role**. The required reviewers for **My Role** are notified in Slack that they have a request to review.
+
+![](/images/docs/49a018d-Screen_Shot_2022-09-27_at_1.40.58_AM.png "Screen Shot 2022-09-27 at 1.40.58 AM.png")
+
+When the request is approved, Opal creates a Jira ticket to assign and track the task of making the access change on the end system. In Jira, you can see a reference to the ticket from the **My Role** resource page on the **Users** tab. If you click the ticket's identifier, a modal displays with a link to the ticket.
+
+![](/images/docs/3c2272f-Screen_Shot_2022-09-27_at_1.41.39_AM.png "Screen Shot 2022-09-27 at 1.41.39 AM.png")
+
+The ticket appears on the ticketing provider as follows.
+
+![](/images/docs/fc5b30b-Screen_Shot_2022-09-27_at_1.45.32_AM.png "Screen Shot 2022-09-27 at 1.45.32 AM.png")
+
+When the access change has been made on the end system, the assignee should mark the ticket as **Done**. Opal then records the access change as complete and syncs the change to any remote systems. This appears as a green sync icon next to the user's access.
+
+Note that it may take several minutes for Opal to sync the ticket's status. If you're the admin of the resource, you can also force a sync by clicking the sync button on the top right of the resource's page.
+
+### Configure ticket propagation
+
+To enable ticket propagation, from the **Inventory** page, edit the resource. Toggle on **Ticket provider for access propagation** in the left panel and specify the provider, project, and conditions to create tickets.
+
+![2312](/images/docs/8f58d13e323c5aaebdefc0c8984f1c1d6ee39e286aa9eec9078843e4d30966a9-enable-ticket-propagation.png "SCR-20230313-muw.png")
+
+If you don’t see the **Ticket provider for access propagation** option, ensure you’re editing the resource, not the app.
+
+***
+
+* [Table of Contents](#)
+
+* * [Requirements](#requirements)
+
+  * [Reference existing tickets on access requests](#reference-existing-tickets-on-access-requests)
+
+  * [Create audit tickets](#create-audit-tickets)
+
+  * [Propagate access with tickets](#propagate-access-with-tickets)
+
+    * [Example](#example)
+    * [Configure ticket propagation](#configure-ticket-propagation)

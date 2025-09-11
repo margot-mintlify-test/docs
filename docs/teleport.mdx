@@ -1,0 +1,139 @@
+---
+title: "Teleport"
+description: "Learn how to connect Opal to Teleport to manage access to Teleport groups."
+---
+
+[Suggest Edits](/edit/teleport)
+
+Opal natively supports an integration with Teleport. This integration enables organizations to manage access to groups in Teleport.
+
+With Opal's Teleport integration, you can:
+
+* Give specific roles via birthright access
+* Grant just-in-time short-lived access to roles
+* Audit who has access specific roles and why
+* Review roles in user access reviews
+
+## Supported resources
+
+| Resource       | Read | Grant and revoke access | Available in Risk Center |
+| -------------- | ---- | ----------------------- | ------------------------ |
+| Teleport Roles | ✔️   | ✔️                      | ✔️                       |
+
+## Configuration steps
+
+In Teleport, you will need to set up a service account for Opal to perform operations.
+
+1. Create an `opal-service` role.
+
+In the Teleport Dashboard, go to **Team** > **Roles**, then **Create New Role**. Use the following YAML:
+
+<CodeGroup>
+  ```yaml yaml
+  kind: role
+  metadata:
+    name: opal-service
+  spec:
+    allow:
+      db_labels:
+        "*": "*"
+      app_labels:
+        "*": "*"
+      rules:
+        - resources:
+            - role
+            - user
+          verbs: ["list", "create", "read", "update", "delete"]
+    options:
+      max_session_ttl: 8760h
+  version: v5
+  ```
+</CodeGroup>
+
+The `opal-service` role is used by Opal to make changes to your system. Note that we use a max session TTL of 8760 hours (1 year). The credentials you generate in a subsequent step will be bound by this TTL, and you will need to reissue the credentials at this interval. You may want to set this value higher to avoid needing to reissue the credentials.
+
+2. Next, create an `opal-impersonator` role on the same page. Use the following YAML:
+
+<CodeGroup>
+  ```yaml yaml
+  kind: role
+  version: v5
+  metadata:
+    name: opal-impersonator
+  spec:
+    # SSH options used for user sessions
+    options:
+      # max_session_ttl defines the TTL (time to live) of SSH certificates
+      # issued to the users with this role.
+      max_session_ttl: 10h
+
+    # The allow section declares a list of resource/verb combinations that are
+    # allowed for the users of this role. By default, nothing is allowed.
+    allow:
+      impersonate:
+        users: ["opal-service"]
+        roles: ["opal-service"]
+
+    # The deny section uses the identical format as the 'allow' section.
+    # Deny rules always override allow rules.
+    deny:
+      node_labels:
+        "*": "*"
+  ```
+</CodeGroup>
+
+This role allows you to sign a credential on behalf of the `opal-service` service user.
+
+3. Attach this role to yourself in the Teleport dashboard by finding your user and going to **Options** > **Edit**, and adding `opal-impersonator` to your **User Roles**.
+
+4. Create the `opal-service` service user. Go to **Team** > **Users** > **Create New User**. Use `opal-service` as the name and add the `opal-service` role.
+
+5. In your terminal, use `tsh login` to log in to your account (not the `opal-service` account). If you were already logged in, you must `tsh logout` and log in again to pick up the new `opal-impersonator` role.
+
+<CodeGroup>
+  ```text text
+  tsh login --proxy=myorg.teleport.sh [email protected]
+  ```
+</CodeGroup>
+
+6. Sign a new credential for the `opal-service` service account.
+
+<CodeGroup>
+  ```text text
+  tctl auth sign --user=opal-service --out=opal-service.pem --ttl=8760h
+  ```
+</CodeGroup>
+
+Note that this step is possible because you attached the `opal-impersonator` role to your Teleport user. The TTL in this step should match the value you configured in step 1.
+
+7. In Opal, go to **Inventory**, click on the **+ App** icon, and select the Teleport App. Fill out the details for the integration, using the contents of `opal-service.pem` generated in the previous step as the **Opal service account credentials file**.
+
+## Link Teleport users to Opal users
+
+Teleport does not expose user emails. Therefore, Opal is not able to associate Teleport users with Opal users by default. To use the integration, you need to import the mapping via a custom attribute from your IDP.
+
+1. Make sure that users in your IDP have a field with their Teleport username.
+
+2. In Opal, make sure that you have [connected your IDP](/docs/identity-providers-saml#identity-providers).
+
+3. In Opal, go to **Settings** > **IDP & HR Integrations** select the **Importing X custom user attributes** link on your IDP tile.
+
+![2372](/images/docs/5886938190d8fe6558d44c2fa3f7c9547e03cd166234e4105a30ee21ff07662c-import-user-attribute.png "SCR-20230313-k9s.png")
+
+4. Enter the attribute name from your IDP that has the Teleport username, select **Teleport username** as the **Use as** value from the dropdown and click **Add attribute**.
+
+![2312](/images/docs/faa7b40452cd7227138d0e6454e199cd366ee85262528b030abbd5453f15a819-teleport-username.png "SCR-20230313-mze.png")
+
+5. The mappings from Opal user to Teleport username are now imported from your IDP and you can start using the integration.
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [Configuration steps](#configuration-steps)
+  * [Link Teleport users to Opal users](#link-teleport-users-to-opal-users)

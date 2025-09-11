@@ -1,0 +1,64 @@
+---
+title: "Overview"
+description: "Connect your Active Directory server to use Opal to manage and review access."
+---
+
+[Suggest Edits](/edit/active-directory)
+
+Opal's integration with Active Directory supports the following, and more:
+
+* Users can **request time-bounded access** to your AD groups.
+* Auditors can **initiate access reviews** that assign managers or group admins to periodically review users with long-lived access to AD groups.
+* Admins can **add resources from other Opal integrations** to an AD group so an AD group's members can automatically gain birthright access to, for example, a GitHub repo, AWS IAM role, etc.
+* All access changes are tracked as [events](/docs/event-types) that can be logged to a Slack channel or be exported to your favorite tools.
+
+## Supported resources
+
+| Resource                | Read | Grant and revoke access | Available in Risk Center |
+| ----------------------- | ---- | ----------------------- | ------------------------ |
+| Active Directory Groups | ✔️   | ✔️                      | ✔️                       |
+
+## Create an Active Directory app
+
+To get started, go to the **Inventory** > **Apps** page, then select **+App**. Select the Active Directory tile.
+
+![](/images/docs/ea8116616ade46f8308e30ae3eaef4b57a3626e31b7f132c9fd3ab7b39f71e7e-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+You will see a form to be completed. Opal requires the following credentials in order to manage access to your AD groups.
+
+## Step 1 - Configure an Active Directory service account for Opal
+
+In order for Opal to manage your Active Directory server on your behalf, you need to create an Active Directory service account for your server with proper permission scopes.
+
+* Connect to a Domain Controller or to a computer with Active Directory Remote Server Administration Tools installed.
+* Click **Start**, type **"dsa.msc"**, then press **Enter**.
+* Navigate to the Organizational Unit where the Opal Service Account will be located.
+* Right-click the Organizational Unit, select **New** > **User**.
+* Optional: Type **"Opal"** into the **First Name** field and **"Service Account"** into the **Last Name** field.
+* Type **"OpalServiceAccount"** into the **User logon name** field. Click **Next**.
+* Configure a password based on your organization's password policy requirements, uncheck the **User must change password at next logon** checkbox, and check the **Password never expires** checkbox. Click **Next**. Click **Finish**.
+* Double click on the newly created service account user. On the **Member Of** tab, add the **Domain Admins** group (or if you're using AWS Managed AD, then add **AWS Delegated Administrators** instead). Then save the account and click **OK**.
+
+## Step 2 - Fill out Opal form
+
+Back in the Create App form, fill in details about your Active Directory server and service account:
+
+* For **Server hostname** and **Server port**, input the hostname and port of your Domain Controller.
+  * Please ensure your AD hostname is reachable from the instance that is hosting the Opal app.
+* For **Base distinguished name**, enter the Distinguished Name (DN) of the OU that Opal should begin directory searches from.
+* For **Root username** and **Root password**, enter the credentials of the AD service account that you created above.
+
+If this step is successful, you have completed setting up the Active Directory server connection.
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [Create an Active Directory app](#create-an-active-directory-app)
+  * [Step 1 - Configure an Active Directory service account for Opal](#step-1---configure-an-active-directory-service-account-for-opal)
+  * [Step 2 - Fill out Opal form](#step-2---fill-out-opal-form)

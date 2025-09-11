@@ -1,0 +1,659 @@
+---
+title: "Amazon Web Services (AWS)"
+description: "Connect your AWS infrastructure to use Opal to manage and review access."
+---
+
+[Suggest Edits](/edit/setting-up-your-aws-organization-in-opal)
+
+Opal's *Amazon Web Services* app lets you manage access to your AWS IAM Roles, EC2 instances, EKS instances, and RDS databases across AWS accounts, as well as your AWS IAM Identity Center groups and permission sets.
+
+Our integration supports the following, and more:
+
+* Users can **request time-bounded access** to your IAM roles, EC2 instances, EKS instances, RDS databases, and Identity Center permission sets.
+* Auditors can **initiate access reviews** that assign managers or group admins to periodically review users with long-lived access to AWS resources.
+* All access changes are tracked in a **permanent audit log** that can notify a Slack channel or be exported to your favorite tools.
+
+## Supported resources
+
+| Resource                                  | Read | Grant and revoke access | Connect Opal user sessions to resource | Included in [Risk Center](/docs/least-privilege-posture-management) |
+| ----------------------------------------- | ---- | ----------------------- | -------------------------------------- | ------------------------------------------------------------------- |
+| AWS Identity Center Groups                | ✔️   | ✔️                      |                                        | ✔️                                                                  |
+| AWS Account                               | ✔️   |                         |                                        | ✔️                                                                  |
+| AWS Identity Center Role (permission set) | ✔️   | ✔️                      |                                        | ✔️                                                                  |
+| AWS IAM Role                              | ✔️   | ✔️                      | ✔️                                     | ✔️                                                                  |
+| AWS EC2                                   | ✔️   | ✔️                      | ✔️                                     | ✔️                                                                  |
+| AWS EKS                                   | ✔️   | ✔️                      | ✔️                                     | ✔️                                                                  |
+| AWS RDS MySQL Instance                    | ✔️   | ✔️                      | ✔️                                     | ✔️                                                                  |
+| AWS RDS Postgres Instance                 | ✔️   | ✔️                      | ✔️                                     | ✔️                                                                  |
+| AWS RDS MySQL/PSQL Clusters (Aurora)      | ✔️   | ✔️                      | ✔️                                     | ✔️                                                                  |
+| AWS Organizational Units                  | ✔️   |                         |                                        | ✔️                                                                  |
+
+Note that the AWS integration does **not** support syncing IAM Groups.
+
+## Authentication model
+
+The following shows a high-level summary of how Opal authenticates for two major workflows:
+
+1. Synchronizing your AWS Organizations resources in Opal
+2. Granting Opal users sessions to AWS resources
+
+![](/images/docs/50dd94d-Screenshot_2024-03-11_at_12.54.40_PM.png)
+
+## Requirements
+
+To configure your AWS organization in Opal, you must:
+
+* Be an Opal Admin
+* Set up an OIDC provider in Opal, if you want to use Opal to manage IAM roles, EC2 instances, EKS instances, or RDS databases
+* Have an AWS Management or Delegated Administrator account
+
+### Set up OIDC provider in Opal
+
+Setting up an OpenID Connect (OIDC) provider in Opal is required to use Opal to manage IAM roles, EC2 instances, EKS instances, or RDS databases. Opal uses OIDC to authenticate users when they start an AWS session with these accounts. This adds an extra layer of security by preventing Opal from being able to give access to users that aren't registered with your Identity Provider.
+
+To configure an OIDC identity provider:
+
+1. Register Opal with your OIDC provider to receive a **Client ID** and **Client Secret** that will be used to establish a trust relationship between Opal and your OIDC provider.
+
+Use the callback URL `https://{YOUR_OPAL_BASE_URL}/callback/oidc`, substituting in your Opal base URL, which is usually `app.opal.dev` for Opal Cloud organizations. For example, `https://app.opal.dev/callback/oidc`.
+
+To learn more about obtaining these credentials, refer to your OIDC documentation—for example, see [Okta OIDC docs](https://help.okta.com/en-us/Content/Topics/Apps/Apps_App_Integration_Wizard_OIDC.htm) or [Google OIDC docs](https://developers.google.com/identity/openid-connect/openid-connect). If you use Okta, set the application type to **Web Application**.
+
+2. In Opal, go to the **Settings** tab at the bottom of the left sidebar.
+3. Find the **OIDC Provider Settings** setting under **AWS Settings**. Select **Configure**.
+4. Enter the Client ID, Client Secret, and Issuer URL from your OIDC provider.
+5. Save the Client ID and Issuer URLs, as you'll need them in a subsequent step.
+
+![](/images/docs/c695672981d1ed76632e2a6a3e69d1ebb4b208408ca617c6dc2c813eda7a920b-oidc-aws-settings.png "SCR-20230313-mb4.png")
+
+## 1. Find your External ID
+
+1. In Opal, go to the **Inventory** and select the **+ App** button in the top right corner to create a new app. Select **Amazon Web Services**.
+2. Save the **External ID**, which is unique to your Opal organization and is necessary for the following step. Opal uses this to [safeguard Opal’s third-party access to your data](https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html).
+
+<Frame caption="Copy the External ID to use in a later step.">
+  <img src="/images/docs/bd239ea09afbbde1d3f1365c29fe82b703f35b734526564f4d6b582eb1c0b949-save-external-id.png" />
+</Frame>
+
+## 2. Configure your AWS management account
+
+<Info>
+  If your Opal instance is self-hosted, follow the [AWS setup for self-hosted Opal guide](/docs/aws-integration-on-prem-setup) to set up the trust policy for the **OpalIngester** IAM role.
+
+  Once complete, return to these instructions to add the permissions policy for the role and complete the following steps.
+</Info>
+
+In order for Opal to manage access to your AWS infrastructure, you must configure an IAM Role in your AWS management account. In the AWS console, create a new IAM role called **OpalIngester**. Give your role the following trust policy, replacing `${EXTERNAL_ID}` with the External ID from the *Create App* page in Opal:
+
+<CodeGroup>
+  ```json Opal-hosted
+  {
+  	"Version": "2012-10-17",
+  	"Statement": [
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "arn:aws:iam::602387580983:root"
+  			},
+  			"Action": [
+  				"sts:AssumeRole"
+  			],
+  			"Condition": {
+  				"StringEquals": {
+  					"sts:ExternalId": "${EXTERNAL_ID}"
+  				}
+  			}
+  		},
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "arn:aws:iam::602387580983:root"
+  			},
+  			"Action": [
+  				"sts:TagSession"
+  			]
+  		}
+  	]
+  }
+  ```
+</CodeGroup>
+
+Next, attach the following permissions policy to the role. Note that some permissions are always required, some are required to manage non-Identity Center resources (EC2 instances, IAM roles, etc.), and some are required specifically to manage Identity Center-managed roles. Use the **Explanation** tab to learn how to customize permissions for your use case, and the **Policy** tab for a policy you can copy and paste.
+
+<CodeGroup>
+  ```json Explanation
+  // IMPORTANT: This snippet is meant for documenting why Opal requires each of
+  // these permissions, allowing you to customize based on your needs. For a valid
+  // pasteable policy document, open the "Policy" tab above.
+
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        // This statement is required in all setups. 
+        // The Opal AWS integration will not function correctly without it.
+        "Sid": "AlwaysRequired",
+        "Effect": "Allow",
+        "Action": [
+          // Required to show information about your AWS accounts in Opal.
+          "organizations:DescribeAccount",
+          "organizations:ListAccounts",
+          "organizations:ListTagsForResource",
+          // Required to filter out disabled regions when importing resources.
+          "account:ListRegions",
+          // Required for Opal to validate what access it has
+          "iam:SimulatePrincipalPolicy"
+          // Required to ingest AWS Organizational Units (OUs).
+          "organizations:ListRoots",
+          "organizations:ListOrganizationalUnitsForParent",
+          "organizations:ListAccountsForParent",
+          "organizations:DescribeOrganizationalUnit"
+        ],
+        "Resource": "*"
+      },
+      {
+        // Required to import your non-Identity Center resources from this account. 
+        // This includes IAM Roles, EC2 instances, EKS clusters, and RDS databases. 
+        // This statement can be removed for configurations that opt out of AWS 
+        // Organization management in Opal.
+        "Sid": "RequiredToManageNonIdentityCenterResourcesInThisAccount",
+        "Effect": "Allow",
+        "Action": [
+          // Required to show IAM Roles in Opal.
+          "iam:ListRoleTags",
+          "iam:ListRoles",
+          "iam:GetRolePolicy",
+          "iam:GetPolicy",
+          "iam:GetRole",
+          // Required to show RDS databases in Opal
+          "rds:DescribeDBInstances",
+          "rds:DescribeDBClusters",
+          // Required to show EC2 instances in Opal
+          "ec2:DescribeInstances",
+          // Required to show EKS clusters in Opal
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+        ],
+        "Resource": "*"
+      },
+      { 
+        // Required to manage your Identity Center resources from all accounts. This statement
+        // can be removed for configurations that opt out of Identity Center management in Opal.
+        "Sid": "RequiredToManageIdentityCenter",
+        "Effect": "Allow",
+        "Action": [
+          // Required to show Permission sets and their assignments in Opal
+          "sso:ListPermissionSets",
+          "sso:ListPermissionSetsProvisionedToAccount",
+          "sso:DescribePermissionSet",
+          "sso:ListAccountAssignments",
+          // Required to populate user access to permission sets
+          "sso:CreateAccountAssignment",
+          "sso:DeleteAccountAssignment",
+          "sso:DescribeAccountAssignmentCreationStatus",
+          "sso:DescribeAccountAssignmentDeletionStatus",
+          // Required to provision Identity Center group memberships
+          "identitystore:ListUsers",
+          "identitystore:ListGroups",
+          "identitystore:DescribeUser",
+          "identitystore:DescribeGroup",
+          "identitystore:GetGroupMembershipId",
+          "identitystore:ListGroupMemberships",
+          "identitystore:CreateGroupMembership",
+          "identitystore:DeleteGroupMembership"
+        ],
+        "Resource": "*"
+      },
+      {
+        // Required to provision permission sets. When account assignments are modified,
+        // iam:GetSAMLProvider is called under the hood by AWS. Permission Set provisioning
+        // operations do not function without this permission. This statement can be removed
+        // for configurations that opt out of IAM Identity Center management in Opal.
+        "Sid": "RequiredForIdentityCenterIAMRoleProvisioning",
+        "Effect": "Allow",
+        "Action": "iam:GetSAMLProvider",
+        "Resource": "arn:aws:iam::*:saml-provider/AWSSSO_*_DO_NOT_DELETE"
+      },
+      {
+        // Required to provision permission sets in Management account. This statement
+        // can be removed for configurations that do not require provisioning IAM 
+        // Identity Center permission sets in their management account with Opal.
+        "Sid": "RequiredForIdentityCenterIAMRoleProvisioningInManagementAccount",
+        "Effect": "Allow",
+        "Action": [
+          // In certain cases, you may also need to add iam:UpdateSAMLProvider here.
+          // See the AWS documentation for more detail:
+          // https://docs.aws.amazon.com/singlesignon/latest/userguide/iam-auth-access-using-id-policies.html#policyexamplemanageconnecteddirectory
+          "iam:AttachRolePolicy",
+          "iam:CreateRole",
+          "iam:ListRoles",
+          "iam:ListRolePolicies",
+  			  "iam:ListAttachedRolePolicies"
+        ],
+        "Resource": [
+          "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/*"
+        ],
+        "Condition": {
+          "StringEquals": {
+            "aws:PrincipalOrgMasterAccountId": "${aws:PrincipalAccount}"
+          }
+        }
+      },
+      {
+        // Required to display usage data in Opal.
+        "Sid": "RequiredToReadUsageData",
+        "Effect": "Allow",
+        "Action": [
+          "cloudtrail:LookupEvents",
+  				// Required for viewing EC2 usage data
+          "ssm:DescribeSessions"
+        ],
+        "Resource": "*"
+      },
+    ]
+  }
+  ```
+
+  ```json Policy
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "AlwaysRequired",
+        "Effect": "Allow",
+        "Action": [
+          "organizations:DescribeAccount",
+          "organizations:ListAccounts",
+          "organizations:ListTagsForResource",
+          "account:ListRegions",
+          "iam:SimulatePrincipalPolicy",
+          "organizations:ListRoots",
+          "organizations:ListOrganizationalUnitsForParent",
+          "organizations:ListAccountsForParent",
+          "organizations:DescribeOrganizationalUnit"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "RequiredToManageNonIdentityCenterResourcesInThisAccount",
+        "Effect": "Allow",
+        "Action": [
+          "iam:ListRoleTags",
+          "iam:ListRoles",
+          "iam:ListPolicies",
+  			  "iam:ListAttachedRolePolicies",
+          "iam:GetRolePolicy",
+          "iam:GetPolicy",
+          "iam:GetRole",
+          "rds:DescribeDBInstances",
+          "rds:DescribeDBClusters",
+          "ec2:DescribeInstances",
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "ssm:DescribeSessions"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "RequiredToManageIdentityCenter",
+        "Effect": "Allow",
+        "Action": [
+          "sso:ListPermissionSets",
+          "sso:ListPermissionSetsProvisionedToAccount",
+          "sso:DescribePermissionSet",
+          "sso:ListAccountAssignments",
+          "sso:CreateAccountAssignment",
+          "sso:DeleteAccountAssignment",
+          "sso:DescribeAccountAssignmentCreationStatus",
+          "sso:DescribeAccountAssignmentDeletionStatus",
+          "identitystore:ListUsers",
+          "identitystore:ListGroups",
+          "identitystore:DescribeUser",
+          "identitystore:DescribeGroup",
+          "identitystore:GetGroupMembershipId",
+          "identitystore:ListGroupMemberships",
+          "identitystore:CreateGroupMembership",
+          "identitystore:DeleteGroupMembership"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "RequiredForIdentityCenterIAMRoleProvisioning",
+        "Effect": "Allow",
+        "Action": "iam:GetSAMLProvider",
+        "Resource": "arn:aws:iam::*:saml-provider/AWSSSO_*_DO_NOT_DELETE"
+      },
+      {
+        "Sid": "RequiredForIdentityCenterIAMRoleProvisioningInManagementAccount",
+        "Effect": "Allow",
+        "Action": [
+          "iam:AttachRolePolicy",
+          "iam:CreateRole",
+          "iam:ListRoles",
+          "iam:ListRolePolicies",
+  				"iam:ListAttachedRolePolicies"
+        ],
+        "Resource": [
+          "arn:aws:iam::*:role/aws-reserved/sso.amazonaws.com/*"
+        ],
+        "Condition": {
+          "StringEquals": {
+            "aws:PrincipalOrgMasterAccountId": "${aws:PrincipalAccount}"
+          }
+        }
+      },
+      {
+        "Sid": "RequiredToReadUsageData",
+        "Effect": "Allow",
+        "Action": [
+          "cloudtrail:LookupEvents",
+          "ssm:DescribeSessions"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## 3. Configure additional AWS accounts to be managed by Opal
+
+If you are only setting up **AWS IAM Identity Center** to use Opal to manage AWS IAM Identity Center groups and resources, you can skip to Step 4.
+
+For each additional AWS account—IAM role, RDS database, etc.—that you want Opal to manage, you must add an Identity Provider and 2 IAM Roles with different permission scopes. Perform steps 3a-3c for each account.
+
+### 3a. Create Ingester Role
+
+Note: This step can be skipped for your management account, as you configured its ingester role in the previous step.
+
+The ingester role allows Opal to read your configuration and populate it within Opal. Create a role called **OpalIngester**, with the same trust policy as above:
+
+<CodeGroup>
+  ```json Opal-hosted
+  {
+  	"Version": "2012-10-17",
+  	"Statement": [
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "arn:aws:iam::602387580983:user/OpalIngester"
+  			},
+  			"Action": [
+  				"sts:AssumeRole"
+  			],
+  			"Condition": {
+  				"StringEquals": {
+  					"sts:ExternalId": "${EXTERNAL_ID}"
+  				}
+  			}
+  		},
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "arn:aws:iam::602387580983:user/OpalIngester"
+  			},
+  			"Action": [
+  				"sts:TagSession"
+  			]
+  		}
+  	]
+  }
+  ```
+</CodeGroup>
+
+Then, attach the following permissions policy to it. Use the **Explanation** tab to view which permissions you can customize and the **Policy** tabs for a version you can copy and paste.
+
+<CodeGroup>
+  ```json Explanation
+  // IMPORTANT: This snippet is meant for documenting why Opal requires each of
+  // these permissions, allowing you to customize based on your needs. For a valid
+  // pasteable policy document, open the "Policy" tab above.
+
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        // Required to import IAM Roles, EC2 instances, EKS clusters and RDS databases into Opal.
+        "Sid": "OpalRequiredToManageAccount",
+        "Effect": "Allow",
+        "Action": [
+          "iam:ListRoleTags",
+          "iam:ListRoles",
+          "iam:GetRolePolicy",
+          "iam:GetPolicy",
+          "iam:GetRole",
+          "rds:DescribeDBInstances",
+          "rds:DescribeDBClusters",
+          "ec2:DescribeInstances",
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          // Required to filter out disabled regions when importing resources.
+  				"account:ListRegions"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  ```
+
+  ```json Policy
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "OpalRequiredToManageAccount",
+        "Effect": "Allow",
+        "Action": [
+          "iam:ListRoleTags",
+          "iam:ListRoles",
+          "iam:GetRolePolicy",
+          "iam:GetPolicy",
+          "iam:GetRole",
+          "rds:DescribeDBInstances",
+          "rds:DescribeDBClusters",
+          "ec2:DescribeInstances",
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "account:ListRegions"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+### 3b. Register Identity Provider
+
+Add your OIDC identity provider to your AWS account—you can search for **Identity provider** in the AWS IAM console, then select **Add provider**. See the [AWS documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html#manage-oidc-provider-console) for more detail or alternative methods.
+
+Set the following fields in AWS.
+
+| Field         | Value                                                                                                                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Provider type | OpenID Connect                                                                                                                                                                                    |
+| Provider URL  | The issuer URL from your OIDC provider. This should be the same value as the Issuer URL in **AWS Settings > OIDC Provider Settings** in Opal. For example, `https://companyname.oktapreview.com`. |
+| Audience      | The Client ID from your OIDC provider. This should be the same value as the Client ID in **AWS Settings > OIDC Provider Settings** in Opal.                                                       |
+
+### 3c. Create User Role
+
+The User role is used to grant your authenticated users access to the resources that have been allocated to them.
+
+Create a role called **OpalUser** with the following trust policy, substituting in your management account ID, OIDC issuer URL, and the Client ID used for your OIDC configuration:
+
+* `${ACCOUNT_ID}`: The account ID of the account being configured
+* `${IDP_ISSUER_URL}`: The OIDC issuer URL
+* `${OPAL_CLIENT_ID}`: The Client ID you used in Step 3b
+
+<CodeGroup>
+  ```json json
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Federated": "arn:aws:iam::${ACCOUNT_ID}:oidc-provider/${IDP_ISSUER_URL}"
+        },
+        "Action": "sts:AssumeRoleWithWebIdentity",
+        "Condition": {
+          "StringEquals": {
+            "${IDP_ISSUER_URL}:aud": "${OPAL_CLIENT_ID}"
+          }
+        }
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+This trust policy ensures that only users authenticated with your identity provider can be granted access to the role.
+
+Next, add the following permissions policy to the role. Use the **Explanation** tab to view which permissions you can customize and the **Policy** tabs for a version you can copy and paste.
+
+<CodeGroup>
+  ```json Explanation
+  // IMPORTANT: This snippet is meant for documenting why Opal requires each of
+  // these permissions, allowing you to customize based on your needs. For a valid
+  // pasteable policy document, open the "Policy" tab above.
+
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        // Required to:
+        // * Revoke sessions in this account
+        // * Grant users session-based access to:
+        //   * EC2 instances
+        //   * RDS databases/clusters
+        "Sid": "OpalRequiredToManageUserSessions",
+        "Effect": "Allow",
+        "Action": [
+          // Required to read/validate AWS configuration
+          "access-analyzer:ValidatePolicy",
+          "ec2:DescribeInstances",
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "iam:GetRole",
+          "iam:ListRoles",
+          "iam:ListRoleTags",
+          "iam:GetRolePolicy",
+          "rds:DescribeDBClusters",
+          "rds:DescribeDBInstances",
+          "ssm:DescribeInstanceProperties",
+          "ssm:DescribeSessions",
+          "ssm:GetConnectionStatus",
+          // Required to tag roles and sessions
+          "sts:TagSession",
+          "iam:TagRole",
+          // Required to revoke sessions before expiration, e.g. if a user's access
+          // is removed by admin in Opal.
+          "iam:DeleteRolePolicy",
+          "iam:PutRolePolicy",
+          // Required to grant end-users session credentials.
+          "rds-db:connect",
+          "ssm:SendCommand",
+          "ssm:TerminateSession",
+          "ssm:StartSession"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  ```
+
+  ```json Policy
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "OpalRequiredToManageUserSessions",
+        "Effect": "Allow",
+        "Action": [
+          "access-analyzer:ValidatePolicy",
+          "ec2:DescribeInstances",
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "iam:GetRole",
+          "iam:ListRoleTags",
+          "iam:GetRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:PutRolePolicy",
+          "iam:ListRoles",
+          "iam:TagRole",
+          "rds-db:connect",
+          "rds:DescribeDBClusters",
+          "rds:DescribeDBInstances",
+          "sts:TagSession",
+          "ssm:DescribeInstanceProperties",
+          "ssm:SendCommand",
+          "ssm:GetConnectionStatus",
+          "ssm:TerminateSession",
+          "ssm:StartSession"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## 4. Configure Opal app
+
+1. In Opal, return to the **Create App** form and enter your AWS configuration details.
+2. Enter your AWS **Account ID** in the **AWS Management or Delegated Administrator Account ID** field. In the AWS console, this is in the upper right corner.
+3. **Optional**. If you're using [real-time sync](/docs/aws-real-time-sync), enter your **CloudTrail events SQS queue URL**. You can also configure real-time sync after you create the app.
+4. Enable or disable the following toggles based on your use cases. You can change these settings later from your app's **Setup** page.
+
+* **AWS Organization management**: Enable if you want to manage IAM roles, EC2 instances, EKS instances, or RDS databases in Opal.
+* **IAM Identity Center management**: Enable if you want to manage AWS IAM Identity Center groups and permission sets in Opal.
+
+5. If you want to manage AWS IAM Identity Center groups and permissions in Opal, enter the following additional settings, which you can find in your AWS console in **IAM Identity Center > Settings**.
+
+| Field in Opal                    | Field in AWS          |
+| -------------------------------- | --------------------- |
+| AWS IAM Identity Center Region   | Region                |
+| AWS Identity Center Instance ARN | Instance ARN          |
+| AWS Identity Store ID            | Identity Store ID     |
+| AWS Access Portal URL            | AWS access portal URL |
+
+![](/images/docs/6ed04a9a213d45c41e6d4966b5df17a7793295b0c0c517fa5c220d28e12e1dc0-aws-identity-update.png)
+
+## 5. Run app validation checks
+
+After you save your app, you can view existing sync issues from the **Setup** tab on the app detail page. Missing permissions and sync issues show in the **App Validations** section. Select the refresh icon to rerun validation checks.
+
+![](/images/docs/ac4c48967a34aa0c2a832242c52d0db7249c228391f8c63aa1bc92526e0d8b59-app-validation-aws.png)
+
+You can hover over the validation icons to learn why Opal needs a given permission. To correctly sync your app to Opal, ensure you address any sync errors, marked with the red **!** icon. Inspect warnings on a case-by-case basis: warnings might impact features you’re not using and may be safely ignored, but this depends on your use case.
+
+## 6. Connect individual AWS accounts
+
+After you've configured your AWS app, use the additional guides to configure [IAM roles](/docs/adding-an-iam-role), [RDS databases](/docs/adding-an-rds-database), [EC2 instances](/docs/adding-an-ec2-instance), and [EKS clusters](/docs/adding-an-eks-cluster). These guides contain instructions on how to let users connect to your AWS accounts.
+
+***
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+
+  * [Authentication model](#authentication-model)
+
+  * [Requirements](#requirements)
+    * [Set up OIDC provider in Opal](#set-up-oidc-provider-in-opal)
+
+  * [1. Find your External ID](#1-find-your-external-id)
+
+  * [2. Configure your AWS management account](#2-configure-your-aws-management-account)
+
+  * [3. Configure additional AWS accounts to be managed by Opal](#3-configure-additional-aws-accounts-to-be-managed-by-opal)
+
+    * [3a. Create Ingester Role](#3a-create-ingester-role)
+    * [3b. Register Identity Provider](#3b-register-identity-provider)
+    * [3c. Create User Role](#3c-create-user-role)
+
+  * [4. Configure Opal app](#4-configure-opal-app)
+
+  * [5. Run app validation checks](#5-run-app-validation-checks)
+
+  * [6. Connect individual AWS accounts](#6-connect-individual-aws-accounts)

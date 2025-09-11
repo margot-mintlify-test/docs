@@ -1,0 +1,50 @@
+---
+title: "Import Okta apps"
+description: "Learn how to import your Okta apps into Opal."
+---
+
+[Suggest Edits](/edit/okta-apps)
+
+You can import your Okta apps into Opal using group assignment or manually in the Opal dashboard.
+
+## Auto-import via group assignment
+
+<Info>
+  In most cases, organizations should import applications via Okta groups, since it is the easiest way to import existing group and application relationships.
+</Info>
+
+Opal automatically imports Okta Apps that are assigned to Okta Groups. If an Okta Group is imported into Opal and there are Okta Apps assigned to the group, Opal automatically imports these apps.
+
+## Manual import
+
+In the Opal dashboard, you can manually select which Okta Apps to import into Opal. To do this, in **Inventory**, find your Okta App and click **...** > **Import items**.
+
+![2312](/images/docs/a40de5ce67ab7665b2bf57e1ba50520030f065aeec76aedc947a0bc12ccf0092-okta-import-items.png "SCR-20230313-ngp.png")
+
+From here, you can filter by type **Okta App**, and select any apps that you want to import into Opal.
+
+![2312](/images/docs/eaf1175-AddOktaApp.png "SCR-20230313-nky.png")
+
+## Use Okta apps in Opal
+
+After you import your Okta apps, you can:
+
+**1. Set up self-service just-in-time approval workflows**
+
+* Using the Opal Web UI or `/opal` Slackbot, employees can browse for Okta Apps and groups to request. Our product lets resource owners easily approve or deny requests one-click from Slack, enabling more decentralized and scalable access management.
+
+**2. Grant event-based access to sensitive Okta Apps**
+
+* Using Opal, you can grant users event-based access to sensitive Okta Apps by tying access grants to on-call rotations or support tickets.
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Auto-import via group assignment](#auto-import-via-group-assignment)
+  * [Manual import](#manual-import)
+  * [Use Okta apps in Opal](#use-okta-apps-in-opal)

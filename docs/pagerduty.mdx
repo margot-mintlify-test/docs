@@ -1,0 +1,59 @@
+---
+title: "PagerDuty"
+description: "Learn how to connect your PagerDuty accounts with Opal to manage and review access."
+---
+
+[Suggest Edits](/edit/pagerduty)
+
+Opal natively supports an integration with PagerDuty. This integration enables organizations to manage access to groups and roles within PagerDuty.
+
+Use the following steps for managing access to PagerDuty roles. To sync PagerDuty on-call schedules to any group you've synced to Opal, connect PagerDuty as a [productivity integration](/docs/5526196-pagerduty) instead.
+
+![2312](/images/docs/6f226079232f2f56e116db03bab570e61121b0446e88e4740d3f52da98e8dc14-pagerduty.png "SCR-20230313-ood.png")
+
+## Supported resources
+
+| Resource       | Read | Grant and revoke access | Available in Risk Center |
+| -------------- | ---- | ----------------------- | ------------------------ |
+| PagerDuty Role | ✔️   | ✔️                      | ✔️                       |
+
+You can grant access to PagerDuty roles using the native integration. Use the [productivity integration](/docs/5526196-pagerduty) to sync on-call schedules.
+
+## 1. Create app in Opal
+
+In Opal, go to the **Inventory**, click on the **+ App** icon, and select the **PagerDuty** app.
+
+## 2. Create a service account for Opal
+
+Opal requires an API Access Key to manage your PagerDuty on your behalf.
+
+To set up an API Access Key:
+
+1. In PagerDuty, go to **Integrations > API Access Keys > Create New API Key**.
+2. Set the description to Opal, leave the read-only checkbox disabled, then select **Create Key Set**. You will receive an API Key with full access.
+3. Save the API Key, as it will only be visible once.
+
+## 3. Save your Opal app
+
+After you create the service account, go back to Opal and fill in details about your app—the name, description, and visibility. Enter the API Key from the previous step in the **PagerDuty API Key** field, then select **Create**.
+
+After you save the app, in the **Details** tab, you can manage default settings, such as:
+
+* **Admin**: Who is the owner who can manage configurations
+* **Description**: What is the human understandable description for the role
+* **Webhook for access changes**: Opal can push events to a webhook rather than connecting to the end system
+* **Import setting**: Opal can either import all or manually import resources
+* **Default import visibility**: Resources can be either global or limited access (based on groups)
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [1. Create app in Opal](#1-create-app-in-opal)
+  * [2. Create a service account for Opal](#2-create-a-service-account-for-opal)
+  * [3. Save your Opal app](#3-save-your-opal-app)

@@ -1,0 +1,189 @@
+---
+title: "Self-Hosted on GKE"
+description: "Learn how to deploy Opal on Google Cloud GKE."
+---
+
+[Suggest Edits](/edit/self-host-opal-gke-guide)
+
+Use this guide to learn how to deploy Self-Hosted Opal on Google Cloud GKE.
+
+There are three steps to deploying Opal:
+
+1. **Infrastructure setup**: GKE cluster, Cloud SQL Postgres instance, and TLS certificate
+2. **Deploy Opal admin console**: Deployed on the GKE cluster and used to configure your Opal deployment and manage updates
+3. **Configure and deploy Opal**: Deployed on the GKE cluster
+
+# 1. Infrastructure Setup
+
+## Deployment checklist
+
+The following is an overview to help plan for the deployment. We expand on each item below.
+
+* GKE cluster is provisioned.
+* SQL database is provisioned.
+* The hostname to reach Opal has to be decided. This cannot be updated later.
+* The TLS certificate matching the desired hostname is available in the Load balancing components.
+
+## Create a Kubernetes cluster
+
+Opal installs into an existing Kubernetes cluster. This cluster must meet the following requirements:
+
+* Intel Processor
+* Min nodes: 2
+* Min total CPU: 4 cores
+* Min total RAM: 30 GB
+* Kubernetes version: 1.27+
+
+Your cluster must have outbound access to pull Docker containers and verify your license. If you do not want to provide open outbound access, see our [list of ports](https://docs.replicated.com/enterprise/installing-general-requirements#firewall-openings-for-online-installations) that need access.
+
+## Provision Cloud SQL database
+
+For production deployments, we strongly recommend that you use an external PostgreSQL database provisioned in Cloud SQL, in order to have automatic backups.
+
+Your SQL instance should meet the following requirements:
+
+* Minimum PostgreSQL version: 15
+* Minimum storage: 50 GB
+* Minimum instance size: 2 cores / 8 GB (if more than 1,000 users: 4 cores / 16 GB)
+* Recommended: enable multiple zones for high availability
+
+<Warning>
+  For production use cases, we recommend running a managed PostgreSQL database. This is easy to configure with Opal's setup process.
+
+  Alternatively, you can store all of Opal's data on the virtual machine it's deployed on. This is great for testing out the product, but accidents are more likely to cause data loss.
+</Warning>
+
+## TLS certificate
+
+Opal must be used with TLS. To create a Google-managed certificate, follow the steps below:
+
+* Go to **Load balancing** from the search bar
+* Click the **load balancing components** view
+* Click **Certificates**
+* Click **Create SSL Certificate**, then fill out the form like so and click **Create**:
+
+![](/images/docs/80ddfce-Screen_Shot_2022-11-08_at_4.16.14_PM.png "Screen Shot 2022-11-08 at 4.16.14 PM.png")
+
+## Static IP address
+
+We're going to create a static IP address so that traffic can be routed through the load balancer.
+
+* Go to **IP addresses** from the search bar
+* Click **Reserve external static address**
+* Fill out the form like so, then click **Reserve**:
+
+![](/images/docs/665640b-Screen_Shot_2022-11-08_at_4.31.08_PM.png "Screen Shot 2022-11-08 at 4.31.08 PM.png")
+
+# 2. Deploy Opal admin console
+
+<Info>
+  We use [KOTS](https://kots.io/) to package and monitor private cluster deployments of Opal. Specifically, it provides an admin console for configuring your Opal deployment and managing updates.
+
+  If you would prefer to manage deployments yourself, you can alternatively [install opal using helm](/docs/install-opal-using-helm).
+
+  Otherwise, proceed with the instructions below for setting up with KOTS.
+</Info>
+
+To install KOTS, run the following command:
+
+<CodeGroup>
+  ```shell shell
+  curl https://kots.io/install | bash
+  ```
+</CodeGroup>
+
+Next, install the Opal admin console. The installation should take 5-10 minutes, and you'll be prompted to set a password for accessing your admin console (which you can reset [using these instructions](https://docs.replicated.com/reference/kots-cli-reset-password)).
+
+<CodeGroup>
+  ```shell shell
+  kubectl kots install opal-onprem --strict-security-context
+  ```
+</CodeGroup>
+
+The Opal admin console is deployed as a set of `kotsadm-*` pods. Once installed, you should see the following pods deployed as well as a URL for accessing the Opal admin console via port-forwarding.
+
+![](/images/docs/42b1fc8-Screen_Shot_2023-01-31_at_12.05.34_AM.png "Screen Shot 2023-01-31 at 12.05.34 AM.png")
+
+<Info>
+  If you kill your port-forwarding to the admin console, you can set it up again using this command:
+
+  ```
+  kubectl kots admin-console --namespace opal-onprem
+  ```
+
+  The admin console password may be reset with this command:
+
+  ```
+  kubectl kots reset-password opal-onprem
+  ```
+</Info>
+
+# 3. Configure and deploy Opal
+
+When you access your admin console, you'll be prompted to upload a license. This should have been provided by your Opal representative.
+
+Next, you'll be asked to configure your Opal deployment:
+
+![](/images/docs/60aef15-08c5af1-Screen_Shot_2022-05-06_at_12.14.58_AM.png "08c5af1-Screen_Shot_2022-05-06_at_12.14.58_AM.png")
+
+The below recommendations assume you've followed the steps above to setup your infrastructure:
+
+* **Hostname**: Enter the hostname used to access the Opal application. *This cannot be updated later.*
+* **Ingress**: If using the pre-packaged ingress, enter the desired annotations. Here is an example using the names of the TLS certificate and the static IP address created above:- **Custom annotations**:
+
+<CodeGroup>
+  ```text text
+  ingress.gcp.kubernetes.io/pre-shared-cert: opal-replicated
+  kubernetes.io/ingress.global-static-ip-name: opal-replicated
+  ```
+</CodeGroup>
+
+* **Postgres**: Select *External Postgres* and point it to your RDS instance.
+* **Redis**: Select *Embedded Redis*.
+* **Database encryption key**: Generate a 32-character string for encrypting sensitive data, like 3rd party API tokens, in your database.
+* **Opal API encryption key**: Generate a 32-character string for encrypting generated Opal API tokens.
+
+<Warning>
+  Encryption keys used by the application should be stored securely in a password manager to enable restoring Opal in a disaster recovery event.
+</Warning>
+
+* **Email settings**: You may enable SMTP for sending email notifications and use the SMTP provider of your choice. If you use [Google Workspace's SMTP](https://support.google.com/a/answer/2956491), you'll be required to add the public IP addresses of the Kubernetes nodes to the allowlist.
+
+Click **Continue**. You can run or skip the pre-flight checks. After you deploy, you expect to see the following additional Opal pods running on the cluster:
+
+![](/images/docs/0be664e-Screen_Shot_2023-01-31_at_12.52.33_PM.png "Screen Shot 2023-01-31 at 12.52.33 PM.png")
+
+## Provision DNS record
+
+Once the Opal pods are up and running and the load balancer has been provisioned, you can create an A DNS record for the selected hostname. This should point to the load balancer IP address.
+
+At this time, Google cloud will finish the DNS validation process and provision a managed certificate. This process can take at least 10 minutes.
+
+**Once your DNS record is created, you should now be able to access Opal at your desired hostname. Log in and invite your team!**
+
+## Optional: Access via VPN (e.g. Cloudflare Access, Twingate)
+
+If your users will be accessing your Opal instance via a VPN, please ensure that you've configured it to point to the load balancer.
+
+***
+
+What’s Next
+
+* [Connect Your Identity Provider (IDP)](/docs/connect-your-identity-provider-idp)
+
+* [Table of Contents](#)
+
+* * [1. Infrastructure Setup](#1-infrastructure-setup)
+
+    * [Deployment checklist](#deployment-checklist)
+    * [Create a Kubernetes cluster](#create-a-kubernetes-cluster)
+    * [Provision Cloud SQL database](#provision-cloud-sql-database)
+    * [TLS certificate](#tls-certificate)
+    * [Static IP address](#static-ip-address)
+
+  * [2. Deploy Opal admin console](#2-deploy-opal-admin-console)
+
+  * [3. Configure and deploy Opal](#3-configure-and-deploy-opal)
+
+    * [Provision DNS record](#provision-dns-record)
+    * [Optional: Access via VPN (e.g. Cloudflare Access, Twingate)](#optional-access-via-vpn-eg-cloudflare-access-twingate)

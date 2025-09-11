@@ -1,0 +1,56 @@
+---
+title: "Google Workspace"
+description: "Learn how to connect Google Workspace with Opal."
+---
+
+[Suggest Edits](/edit/google-workspace)
+
+Opal natively supports an integration with Google Workspace. This integration enables organizations to manage access to default and custom admin roles.
+
+![2312](/images/docs/b1355a36f0f80d0dd2108418f4c04aa574c0621b3601591755990affc2cab147-google-workspace.png "SCR-20230313-njh.png")
+
+## Configuration
+
+1. Go to **Inventory** and select **+ App** to add the Google Workspace App.
+
+![2312](/images/docs/a797137747ec603a64902e4e317e2a12d7bf85138af624f25d28e5617249618f-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+2. For Opal to manage your Google Workspace on your behalf, you'll need to [create a Google service account](/docs/google#setting-up-a-service-account-for-opal) with proper permission scopes to retrieve role and user information. Grant the service account the following scopes:
+
+<CodeGroup>
+  ```text text
+  https://www.googleapis.com/auth/admin.directory.user, 
+  https://www.googleapis.com/auth/admin.directory.rolemanagement
+  ```
+</CodeGroup>
+
+The `admin.directory.user` scope is used to import and manage users, and the `admin.directory.rolemanagement` scope is used to import and manage roles.
+
+If you only want to view user's access and not grant/revoke their access, you can use the `admin.directory.user.readonly` and `admin.directory.rolemanagement.readonly` scopes instead.
+
+3. Enable the [Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com) in the project that the service account was created in.
+
+<Info>
+  In Google, [role assignment privileges](https://support.google.com/a/answer/7519580?hl=en\&ref_topic=9832445\&sjid=14153642454757397359-NC) are only available to super administrator role. Opal needs the Google Workspace admin email to be a super administrator in order to import admin roles.
+</Info>
+
+4. Return to Opal to finish the app creation form. **Google Workspace admin email** should be a user with the **Super Admin Role** in order for the service account to read role assignments. You can find super admins in the [admin console](https://admin.google.com/) under **Admin Roles** > **Super Admin**. This email is **not** your service account email. Use this same account for the **Google Workspace customer ID** [field](https://support.google.com/a/answer/10070793?hl=en\&src=supportwidget0\&authuser=0).
+
+## Run app validation checks
+
+After you save your app, you can view existing sync issues from the **Setup** tab on the app detail page. Missing permissions and sync issues show in the **App Validations** section. Select the refresh icon to rerun validation checks.
+
+![](/images/docs/736327d23fc8f7e7e4b9698fc0bad95f5af3eadd2b88c1e15f92185eb5d5064c-workspace-app-validation.png)
+
+You can hover over the validation icons to learn why Opal needs a given permission. To correctly sync your app to Opal, ensure you address any sync errors, marked with the red ! icon. Inspect warnings on a case-by-case basis: warnings might impact features you’re not using and may be safely ignored, but this depends on your use case.
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Configuration](#configuration)
+  * [Run app validation checks](#run-app-validation-checks)

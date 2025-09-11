@@ -1,0 +1,353 @@
+---
+title: "Configure AWS for self-hosted Opal"
+description: "Suggest Edits"
+---
+
+<Info>
+  This guide assumes you've started to [configure your AWS integration in Opal](/docs/setting-up-your-aws-organization-in-opal#2-configure-your-aws-management-account). Use the following steps to set up the trust policy for the **OpalIngester** IAM role, then return to the integration guide.
+</Info>
+
+We support the following options for Opal Service Principals:
+
+* IAM Role for Service Account
+* EC2 Instance Role
+* IAM User Credentials
+
+We recommend using the IAM Role for Service Account as this is the most secure option, with permissions granted at the scope of the Opal pods only.
+
+Note: IAM Role for Service Account and EC2 Instance Role are only supported if your Kubernetes cluster is running in EKS.
+
+## IAM Role for Service Account
+
+### Step 1: Kubernetes service account
+
+Configure a service account on your Kubernetes cluster. This requires creating an IAM OIDC provider for your cluster, if not already existing. Please follow [these instructions](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html).
+
+Let's now configure a Kubernetes service account to assume an IAM role:
+
+1. Create a Kubernetes service account, if you don’t have one already. Copy the following contents to your device. Replace `my-namespace` with the namespace where Opal is installed.
+   <CodeGroup>
+     ```shell shell
+     cat >my-service-account.yaml <<EOF
+     apiVersion: v1
+     kind: ServiceAccount
+     metadata:
+       name: opal-service-account
+       namespace: my-namespace
+     EOF
+     kubectl apply -f my-service-account.yaml
+     ```
+   </CodeGroup>
+2. Set your AWS account ID to an environment variable with the following command.
+   <CodeGroup>
+     ```shell shell
+     ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+     ```
+   </CodeGroup>
+3. Set your cluster's OIDC identity provider to an environment variable with the following command. Replace `my-cluster` with the name of your cluster.
+   <CodeGroup>
+     ```shell shell
+     OIDC_PROVIDER=$(aws eks describe-cluster --name my-cluster --region $AWS_REGION --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
+     ```
+   </CodeGroup>
+4. Set variables for the namespace and name of the service account. Replace `my-namespace` with the namespace where Opal is installed.
+   <CodeGroup>
+     ```shell shell
+     export NAMESPACE=my-namespace
+     export SERVICE_ACCOUNT=opal-service-account
+     ```
+   </CodeGroup>
+5. Run the following command to create a trust policy file for the IAM role. You can add multiple entries in the StringEquals or StringLike conditions to allow multiple service accounts or namespaces to assume the role.
+   <CodeGroup>
+     ```json json
+     cat >trust-relationship.json <<EOF
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+         {
+           "Effect": "Allow",
+           "Principal": {
+             "Federated": "arn:aws:iam::$ACCOUNT_ID:oidc-provider/$OIDC_PROVIDER"
+           },
+           "Action": "sts:AssumeRoleWithWebIdentity",
+           "Condition": {
+             "StringEquals": {
+               "$oidc_provider:aud": "sts.amazonaws.com",
+               "$oidc_provider:sub": "system:serviceaccount:$NAMESPACE:$SERVICE_ACCOUNT"
+             }
+           }
+         }
+       ]
+     }
+     EOF
+     ```
+   </CodeGroup>
+6. Create the role. Replace `my-role-description` with a description for your role.
+   <CodeGroup>
+     ```shell shell
+     aws iam create-role --role-name OpalServiceAccount --assume-role-policy-document file://trust-relationship.json --description "my-role-description"
+     ```
+   </CodeGroup>
+7. Create a file that includes the permissions for the AWS services that are needed for the Opal pods to access.
+   <CodeGroup>
+     ```json json
+     cat >my-policy.json <<EOF
+     {
+     	"Version": "2012-10-17",
+     	"Statement": [
+     	    {
+     	        "Effect": "Allow",
+     	        "Action": [
+                         "sts:AssumeRole",
+                         "sts:TagSession"
+     	        ],
+     	        "Resource": "arn:aws:iam::*:role/OpalIngester"
+     	    },
+     	    {
+     	        "Effect": "Allow",
+     	        "Action": [
+     	            "account:ListRegions"
+     	        ],
+     	        "Resource": "arn:aws:account::${ACCOUNT_ID}:account"
+     	    }
+     	]
+     }
+     EOF
+     ```
+   </CodeGroup>
+8. Create the IAM policy.
+   <CodeGroup>
+     ```shell shell
+     aws iam create-policy --policy-name my-policy --policy-document file://my-policy.json
+     ```
+   </CodeGroup>
+9. Attach an IAM policy to your role. Replace `my-role` with the name of your IAM role and `my-policy` with the name of an existing policy that you created.
+   <CodeGroup>
+     ```shell shell
+     aws iam attach-role-policy --role-name OpalServiceAccount --policy-arn=arn:aws:iam::$ACCOUNT_ID:policy/my-policy
+     ```
+   </CodeGroup>
+10. Annotate your service account with the ARN of the IAM role that you want the service account to assume. Replace `my-role` with the name of your existing IAM role.
+    <CodeGroup>
+      ```shell shell
+      kubectl annotate serviceaccount -n $NAMESPACE $SERVICE_ACCOUNT eks.amazonaws.com/role-arn=arn:aws:iam::$ACCOUNT_ID:role/OpalServiceAccount
+      ```
+    </CodeGroup>
+
+### Step 2: OpalIngester role trust policy
+
+Find the **OpalIngester** role and add the following to the trust policy. Replace `${IAM_ROLE_FOR_SERVICE_ACCOUNT_ARN}` with the ARN of the IAM role for service account we created.
+
+<CodeGroup>
+  ```json json
+  {
+  	"Version": "2012-10-17",
+  	"Statement": [
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "${IAM_ROLE_FOR_SERVICE_ACCOUNT_ARN}"
+  			},
+  			"Action": [
+  				"sts:AssumeRole"
+  			],
+  			"Condition": {
+  				"StringEquals": {
+  					"sts:ExternalId": "${EXTERNAL_ID}"
+  				}
+  			}
+  		},
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "${IAM_ROLE_FOR_SERVICE_ACCOUNT_ARN}"
+  			},
+  			"Action": [
+  				"sts:TagSession"
+  			]
+  		}
+  	]
+  }
+  ```
+</CodeGroup>
+
+### Step 3: Enable service account
+
+Let’s now configure Opal pods to use a Kubernetes service account.
+
+* Open the Opal Admin console.
+* Click “Config”.
+* Check “AWS integration - Enable IAM role for service account as Opal Service Principal"
+* Enter the service account name.
+* Click “Save”.
+* Deploy the config change.
+
+![](/images/docs/4fa76d1-Screenshot_2024-03-08_at_2.41.55_PM.png)
+
+### Step 4: Continue the setup
+
+Head over to the [main page for next steps](/docs/setting-up-your-aws-organization-in-opal#2-configure-your-aws-management-account).
+
+## EC2 Instance Role
+
+### Step 1: Instance role policy
+
+You’ll need to update the permissions of your EC2 instance role to enable this role to take the appropriate actions on your behalf. Go into IAM service in the AWS console and add the following policy to your EC2 instance role. Make sure to substitute `${YOUR_ACCOUNT_NUMBER}` with the account number of your AWS management account.
+
+<CodeGroup>
+  ```json json
+  {
+  	"Version": "2012-10-17",
+  	"Statement": [
+  	    {
+  	        "Effect": "Allow",
+  	        "Action": [
+                      "sts:AssumeRole",
+                      "sts:TagSession"
+  	        ],
+  	        "Resource": "arn:aws:iam::*:role/OpalIngester"
+  	    },
+  	    {
+  	        "Effect": "Allow",
+  	        "Action": [
+  	            "account:ListRegions"
+  	        ],
+  	        "Resource": "arn:aws:account::${YOUR_ACCOUNT_NUMBER}:account"
+  	    }
+  	]
+  }
+  ```
+</CodeGroup>
+
+The `account:ListRegions` action enables Opal to ensure sessions are created for the enabled regions on your AWS accounts.
+
+### Step 2: OpalIngester role trust policy
+
+Find the **OpalIngester** role in IAM and set the following trust policy. Make sure to substitute `${EC2_INSTANCE_ROLE_ARN}` with the ARN of your EC2 instance role.
+
+<CodeGroup>
+  ```json json
+  {
+  	"Version": "2012-10-17",
+  	"Statement": [
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "${EC2_INSTANCE_ROLE_ARN}"
+  			},
+  			"Action": [
+  				"sts:AssumeRole"
+  			],
+  			"Condition": {
+  				"StringEquals": {
+  					"sts:ExternalId": "${EXTERNAL_ID}"
+  				}
+  			}
+  		},
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "${EC2_INSTANCE_ROLE_ARN}"
+  			},
+  			"Action": [
+  				"sts:TagSession"
+  			]
+  		}
+  	]
+  }
+  ```
+</CodeGroup>
+
+### Step 3: Continue the setup
+
+Head over to the [main page for next steps](/docs/setting-up-your-aws-organization-in-opal#step-1-configure-your-aws-management-account).
+
+## IAM User Credentials
+
+### Step 1: Create IAM User
+
+* Head over to IAM in the AWS console and create a new user.
+* Generate an access key / secret access key pair for the user. These will be needed in the Opal form.
+* Attach the following policy to the IAM user:
+
+<CodeGroup>
+  ```json json
+  {
+      "Version": "2012-10-17",
+      "Statement": [
+          {
+              "Effect": "Allow",
+              "Action": [
+                  "sts:AssumeRole",
+                  "sts:TagSession"
+              ],
+              "Resource": "arn:aws:iam::*:role/OpalIngester"
+          }
+      ]
+  }
+  ```
+</CodeGroup>
+
+### Step 2: OpalIngester role trust policy
+
+* Update the trust policy on the **OpalIngester** role with the following. Please substitute `${IAM_USER_ARN}` with the ARN of that IAM User.
+
+<CodeGroup>
+  ```json json
+  {
+  	"Version": "2012-10-17",
+  	"Statement": [
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "${IAM_USER_ARN}"
+  			},
+  			"Action": [
+  				"sts:AssumeRole"
+  			],
+  			"Condition": {
+  				"StringEquals": {
+  					"sts:ExternalId": "${EXTERNAL_ID}"
+  				}
+  			}
+  		},
+  		{
+  			"Effect": "Allow",
+  			"Principal": {
+  				"AWS": "${IAM_USER_ARN}"
+  			},
+  			"Action": [
+  				"sts:TagSession"
+  			]
+  		}
+  	]
+  }
+  ```
+</CodeGroup>
+
+### Step 3: Continue the setup
+
+Head over to the [main page for next steps](/docs/setting-up-your-aws-organization-in-opal#2-configure-your-aws-management-account).
+
+***
+
+* [Table of Contents](#)
+
+* * [IAM Role for Service Account](#iam-role-for-service-account)
+
+    * [Step 1: Kubernetes service account](#step-1-kubernetes-service-account)
+    * [Step 2: OpalIngester role trust policy](#step-2-opalingester-role-trust-policy)
+    * [Step 3: Enable service account](#step-3-enable-service-account)
+    * [Step 4: Continue the setup](#step-4-continue-the-setup)
+
+  * [EC2 Instance Role](#ec2-instance-role)
+
+    * [Step 1: Instance role policy](#step-1-instance-role-policy)
+    * [Step 2: OpalIngester role trust policy](#step-2-opalingester-role-trust-policy-1)
+    * [Step 3: Continue the setup](#step-3-continue-the-setup)
+
+  * [IAM User Credentials](#iam-user-credentials)
+
+    * [Step 1: Create IAM User](#step-1-create-iam-user)
+    * [Step 2: OpalIngester role trust policy](#step-2-opalingester-role-trust-policy-2)
+    * [Step 3: Continue the setup](#step-3-continue-the-setup-1)

@@ -1,0 +1,58 @@
+---
+title: "Import and configure resources"
+description: "Suggest Edits"
+---
+
+Once you have [connected apps and infrastructure integrations](/docs/5564104-set-up-connections) to Opal, you can import resources and groups to be managed.
+
+## Automatic import
+
+From the app detail page in the **Inventory**, select the edit icon.
+
+![](/images/docs/a1bd8fb2868da66aeb2ecf09076044ee19ca54a268ba2a83977d0c7963d0cac5-edit_app.png "SCR-20230313-oge.png")
+
+Depending on the app type, you can either choose to automatically import all resources, import tagged resources only, or only import manually.
+
+![](/images/docs/cddca0f-importSettings.png "SCR-20230313-oi7.png")
+
+Okta also supports auto-importing groups which contain imported resources:
+
+![](/images/docs/2bc231e-importSettings_okta.png "SCR-20230313-ohl.png")
+
+When you've made your selection, select **Save** and Opal will start syncing immediately.
+
+![](/images/docs/6cff8b8-app-edit-save.png "SCR-20230313-oie.png")
+
+## Manual import
+
+First, select **Import items** under the **...** menu for an app.
+
+![](/images/docs/5fd5d4486fb1820bc31bdf92b7e27c6d799657a323bf697ad033d6fa2ad10834-import-apps.png)
+
+Select the resources and groups to import, then [configure access requests](/docs/5564113-configure-approvals#approval-workflows) for these resources.
+
+![](/images/docs/9bc5acd-import-screen.png "SCR-20230313-odo.png") ![](/images/docs/a195ee0-import-select.png "SCR-20230313-odo.png") ![](/images/docs/af91c4d-Config.png "SCR-20230313-odo.png")
+
+Finally, add them to Opal.
+
+![](/images/docs/427aa86-import0button.png "SCR-20230313-oer.png")
+
+These resources will be synced and are now available in Opal.
+
+![](/images/docs/808c99abd38da0bc48e2a021f9dad8cee08af30ee5bebfcdc7768c729a179f1a-imported-resources.png "SCR-20230313-of6.png")
+
+### Import resources from CSVs
+
+Within [**Push-only** custom apps](/docs/custom-integrations-overview), you can upload CSVs as resources. Go to the **Inventory**, then select **Import resource from CSV**.
+
+This can be especially useful for configuring [access reviews](/docs/access-reviews) for systems without native Opal integrations.
+
+![](/images/docs/1c0171ba3db45f9a8edcb4695f815e8f03732b45caaa3ac41bab9a53f149354f-import-resource-from-csv.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [Automatic import](#automatic-import)
+  * [Manual import](#manual-import)
+    * [Import resources from CSVs](#import-resources-from-csvs)

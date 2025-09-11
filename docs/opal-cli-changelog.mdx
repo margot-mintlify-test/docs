@@ -1,0 +1,35 @@
+---
+title: "Opal CLI Changelog"
+description: "Learn about notable changes to the Opal CLI."
+---
+
+[Suggest Edits](/edit/opal-cli-changelog)
+
+See the [npm package](https://www.npmjs.com/package/opal-security) for changes released prior to version 3.2.1. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## 3.2.2
+
+* Added new `--bundle` flag to the `opal request create` command, allowing users to create requests based on assets in an existing bundle
+* Added new`--template` flag to the `opal request create` command, allowing users to create new access requests based on previous ones with requested
+* Added more descriptive error messaging in `opal request create`
+* Print URL link to authentication page in browser if `opal login` does not open browser automatically
+
+## 3.2.1
+
+Introduced on 2025-06-13.
+
+* New request experience in CLI:
+
+  * `opal request create` starts an interactive experience to create an access request in Opal, or users can pass in appropriate flags to bypass the interactivity
+  * `opal request get --id` retrieves data about a certain request id including its status
+  * `opal request list` retrieves data about the user's 10 most recent outgoing access requests
+
+* New command `opal whoami`:
+  * Returns information about the current setup, including the set Opal server URL, organization name, and actively logged-in user email, if any.
+
+***
+
+* [Table of Contents](#)
+
+* * [3.2.2](#322)
+  * [3.2.1](#321)

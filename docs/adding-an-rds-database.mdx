@@ -1,0 +1,196 @@
+---
+title: "Add an RDS database"
+description: "Add your AWS RDS databases to Opal to allow your developers to request temporary access."
+---
+
+[Suggest Edits](/edit/adding-an-rds-database)
+
+<Info>
+  This guide assumes you've already [configured your AWS organization in Opal](/docs/setting-up-your-aws-organization-in-opal).
+</Info>
+
+The following diagram illustrates how Opal connects to AWS RDS. Use this guide to learn how you can add RDS databases to Opal.
+
+![1920](/images/docs/f83f3cd-1.png "1.png")
+
+You can add RDS databases to Opal easily using [RDS IAM database authentication](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html).
+
+## Supported RDS engines
+
+Amazon IAM database authentication is available for the following database engines:
+
+* MySQL 8.0, minor version 8.0.16 or higher
+* MySQL 5.7, minor version 5.7.16 or higher
+* MySQL 5.6, minor version 5.6.34 or higher
+* PostgreSQL 14, 13, 12, and 11, all minor versions
+* PostgreSQL 10, minor version 10.6 or higher
+* PostgreSQL 9.6, minor version 9.6.11 or higher
+* PostgreSQL 9.5, minor version 9.5.15 or higher Don't see what you want here? Let us know by suggesting an edit or emailing us at [\[email protected\]](/cdn-cgi/l/email-protection#49212c2525260926392825672d2c3f) and we'll make it happen.
+
+## Add an RDS database
+
+### 1. Enable IAM authentication
+
+You'll need to enable IAM database authentication for your RDS instance. You can do this using the AWS Console and CLI. You can read more on how to do this [here in the AWS official documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.Enabling.html).
+
+#### AWS Console
+
+<Frame caption="Modify your RDS instance">
+  <img src="/images/docs/d1be813-Screen_Shot_2020-12-03_at_3.50.06_PM.png" />
+</Frame>
+
+<Frame caption="Enable IAM database authentication.">
+  <img src="/images/docs/662ccc5-Screen_Shot_2020-12-03_at_3.50.41_PM.png" />
+</Frame>
+
+#### AWS CLI
+
+<CodeGroup>
+  ```shell shell
+  aws rds modify-db-instance \
+      --db-instance-identifier mydbinstance \
+      --apply-immediately \
+      --enable-iam-database-authentication
+  ```
+</CodeGroup>
+
+<Warning>
+  Enabling IAM Authentication **requires a brief outage** for your RDS database.
+</Warning>
+
+### 2. Create database users
+
+Connect to your database and create a database user with read-only access. Here is a snippet you can use for Postgres and MySQL.
+
+<CodeGroup>
+  ```pgsql pgsql
+  -- Create a group
+  CREATE ROLE readaccess;
+
+  -- Grant access to existing tables
+  GRANT USAGE ON SCHEMA public TO readaccess;
+  GRANT SELECT ON ALL TABLES IN SCHEMA public TO readaccess;
+
+  -- Grant access to future tables
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readaccess;
+
+  -- Create a user with IAM authentication
+  CREATE USER readonly; -- NOTE: THIS USERNAME IS REQUIRED
+  GRANT readaccess TO readonly; 
+  GRANT rds_iam TO readonly;
+
+  CREATE USER fullaccess; -- NOTE: THIS USERNAME IS REQUIRED
+  GRANT rds_superuser TO fullaccess;
+  GRANT rds_iam TO fullaccess;
+  ```
+
+  ```mysql mysql
+  -- NOTE: The usernames readonly and fullaccess are required
+  GRANT SELECT ON *.* TO 'readonly'@'%' IDENTIFIED WITH AWSAuthenticationPlugin AS 'RDS';
+  GRANT SELECT ON *.* TO 'readonly'@'%' WITH GRANT OPTION;
+
+  CREATE USER 'fullaccess'@'%' IDENTIFIED WITH AwsAuthenticationPlugin AS 'RDS';
+  GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, PROCESS, REFERENCES, INDEX, ALTER, SHOW DATABASES, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER ON *.* TO 'fullaccess'@'%' WITH GRANT OPTION;
+
+  FLUSH PRIVILEGES;
+  ```
+</CodeGroup>
+
+#### Custom Database Users
+
+If you'd like to instead define your own database users with custom amounts of access, you can do that easily in one of two ways: through Opal UI, or with tags.
+
+#### Opal UI
+
+1. In the **Inventory**, go to the **Roles** tab of the RDS instance, then select **+ Create**.
+
+![](/images/docs/11aa57f4cc9aefcc2863e8a80be6e2db6df86470f39676c4fe793ef434a3edc9-rds-roles.png)
+
+2. Add a role name, and the database username as the **Role Remote ID**, then select **Create**.
+
+![](/images/docs/953cb7e566d45bf12d6c1e5b2febff77b95d9d5112a2e18df3a88eb9871279ff-Screenshot_2024-10-10_at_10.27.19_AM.png)
+
+#### Tags
+
+1. Create the user with any username that you like and grant them `rds_iam` with the following queries:
+
+<CodeGroup>
+  ```pgsql pgsql
+  GRANT rds_iam TO myuser;
+  ```
+
+  ```mysql mysql
+  CREATE USER myuser IDENTIFIED WITH AwsAuthenticationPlugin AS 'RDS';
+  ```
+</CodeGroup>
+
+2. Tag the RDS database with key `opal:user:1` and value `myuser`. You can manage multiple levels of access using more tags! Example: `opal:user:2` => `myseconduser`. To see how to tag your database check out Step 3.
+
+Now the custom database users will show up in Opal as access levels.
+
+<Warning>
+  AWS supports a maximum of 50 tags on a resource.
+</Warning>
+
+### 3. Tag the database
+
+Finally, tag the RDS database with `opal` so Opal knows which RDS databases you'd like Opal to automatically import:
+
+#### AWS Console
+
+<Frame caption="Tagging an RDS database with  in the AWS Console.">
+  <img src="/images/docs/441854a-Screen_Shot_2020-12-03_at_3.54.50_PM.png" />
+
+  `opal`
+</Frame>
+
+#### AWS CLI
+
+<CodeGroup>
+  ```shell shell
+  aws rds add-tags-to-resource \
+    --resource-name arn:aws:rds:<REGION>:<AWS_ACCOUNT_ID>:db:<DB_INSTANCE_NAME> \
+    --tags "Key=opal,Value="
+  ```
+</CodeGroup>
+
+#### Terraform
+
+Add the following `tags` argument to your AWS RDS instance:
+
+```
+tags = {
+  opal = ""
+  opal:database-name="my_db" // This is optional. By default, Opal will pull the database name from RDS's configuration
+}
+```
+
+## Access an RDS database in Opal
+
+Once you've successfully tagged an RDS database, it will appear on the Resources page in the **Catalog**. If you followed the steps above, you'll be able to **Connect** with read-only and full access to your database.
+
+Access to RDS databases in Opal is session-based, meaning your developers won't have access unless they initiate a session.
+
+<Frame caption="Start a session to an RDS database.">
+  <img src="/images/docs/df18ccf-RDS-Connect.png" />
+</Frame>
+
+You can instantly open a connection to the database using your favorite viewer, like Postico or TablePlus, or connect manually. Your credentials can only initiate connections for 15 minutes.
+
+<Frame caption="Automatically connect to your database or use manual configuration.">
+  <img src="/images/docs/32e8a67-Screen_Shot_2020-12-03_at_4.11.28_PM.png" />
+</Frame>
+
+***
+
+* [Table of Contents](#)
+
+* * [Supported RDS engines](#supported-rds-engines)
+
+  * [Add an RDS database](#add-an-rds-database)
+
+    * [1. Enable IAM authentication](#1-enable-iam-authentication)
+    * [2. Create database users](#2-create-database-users)
+    * [3. Tag the database](#3-tag-the-database)
+
+  * [Access an RDS database in Opal](#access-an-rds-database-in-opal)

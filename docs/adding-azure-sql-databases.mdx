@@ -1,0 +1,62 @@
+---
+title: "Add Azure Databases"
+description: "Add Azure databases to grant users temporary access."
+---
+
+[Suggest Edits](/edit/adding-azure-sql-databases)
+
+Opal supports granting temporary read and write access to the following Azure databases:
+
+* Azure SQL Databases
+* Azure SQL Managed Databases
+
+## Prerequisites
+
+Enable Microsoft Entra ID authentication for your database.
+
+## 1. Enable Microsoft Entra ID Authentication on SQL
+
+For SQL Databases, go to its parent SQL Server and enable Microsoft Entra ID Authentication.
+
+For SQL Managed Databases, go to its parent SQL Managed Instance and enable Microsoft Entra ID Authentication.
+
+## 2. Add Opal IP addresses to your firewall rules
+
+On the left hand side, under **Security** > **Networking**, add the following [IP addresses](/docs/ip-ranges) to your SQL's firewall rules. If you self-host Opal, these will be different.
+
+![](/images/docs/f465569a24f10f80f08eba81a6677ef12df92b9db8db180681bef7071dc068f5-Screenshot_2024-11-12_at_9.30.16_AM.png)
+
+## 3. Add your company addresses to your firewall rules
+
+If your company uses a VPN, add any IP ranges to the firewall rules. If you don't add them, each user will have to add their unique IP address and you can easily hit Azure's 128-firewall rule limit.
+
+## 4. Assign the managed-identity permissions
+
+1. Go to the SQL Server or SQL Managed Instance, `Security`-> `Identity`. Under `System Managed Identity`, toggle the status to `On` and save this setting.
+2. Go to `Microsoft Entra ID`, on the left hand panel, `Manage` -> `Roles & Administrators`, find the`Directory Readers` role and click on it.
+3. Click `Add Assignment` and add the SQL Server or SQL Managed Instance Managed Identity.
+
+This may take an hour to sync.
+
+## 5. Add Opal as an Admin
+
+If you have an existing admin:
+
+1. Create a new Azure Security Group: `SQL Admins`
+2. Add your existing admin to the `SQL Admins` Security Group
+3. Add Opal's service principal to the `SQL Admins` security group
+
+Using Microsoft Entra Security Groups may take Azure up to 2 hours to propagate the login changes to the databases.
+
+Once the admin settings have synced, users will be able to connect through `db_datareader` and `db_datawriter` roles.
+
+***
+
+* [Table of Contents](#)
+
+* * [Prerequisites](#prerequisites)
+  * [1. Enable Microsoft Entra ID Authentication on SQL](#1-enable-microsoft-entra-id-authentication-on-sql)
+  * [2. Add Opal IP addresses to your firewall rules](#2-add-opal-ip-addresses-to-your-firewall-rules)
+  * [3. Add your company addresses to your firewall rules](#3-add-your-company-addresses-to-your-firewall-rules)
+  * [4. Assign the managed-identity permissions](#4-assign-the-managed-identity-permissions)
+  * [5. Add Opal as an Admin](#5-add-opal-as-an-admin)

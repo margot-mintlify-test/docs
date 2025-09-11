@@ -1,0 +1,64 @@
+---
+title: "Custom Integrations overview"
+description: "Learn about different options for building custom integrations in Opal."
+---
+
+[Suggest Edits](/edit/custom-integrations-overview)
+
+If you need more flexibility over your integrations than Opal’s built-in integrations provide, or want to connect to a system Opal doesn’t yet support, you can build custom integrations yourself.
+
+You create custom integrations as either **Custom Connectors**, which require you build out endpoints yourself, or as **Push-only App**, which you can connect to your configured webhooks, or use as a bookkeeping tool without connecting to end systems.
+
+## Custom Connectors overview
+
+Custom Connectors require you to implement API endpoints following Opal’s specifications. They allow for a bidirectional sync and are automatically synced with your end system in the same manner as native integrations. The Opal server responds to user-initiated requests to add or remove users to resources or groups, then propagates these changes to your custom app using signed API requests.
+
+Use Custom Connectors if:
+
+* You require a bidirectional sync and want to write data back to Opal
+* You want more control over your integration
+
+To set up custom connectors, you first build your custom connector, exposing the [Custom Connector API spec](/docs/api-spec), then create a custom app in Opal using your custom connector configuration. See the [Create your own connector](/docs/how-to-create-your-own-connector) guide for end-to-end instructions.
+
+### Custom connectors architecture
+
+The following shows the high-level architecture of key components for custom app integrations.
+
+![High level architecture of the key component interactions for a custom app integration](/images/docs/26c5a2f-image.png)
+
+The Opal components include:
+
+* **Opal server** - The Opal server responds to user-initiated requests from the web or Slack interface to add or remove users from resources. These are propagated to your custom app via signed requests to the API connector.
+* **Opal consistency checker** - On a periodic interval, Opal runs a consistency checker to retrieve the up-to-date user lists of your resources in the custom app via signed requests to the API connector.
+
+The components for your organization include:
+
+* **API connector** - This is the interface that enables the integration. This connector should expose the API endpoints in the [Custom Connector API Spec](/docs/api-spec).
+* **Custom app** - The custom app that you want to integrate against.
+
+## Push-only apps and webhooks overview
+
+Create **Push-only apps** to push events to configured webhooks or use the app as a bookkeeping tool. If you do not have a webhook configured in your **Organizational Settings**, push-only apps do not connect to any end system.
+
+Webhooks use a one-way push to your specified URL on access changes to groups and resources. They allow for only a one-way sync, so you are responsible for any access drift between your end systems and Opal.
+
+For example, you could use a one-way sync to send notifications and update issue trackers when users are added and removed from Opal groups.
+
+Use Webhooks if:
+
+* You require a one-way sync and don’t need to write data back to Opal
+* You want to add or modify users in your end system in response to Opal events
+
+Opal currently supports only one webhook URL per organization. To set up Webhooks, see the [Webhooks guide](/docs/webhooks).
+
+<Info>
+  Webhooks should not be confused with [Events Streaming](/docs/events-streaming). To send Opal Events to your logging destinations, e.g., DataDog, use Events Streaming.
+</Info>
+
+***
+
+* [Table of Contents](#)
+
+* * [Custom Connectors overview](#custom-connectors-overview)
+    * [Custom connectors architecture](#custom-connectors-architecture)
+  * [Push-only apps and webhooks overview](#push-only-apps-and-webhooks-overview)

@@ -1,0 +1,156 @@
+---
+title: "Jira"
+description: "Learn how to integrate Opal with your Jira tickets."
+---
+
+[Suggest Edits](/edit/jira)
+
+With Opal, you can sync your engineers' access requests with your Jira support tickets in order to grant access for the lifetime of the support ticket. When the ticket is closed (marked "Done"), access is also revoked. Opal supports Jia Software and Jira Service Management (JSM) projects. For JSM projects, [additional setup](/docs/jira#jira-service-management) is required.
+
+## Jira Cloud
+
+Use the following steps to integrate Jira with Opal if you use Jira Cloud.
+
+### 1. Create a Jira API token
+
+Opal requires an administrator of your Jira workspace to create a [Jira API token](https://id.atlassian.com/manage-profile/security/api-tokens). Click **Create API token** and record the generated token. You'll use this in the next step.
+
+![](/images/docs/ef9cb48-Screenshot_2021-01-13_at_10.34.34_AM.png "Screenshot 2021-01-13 at 10.34.34 AM.png")
+
+### 2. Add your Jira details to Opal
+
+To enable the Jira integration in Opal, go to **Configuration > Settings > Productivity Integrations** in the Opal dashboard.
+
+1. Select **Jira** and enter your Jira workspace name—e.g., if your Jira workspace is `https://jiraworkspace.atlassian.net`, enter `jiraworkspace`.
+2. Enter the name of the Jira project you want to integrate.
+3. Finally, enter the API token from the previous step.
+
+Once complete, you've successfully integrated Jira with Opal. You can now load and bind Jira tickets from the project name from the Jira workspace you specified.
+
+## Jira Data Center
+
+<Info>
+  Jira 8.14 or later is required.
+</Info>
+
+Use the following steps to integrate Jira with Opal if you use Jira Data Center.
+
+### 1. Create a Personal Access Token
+
+Opal requires the administrator of your Jira workspace to create a Personal Access Token. Select your profile picture at the top right of the screen, then click **Personal Access Tokens**. Select **Create token**. Give your new token a name. Finally, click **Create** and record the generated token. This will be input in the next step.
+
+![](/images/docs/f67e14c-Screen_Shot_2021-07-29_at_10.48.53_AM.png "Screen Shot 2021-07-29 at 10.48.53 AM.png")
+
+### 2. Add your Jira details to Opal
+
+To enable the Jira integration in Opal, go to **Configuration > Settings > Productivity Integrations** in the Opal dashboard.
+
+1. Select **Jira**, then **Self-hosted**.
+2. Enter the URL of your Jira instance, e.g., `https://jira.acme-corp.com`.
+3. Enter the name of the Jira project you want to integrate.
+4. Finally, enter the Personal Access Token from the previous step.
+
+Once complete, you've successfully integrated Jira with Opal. You will be able to load and bind Jira tickets from the project name from the Jira workspace you specified.
+
+## How it works
+
+For any access request, binding to a support ticket is optional.
+
+After Jira is integrated, when making a request, the option to "Expire access when ticket is closed" can be enabled.
+
+![2408](/images/docs/80e9c4248ce34d30361b9cd05ce3aecdbab72f22d6cdad6e9966deba1a5cd787-request-access-expire-ticket.png "SCR-20230313-ky0.png")
+
+By clicking "Search for tickets", a list of Jira tickets will appear, only including tickets which are assigned to you in Jira (the Jira account which corresponds to your Opal email address).
+
+Click on any of these support tickets to attach the ticket to the access request.
+
+By default, an expiration time bound is required when making any access request. After the request is approved, access expiration is determined by the combination of this expiration time bound and the closure of the support ticket. Access will expire according to the minimum of these two events: if the ticket is closed before the expiration time bound is reached, access will be revoked when the ticket is closed. Similarly, if the expiration time bound is reached before the closure of the ticket, access is revoked when the expiration time bound is reached.
+
+If you want to attach an access request to a support ticket, without an expiration time bound, you may select "Indefinite" under the expiration options and bind the request to a support ticket.
+
+## Jira Service Management
+
+Most functionality is the same between Jira Software and Jira Service Managent projects. The key differences are:
+
+1. Ticket links in Opal to Jira Service Management requests will show the requestor-facing URL rather than the agent URL. This requires setting up a request type `Access Change - Opal`.
+2. If the access requestor in Opal does not have a Jira account, Opal will attempt to create a Jira customer account.
+
+### Jira Service Management Project Setup
+
+1. **Create an Issue Type: `Service Request - Opal`**
+
+![](/images/docs/bf2283f01b1601c5a52c2da75e019527da65d7c3193b9b4cafe5a36b699b25c3-Screenshot_2025-08-21_at_1.46.23_AM.png)
+
+2. **Create a Request Type `Access Change - Opal`.**
+
+Ensure that the Issue Type is `Service Request - Opal` Opal sets tickets to this request type in order to generate the requestor-facing URL. We recommend hiding this request type from the portal in order to separate Opal requests.
+
+![](/images/docs/61ae7538e766355b613c9c2a724d945cf2c784f79766101fd678aa3883e98e28-Screenshot_2025-08-21_at_1.50.11_AM.png)
+
+3. **Enable the `Request Type/Customer Request Type` and `Reporter` field on the screens associated with your Issue Type**
+
+In your Project Settings, go to `Screens` and find the one associated with your Issue Type (`Service Request - Opal`). Each operation may be associated with a different screen. If they are different, you will need to update each screen to include both fields.
+
+![](/images/docs/85f5bfde5bf1b5f79a4b24753befd5bb949f40de115a41589b58056912b058b5-Screenshot_2025-08-21_at_1.55.20_AM.png)
+
+<Info>
+  For Jira Cloud customers, the field is `Request Type`.
+
+  For Jira Data-Center customers, the field is `Customer Request Type`.
+</Info>
+
+![](/images/docs/4540994df37aafc18dd3df2072b541e1b5088e5806cb9c29e3f02f765d54069c-Screenshot_2025-08-21_at_1.57.52_AM.png)
+
+4. **Enable allowing creation of portal-only accounts.** If an Opal email does not exist in Jira, we will attempt to create a customer account.
+
+### Jira Data-Center - Enable portal-only accounts
+
+In your admin settings, go to `Configuration` to enable Public signup.
+
+![](/images/docs/4ac1a4c1e9166a21a655a4838869d2a5c38ad640647fd84439fb915826bb7d31-Screenshot_2025-08-21_at_2.05.19_AM.png)
+
+Enable one of `Customers who have an account on this Jira Site` or `Anyone can raise a request on the customer portal`
+
+![](/images/docs/4d0921882b881e22122f37b2ef6410414c9b6462d6d649785361a9eb166700b7-Screenshot_2025-08-21_at_2.24.03_AM.png)
+
+### Jira Cloud - Enable portal-only accounts
+
+In your admin settings, under `Products` -> `Jira Service Management` -> `Customer Access`. Enable `Allow portal-only accounts to be created for new customers` . This is required in case the email address in Opal does not have a Jira account but would still like to make a request. When creating a ticket, Opal will set the requestor in Opal as the reporter in Jira. This will allow the user to see all their tickets in Jira.
+
+![](/images/docs/890ccc4b8c095eca7e200456f309471efeeb84ee683e90833e2e93474f9f0c27-Screenshot_2025-08-18_at_1.59.59_PM.png)
+
+In the JSM project settings, set `Channel Access` to `Open`
+
+![](/images/docs/8dcf03c4454984542de4651eb3049578215a30e3bb10d0a5762a51c3650e58fb-Screenshot_2025-08-18_at_2.05.27_PM.png)
+
+4. **Enable service accounts to modify the `Reporter` field on a JSM ticket**
+
+In your Jira admin settings, go to `Work Items` -> `Permission Schemes` -> Click on the `Permissions` tab of associated with your JSM project
+
+![](/images/docs/7b1e5048ab5b5ac12a940a784d10bcfd4c76dc3263d12387bf411a02cbf9898c-Screenshot_2025-08-18_at_2.21.52_PM.png)
+
+Ensure that the service account used in Opal is granted the `Modify Reporter`permission through a `Project Role` or `Group`
+
+![](/images/docs/5df932753864b8b285b148fe81f32d8f8d5602c2aca70d784c476d6de09d24be-Screenshot_2025-08-18_at_2.23.48_PM.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [Jira Cloud](#jira-cloud)
+
+    * [1. Create a Jira API token](#1-create-a-jira-api-token)
+    * [2. Add your Jira details to Opal](#2-add-your-jira-details-to-opal)
+
+  * [Jira Data Center](#jira-data-center)
+
+    * [1. Create a Personal Access Token](#1-create-a-personal-access-token)
+    * [2. Add your Jira details to Opal](#2-add-your-jira-details-to-opal-1)
+
+  * [How it works](#how-it-works)
+
+  * [Jira Service Management](#jira-service-management)
+
+    * [Jira Service Management Project Setup](#jira-service-management-project-setup)
+    * [Jira Data-Center - Enable portal-only accounts](#jira-data-center---enable-portal-only-accounts)
+    * [Jira Cloud - Enable portal-only accounts](#jira-cloud---enable-portal-only-accounts)

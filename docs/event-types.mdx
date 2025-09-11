@@ -1,0 +1,282 @@
+---
+title: "Events"
+description: "Use Events to audit access updates and additional events in Opal."
+---
+
+[Suggest Edits](/edit/event-types)
+
+<Info>
+  Opal guarantees display and exports of logs up to 90 days. To indefinitely retain and export your logs, you should set up [Events Streaming](/docs/events-streaming).
+</Info>
+
+In the **Events** section of the left sidebar, administrators can view, filter, and export all audit events. Exports can be created by downloading CSVs using the **Export** button, or with the [/events API endpoint](/reference/events-1).
+
+![](/images/docs/a79ec545cca7e55a4ec6c84a8487e5379873dff962f695ea6e0dbf1d1e1f5872-events-overview.png "SCR-20230313-m9a.png")
+
+Administrators can also create **Saved filters** for Events to easily access a view of events for a date range, user, event type, Object ID, or API token.
+
+![](/images/docs/a7f5f78fa17c43177c2f607c126fb3426d2bf4b517131c5dc3ae337190143146-saved_filters.png "SCR-20230313-ma1.png")
+
+The events include all changes for configurations in Opal, all actions taken in Opal, and all access changes.
+
+## Event types
+
+Opal records the following events.
+
+| Event type                                                      |
+| --------------------------------------------------------------- |
+| `USERS_CREATED`                                                 |
+| `USERS_DELETED`                                                 |
+| `USERS_UPDATED`                                                 |
+| `USER_EMAIL_UPDATED`                                            |
+| `USER_NAME_UPDATED`                                             |
+| `USER_POSITION_UPDATED`                                         |
+| `USER_MANAGER_UPDATED`                                          |
+| `USER_TEAM_ATTR_UPDATED`                                        |
+| `USER_REMOTE_ID_UPDATED`                                        |
+| `USER_NOTIFIED`                                                 |
+| `USER_NOTIFICATION_FAILED`                                      |
+| `USER_NOT_NOTIFIED`                                             |
+| `USER_MERGED`                                                   |
+| `USER_LOGGED_IN_SAML`                                           |
+| `USER_LOGGED_IN_OAUTH`                                          |
+| `GROUP_FOLDERS_CREATED`                                         |
+| `GROUP_FOLDERS_DELETED`                                         |
+| `GROUPS_CREATED`                                                |
+| `GROUPS_DELETED`                                                |
+| `GROUPS_UPDATED`                                                |
+| `GROUPS_ADDED_TO_FOLDERS`                                       |
+| `GROUPS_REMOVED_FROM_FOLDERS`                                   |
+| `GROUP_VISIBILITY_GROUPS_ADDED`                                 |
+| `GROUP_VISIBILITY_GROUPS_REMOVED`                               |
+| `GROUP_NAME_UPDATED`                                            |
+| `GROUP_ADMIN_OWNER_UPDATED`                                     |
+| `GROUP_FUNCTION_UPDATED`                                        |
+| `GROUP_VISIBILITY_UPDATED`                                      |
+| `GROUP_MAX_DURATION_UPDATED`                                    |
+| `GROUP_RECOMMENDED_DURATION_UPDATED`                            |
+| `GROUP_ACCESS_REQUEST_ESCALATION_PERIOD_UPDATED`                |
+| `GROUP_REQUIRE_SUPPORT_TICKET_UPDATED`                          |
+| `GROUP_REQUIRE_MANAGER_APPROVAL_UPDATED`                        |
+| `GROUP_REQUIRE_MFA_UPDATED`                                     |
+| `GROUP_REQUEST_REQUIRE_MFA_UPDATED`                             |
+| `GROUP_AUTO_APPROVAL_UPDATED`                                   |
+| `GROUP_IS_REQUESTABLE_UPDATED`                                  |
+| `BREAK_GLASS_USERS_ADDED_TO_GROUPS`                             |
+| `BREAK_GLASS_USERS_REMOVED_FROM_GROUPS`                         |
+| `BREAK_GLASS_USED`                                              |
+| `USERS_ADDED_TO_CONNECTIONS`                                    |
+| `USERS_REMOVED_FROM_CONNECTIONS`                                |
+| `CONNECTIONS_CREATED`                                           |
+| `CONNECTIONS_DELETED`                                           |
+| `CONNECTIONS_UPDATED`                                           |
+| `CONNECTION_USERS_UPDATED`                                      |
+| `CONNECTION_VISIBILITY_GROUPS_ADDED`                            |
+| `CONNECTION_VISIBILITY_GROUPS_REMOVED`                          |
+| `HRIS_STATUS_ACTIVE`                                            |
+| `HRIS_STATUS_INACTIVE`                                          |
+| `HRIS_STATUS_DEPROVISIONED`                                     |
+| `HRIS_STATUS_DELETED`                                           |
+| `HRIS_STATUS_NOT_FOUND`                                         |
+| `IDP_STATUS_ACTIVE`                                             |
+| `IDP_STATUS_INACTIVE`                                           |
+| `IDP_STATUS_DEPROVISIONED`                                      |
+| `IDP_STATUS_DELETED`                                            |
+| `IDP_STATUS_NOT_FOUND`                                          |
+| `IDP_CONNECTIONS_CREATED`                                       |
+| `IDP_CONNECTIONS_DELETED`                                       |
+| `IDP_CONNECTIONS_UPDATED`                                       |
+| `IDP_CONNECTION_USER_ATTRIBUTE_MAPPING_CREATED`                 |
+| `IDP_CONNECTION_USER_ATTRIBUTE_MAPPING_DELETED`                 |
+| `RESOURCE_FOLDERS_CREATED`                                      |
+| `RESOURCE_FOLDERS_DELETED`                                      |
+| `RESOURCES_CREATED`                                             |
+| `RESOURCES_DELETED`                                             |
+| `RESOURCES_UPDATED`                                             |
+| `RESOURCES_ADDED_TO_FOLDERS`                                    |
+| `RESOURCES_REMOVED_FROM_FOLDERS`                                |
+| `RESOURCE_VISIBILITY_GROUPS_ADDED`                              |
+| `RESOURCE_VISIBILITY_GROUPS_REMOVED`                            |
+| `RESOURCE_NAME_UPDATED`                                         |
+| `RESOURCE_ADMIN_OWNER_UPDATED`                                  |
+| `RESOURCE_VISIBILITY_UPDATED`                                   |
+| `RESOURCE_MAX_DURATION_UPDATED`                                 |
+| `RESOURCE_RECOMMENDED_DURATION_UPDATED`                         |
+| `RESOURCE_REQUIRE_SUPPORT_TICKET_UPDATED`                       |
+| `RESOURCE_REQUIRE_MANAGER_APPROVAL_UPDATED`                     |
+| `RESOURCE_CONNECT_REQUIRE_MFA_UPDATED`                          |
+| `RESOURCE_APPROVE_REQUIRE_MFA_UPDATED`                          |
+| `RESOURCE_REQUEST_REQUIRE_MFA_UPDATED`                          |
+| `RESOURCE_AUTO_APPROVAL_UPDATED`                                |
+| `RESOURCE_IS_REQUESTABLE_UPDATED`                               |
+| `REQUESTS_CREATED`                                              |
+| `REQUESTS_APPROVED`                                             |
+| `REQUESTS_ADMIN_APPROVED`                                       |
+| `REQUESTS_DENIED`                                               |
+| `REQUESTS_ADMIN_DENIED`                                         |
+| `REQUESTS_CANCELED`                                             |
+| `REQUEST_COMMENT_ADDED`                                         |
+| `REQUEST_SUPPORT_TICKET_ADDED`                                  |
+| `REQUEST_REVIEWERS_ADDED_TO_REQUESTS`                           |
+| `REQUEST_SKIP_MANAGER_ADDED_TO_REQUESTS`                        |
+| `REQUEST_REVIEWERS_APPROVED`                                    |
+| `REQUEST_REVIEWERS_DENIED`                                      |
+| `REQUEST_RESOURCE_REQUESTED`                                    |
+| `REQUEST_GROUP_REQUESTED`                                       |
+| `REVIEWERS_ADDED_TO_RESOURCES`                                  |
+| `REVIEWERS_REMOVED_FROM_RESOURCES`                              |
+| `REVIEWERS_ADDED_TO_GROUPS`                                     |
+| `REVIEWERS_REMOVED_FROM_GROUPS`                                 |
+| `RESOURCE_REVIEWER_STAGE_CREATED`                               |
+| `RESOURCE_REVIEWER_STAGE_UPDATED`                               |
+| `RESOURCE_REVIEWER_STAGE_DELETED`                               |
+| `GROUP_REVIEWER_STAGE_CREATED`                                  |
+| `GROUP_REVIEWER_STAGE_UPDATED`                                  |
+| `GROUP_REVIEWER_STAGE_DELETED`                                  |
+| `REVIEWERS_REMINDED`                                            |
+| `ON_CALL_SCHEDULES_CREATED`                                     |
+| `ON_CALL_SCHEDULES_UPDATED`                                     |
+| `ON_CALL_SCHEDULES_DELETED`                                     |
+| `ON_CALL_SCHEDULES_ADDED_TO_GROUPS`                             |
+| `ON_CALL_SCHEDULES_UPDATED_FOR_GROUPS`                          |
+| `ON_CALL_SCHEDULES_REMOVED_FROM_GROUPS`                         |
+| `OWNERS_CREATED`                                                |
+| `OWNERS_UPDATED`                                                |
+| `OWNERS_DELETED`                                                |
+| `OWNER_USERS_ADDED`                                             |
+| `OWNER_USERS_REMOVED`                                           |
+| `OWNER_USERS_UPDATED`                                           |
+| `OWNER_SOURCE_GROUP_UPDATED`                                    |
+| `OWNER_SOURCE_GROUP_REMOVED`                                    |
+| `OWNER_REVIEWER_CHANNEL_UPDATED`                                |
+| `OWNER_REVIEWER_CHANNEL_REMOVED`                                |
+| `MESSAGE_CHANNELS_CREATED`                                      |
+| `MESSAGE_CHANNELS_DELETED`                                      |
+| `MESSAGE_CHANNELS_ADDED_TO_GROUPS`                              |
+| `MESSAGE_CHANNELS_REMOVED_FROM_GROUPS`                          |
+| `MESSAGE_CHANNELS_ADDED_TO_RESOURCES`                           |
+| `MESSAGE_CHANNELS_REMOVED_FROM_RESOURCES`                       |
+| `ACCESS_REVIEWS_CREATED`                                        |
+| `ACCESS_REVIEWS_UPDATED`                                        |
+| `SESSIONS_CREATED_FOR_RESOURCES`                                |
+| `THIRD_PARTY_INTEGRATION_CREATED`                               |
+| `THIRD_PARTY_INTEGRATION_DELETED`                               |
+| `API_TOKEN_CREATED`                                             |
+| `API_TOKEN_DELETED`                                             |
+| `ACCESS_REVIEW_REVIEW_PERFORMED`                                |
+| `ACCESS_REVIEW_AUTO_ASSIGN_REVIEWER_BY_OWNING_TEAM_ADMIN`       |
+| `ACCESS_REVIEW_AUTO_ASSIGN_REVIEWER_BY_MANAGER`                 |
+| `ACCESS_REVIEW_AUTO_ASSIGN_REVIEWER_BY_APPROVERS`               |
+| `ACCESS_REVIEW_CONNECTION_REVIEWERS_UPDATED`                    |
+| `ACCESS_REVIEW_REVIEWER_FOR_CONNECTION_USER_SET`                |
+| `ACCESS_REVIEW_CONNECTION_REVIEWED`                             |
+| `ACCESS_REVIEW_USER_ACCESS_TO_CONNECTION_ACCEPTED`              |
+| `ACCESS_REVIEW_USER_ACCESS_TO_CONNECTION_REVOKED`               |
+| `ACCESS_REVIEW_RESOURCE_REVIEWERS_UPDATED`                      |
+| `ACCESS_REVIEW_REVIEWER_FOR_RESOURCE_USER_SET`                  |
+| `ACCESS_REVIEW_RESOURCE_REVIEWED`                               |
+| `ACCESS_REVIEW_USER_ACCESS_TO_RESOURCE_ACCEPTED`                |
+| `ACCESS_REVIEW_USER_ACCESS_TO_RESOURCE_CHANGED`                 |
+| `ACCESS_REVIEW_USER_ACCESS_TO_RESOURCE_REVOKED`                 |
+| `ACCESS_REVIEW_USER_ACCESS_TO_RESOURCE_REVOKED_FROM_END_SYSTEM` |
+| `ACCESS_REVIEW_GROUP_REVIEWERS_UPDATED`                         |
+| `ACCESS_REVIEW_REVIEWER_FOR_GROUP_USER_SET`                     |
+| `ACCESS_REVIEW_REVIEWER_FOR_GROUP_RESOURCE_SET`                 |
+| `ACCESS_REVIEW_GROUP_REVIEWED`                                  |
+| `ACCESS_REVIEW_USER_ACCESS_TO_GROUP_ACCEPTED`                   |
+| `ACCESS_REVIEW_USER_ACCESS_TO_GROUP_REVOKED`                    |
+| `ACCESS_REVIEW_USER_ACCESS_TO_GROUP_REVOKED_FROM_END_SYSTEM`    |
+| `ACCESS_REVIEW_RESOURCE_ACCESS_TO_GROUP_ACCEPTED`               |
+| `ACCESS_REVIEW_RESOURCE_ACCESS_TO_GROUP_REVOKED`                |
+| `ACCESS_REVIEW_RESOURCE_USER_SUPPORT_TICKET_LINKED`             |
+| `ACCESS_REVIEW_RESOURCE_USER_SUPPORT_TICKET_UNLINKED`           |
+| `REVIEWERS_ESCALATED`                                           |
+| `ORG_SETTINGS_UPDATED`                                          |
+| `TOXIC_SET_VIOLATIONS_CREATED`                                  |
+| `TOXIC_SET_VIOLATIONS_UPDATED`                                  |
+| `TOXIC_SET_VIOLATIONS_REMEDIATED`                               |
+| `EVENT_MONITOR_EVENTS_DETECTED`                                 |
+| `ACCESS_REVIEW_TEMPLATES_CREATED`                               |
+| `ACCESS_REVIEW_TEMPLATES_UPDATED`                               |
+| `ACCESS_REVIEW_TEMPLATES_DELETED`                               |
+| `BUNDLES_CREATED`                                               |
+| `BUNDLES_UPDATED`                                               |
+| `BUNDLES_DELETED`                                               |
+| `BUNDLE_RESOURCES_ADDED`                                        |
+| `BUNDLE_RESOURCES_REMOVED`                                      |
+| `BUNDLE_GROUPS_ADDED`                                           |
+| `BUNDLE_GROUPS_REMOVED`                                         |
+
+### Propagation events
+
+| Event type                                        |
+| ------------------------------------------------- |
+| `PROPAGATED_ADD_USER_TO_GROUP`                    |
+| `PROPAGATED_REMOVE_USER_FROM_GROUP`               |
+| `PROPAGATED_ADD_USER_TO_RESOURCE`                 |
+| `PROPAGATED_REMOVE_USER_FROM_RESOURCE`            |
+| `PROPAGATED_ADD_RESOURCE_TO_GROUP`                |
+| `PROPAGATED_REMOVE_RESOURCE_FROM_GROUP`           |
+| `PROPAGATED_REMOVE_USER_FROM_CONNECTION`          |
+| `PROPAGATION_SUCCESS_ADD_USER_TO_GROUP`           |
+| `PROPAGATION_SUCCESS_REMOVE_USER_FROM_GROUP`      |
+| `PROPAGATION_SUCCESS_ADD_USER_TO_RESOURCE`        |
+| `PROPAGATION_SUCCESS_REMOVE_USER_FROM_RESOURCE`   |
+| `PROPAGATION_SUCCESS_ADD_RESOURCE_TO_GROUP`       |
+| `PROPAGATION_SUCCESS_REMOVE_RESOURCE_FROM_GROUP`  |
+| `PROPAGATION_SUCCESS_REMOVE_USER_FROM_CONNECTION` |
+| `PROPAGATION_FAILURE_ADD_USER_TO_GROUP`           |
+| `PROPAGATION_FAILURE_REMOVE_USER_FROM_GROUP`      |
+| `PROPAGATION_FAILURE_ADD_USER_TO_RESOURCE`        |
+| `PROPAGATION_FAILURE_REMOVE_USER_FROM_RESOURCE`   |
+| `PROPAGATION_FAILURE_ADD_RESOURCE_TO_GROUP`       |
+| `PROPAGATION_FAILURE_REMOVE_RESOURCE_FROM_GROUP`  |
+| `PROPAGATION_FAILURE_REMOVE_USER_FROM_CONNECTION` |
+| `PROPAGATION_TICKET_UPDATED_REMOTELY`             |
+| `PROPAGATION_MANUAL_ADD_USER_TO_RESOURCE`         |
+| `PROPAGATION_MANUAL_REMOVE_USER_FROM_RESOURCE`    |
+| `PROPAGATION_TIMED_OUT`                           |
+
+### Deprecated events
+
+<Info>
+  `GROUP_RESOURCE` events were updated in self-hosted version 1.990.0, `GROUP_USERS` events in version 1.1016.0, and `RESOURCE_USER` events in version 1.970.0.
+</Info>
+
+The following table lists events that have been migrated and now map to `ROLE_ASSIGNMENTS_*` events.
+
+| Deprecated events                                                                                                          | New event                  |
+| -------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `GROUPS_ADDED_TO_GROUPS`, `USERS_ADDED_TO_GROUPS`, `RESOURCES_ADDED_TO_GROUPS`, `USERS_ADDED_TO_RESOURCES`                 | `ROLE_ASSIGNMENTS_CREATED` |
+| `GROUP_GROUPS_UPDATED`, `GROUP_USERS_UPDATED`, `GROUP_RESOURCES_UPDATED`, `RESOURCE_USERS_UPDATED`                         | `ROLE_ASSIGNMENTS_UPDATED` |
+| `GROUPS_REMOVED_FROM_GROUPS`, `USERS_REMOVED_FROM_GROUPS`, `RESOURCES_REMOVED_FROM_GROUPS`, `USERS_REMOVED_FROM_RESOURCES` | `ROLE_ASSIGNMENTS_DELETED` |
+
+### Remote events
+
+Remote events are accessible from the **Usage** tab on Okta apps, AWS IAM roles, and resources within custom connectors. They are not included in CSV exports nor returned from the `/events` API.
+
+| Event type                                 |
+| ------------------------------------------ |
+| `REMOTE_EVENT_LOGIN_SUCCESS`               |
+| `REMOTE_EVENT_USER_ADDED_TO_GROUP`         |
+| `REMOTE_EVENT_USER_REMOVED_FROM_GROUP`     |
+| `REMOTE_EVENT_USER_ADDED_TO_RESOURCE`      |
+| `REMOTE_EVENT_USER_REMOVED_FROM_RESOURCE`  |
+| `REMOTE_EVENT_GROUP_ADDED_TO_RESOURCE`     |
+| `REMOTE_EVENT_GROUP_REMOVED_FROM_RESOURCE` |
+| `REMOTE_EVENT_RESOURCES_CREATED`           |
+| `REMOTE_EVENT_RESOURCE_READ`               |
+| `REMOTE_EVENT_RESOURCES_DELETED`           |
+| `REMOTE_EVENT_GROUPS_CREATED`              |
+| `REMOTE_EVENT_GROUPS_DELETED`              |
+| `REMOTE_EVENT_GROUP_USED`                  |
+
+***
+
+* [Table of Contents](#)
+
+* * [Event types](#event-types)
+
+    * [Propagation events](#propagation-events)
+    * [Deprecated events](#deprecated-events)
+    * [Remote events](#remote-events)

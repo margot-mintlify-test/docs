@@ -1,0 +1,118 @@
+---
+title: "Curate end-user catalog"
+description: "Suggest Edits"
+---
+
+The following settings are available from a resource's **Edit** page. Use them to customize who can edit resources and how resources appear to end users in the catalog.
+
+## Resource admins
+
+**Owners** can be used as **Admins** of a resource, allowing you to decentralize access management. Both **Owners** and **Opal Admins** can manage the configuration of approval and additional security settings from a resource's **Edit** page.
+
+## Allow requests
+
+To allow end users to request access to your resource, expand the **Request configuration** section and ensure **Allow requests** is enabled. See [Security settings](#security-settings) to learn how to further customize request flows.
+
+![](/images/docs/e8b3ab62361dc99a21bd42a60dbc79d6211f0f634f762dbcf850dbb35d38020a-image.png)
+
+## Allow request extensions
+
+<Info>
+  Request extensions are in beta and may not be available for your Opal instance yet. Reach out if you'd like to enable request extensions.
+</Info>
+
+Allow end users to extend access from the catalog by toggling **Allow request extensions** in a request configuration, then select a duration. The additional duration is added to the original request expiration time. End users can request extensions from the Opal UI or in Slack.
+
+## Visibility
+
+Every resource and group has a **visibility** setting. This is a "hard" visibility setting: a user who doesn't have access, isn't an admin, and isn't in a group that's been granted visibility cannot see the resources or groups in their catalog. Visibility enables you to hide resources from anyone who doesn't have access, or restrict requests to certain groups.
+
+* **No visibility restrictions**: This resource/group is visible to all employees.
+* **Restrict to groups**: Only users in certain groups, admins, and users who have direct access to this item can see the item.
+
+![2262](/images/docs/d80e116-visibility.png "SCR-20230313-lpt.png")
+
+<Info>
+  You can set **Import Visibility** at the app level. This creates a default Visibility setting for all resources that are imported from the app. Setting visibility at the app level does not change visibility settings for resources that have already been imported.
+</Info>
+
+![2262](/images/docs/9c2de70fd3000885b6dc8f9524423578828cea580c5e30b1c56b3c922d222649-edit_app.png "SCR-20230313-lq7.png") ![2262](/images/docs/7bfda19-app-vis.png "SCR-20230313-lq7.png")
+
+## Security settings
+
+Some resources are more sensitive than others. You can apply the following settings to your critical resources:
+
+1. **Require MFA to approve requests (and make connections):** Requires MFA to approve requests via web and Slack. In addition, for certain resources, Opal will also require MFA before end users can connect to the resource.
+2. **Maximum duration:** Enforces the maximum amount of time a resource or group can be requested for
+3. **Recommended duration:** Shows the recommended duration as the default option in both Slack and web
+4. **Require support ticket:** Requires a support ticket to create a request
+5. **Custom fields**: Create a standard set of questions for employees to answer before submitting an access request
+
+![2262](/images/docs/6c871da-reqinfo.png "SCR-20230313-lra.png")
+
+### 1. Require MFA to approve requests
+
+If **MFA to approve requests** is enabled, Opal triggers an MFA prompt before reviewers can approve requests in Slack and web. This protects sensitive resources and validates the approver's identity.
+
+For some resources, Opal can be used to generate short-lived credentials via CLI or web. If MFA is enabled for these resources, end users must validate their identities before connecting to the resource.
+
+### 2. Maximum duration
+
+Set a maximum duration to enforce timebound access. If it's unset, duration defaults to the organization-wide maximum duration if present, and indefinite access otherwise.
+
+### 3. Recommended duration
+
+If a recommended duration is selected, it shows as the default duration on access requests, but employees can still specify other durations.
+
+### 4. Require support ticket
+
+If this is enabled, then a support ticket must be submitted with an access request. This will enable an access request to be dynamically revoked if the support ticket has been completed. This enables a strong security posture as you can revoke access based on the completion of an activity.
+
+You can only attach tickets that are assigned to you.
+
+<Info>
+  If both a time duration and support ticket is enabled, then Opal will take the event that comes first.
+</Info>
+
+### 5. Custom fields
+
+Admins can customize questions for employees to answer before submitting an access request to a given resource.
+
+1. To create custom fields, Admins must first go to **Templates** under the Configuration section in the left-hand bar and then click on **+ Custom Access Request**
+
+![2262](/images/docs/5d9ff3bfd71f07c3e5913ae0c0503ee56eac90741c686ba95a47db32ed49e9fa-create-custom-access-req.png "SCR-20230313-ls5.png")
+
+2. After creating the template, admins can set up custom fields by clicking on **+ Custom Field**. Field options include the following types:
+
+* **Short Answer**: Short text fields
+* **Paragraph**: Longer text fields
+* **Checkbox**: A binary selection
+* **Dropdown**: A dropdown selection
+
+Each field can be either set to **Required** or **Optional**.
+
+![2354](/images/docs/ec9e7bb4884391d9791d38614e0796e2cd092b2739e9308f1913258d4a20aa45-custom-access-request-custom-field.png "SCR-20230313-lt1.png") ![2354](/images/docs/1f275e3a95d1ccf3200c9ea27239c509dbc14b84fce429fd52676c4489a31f73-create-custom-field.png "SCR-20230313-lt1.png")
+
+3. Once the template with its custom fields has been created and saved, you can click **Edit** on the resource and attach your Custom Field template:
+
+![2264](/images/docs/0596ff5-addcustomtoconfig.png "SCR-20230316-oqwk-2.png")
+
+***
+
+* [Table of Contents](#)
+
+* * [Resource admins](#resource-admins)
+
+  * [Allow requests](#allow-requests)
+
+  * [Allow request extensions](#allow-request-extensions)
+
+  * [Visibility](#visibility)
+
+  * [Security settings](#security-settings)
+
+    * [1. Require MFA to approve requests](#1-require-mfa-to-approve-requests)
+    * [2. Maximum duration](#2-maximum-duration)
+    * [3. Recommended duration](#3-recommended-duration)
+    * [4. Require support ticket](#4-require-support-ticket)
+    * [5. Custom fields](#5-custom-fields)

@@ -1,0 +1,26 @@
+---
+title: "Notifications"
+description: "Learn about the types of notifications sent by Opal."
+---
+
+[Suggest Edits](/edit/notifications)
+
+The following are notifications sent by Opal, based on certain events or at a specified frequency. Users can unsubscribe to email or Slack notifications from **Settings > Notification Preferences** in the lower left corner.
+
+| Notification type                                                                                          | Recipients                                    | Email | Slack | Google Chat | Configuration                                                                   |
+| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ----- | ----- | ----------- | ------------------------------------------------------------------------------- |
+| Access review assigned to reviewers                                                                        | Reviewers                                     | ✔️    | ✔️    | ✔️          | [Access review settings](/docs/access-reviews#set-notifications)                |
+| Incomplete access review reminders                                                                         | Managers if enabled, reviewers                | ✔️    | ✔️    | ✔️          | [Access review settings](/docs/access-reviews#set-notifications)                |
+| Access reviews require access to be revoked on end systems                                                 | Auditors                                      | ✔️    | ✔️    |             |                                                                                 |
+| Access revoked due to access reviews                                                                       | Revoked users                                 | ✔️    | ✔️    |             |                                                                                 |
+| Access expired                                                                                             | Users with expired access                     | ✔️    | ✔️    |             |                                                                                 |
+| Resources imported to Opal                                                                                 | Owners of connection/app containing resources | ✔️    | ✔️    |             |                                                                                 |
+| User invited to Opal                                                                                       | Invited user                                  | ✔️    |       |             |                                                                                 |
+| Access requested                                                                                           | Reviewers                                     | ✔️    | ✔️    | ✔️          |                                                                                 |
+| Access requested on behalf of another user                                                                 | Requestor, affected user, and reviewers       | ✔️    | ✔️    |             |                                                                                 |
+| User comments on access requests                                                                           | Reviewers                                     | ✔️    | ✔️    |             |                                                                                 |
+| Access request approved or denied                                                                          | Requestors                                    | ✔️    | ✔️    |             |                                                                                 |
+| Access request canceled                                                                                    | Reviewers                                     | ✔️    | ✔️    |             |                                                                                 |
+| Access is expiring soon                                                                                    | Users with expiring access, Group leaders     | ✔️    | ✔️    |             | **Configuration Settings** > **Advanced** > **Access expiration notifications** |
+| Access propagation failed or [owner groups are empty](/docs/configure-reviewers#empty-owner-notifications) | Admins and/or Owners                          | ✔️    | ✔️    |             | **Configuration Settings** > **Advanced** > **Error notification setting**      |
+| Manual ticket propagation successful                                                                       | Requestors                                    |       | ✔️    |             |                                                                                 |

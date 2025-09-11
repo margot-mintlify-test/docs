@@ -1,0 +1,67 @@
+---
+title: "Update your Opal installation"
+description: "Learn how to update your self-hosted Opal installation."
+---
+
+[Suggest Edits](/edit/5526354-opal-on-premise-updating-opal)
+
+New releases of Opal are made available on a regular basis—see the [changelog](/changelog) for details. To update your installation:
+
+* Connect to your Opal on-premise dashboard: `https://<HOSTNAME>:8800`
+* Click **Check for update**, which fetches the latest available version from Replicated
+* Click **Deploy** to deploy, which automatically updates all necessary components
+
+You can also go to the **Version History** in your on-prem dashboard, which has a list of all available versions. From there, you can roll back to previous versions.
+
+Deploying a new release should take less than a minute and does not cause downtime. However, you should always monitor the upgrade in case issues arise.
+
+## Security Updates: Kots
+
+To update KOTS and the admin console, follow these instructions:
+
+1. Log in to the cluster
+2. Install the latest version of kots
+   <CodeGroup>
+     ```Text Shell
+     curl https://kots.io/install | bash
+     ```
+   </CodeGroup>
+3. Upgrade your cluster
+   <CodeGroup>
+     ```Text Shell
+     kubectl kots admin-console upgrade -n NAMESPACE
+     ```
+   </CodeGroup>
+
+## Troubleshooting updates
+
+### Blank page after update
+
+If you see a blank page after updating Opal, you can try the following to troubleshoot:
+
+**Clear your browser cache:**
+
+1. Follow instructions for [Chrome](https://support.google.com/accounts/answer/32050?hl=en\&co=GENIE.Platform%3DDesktop), [Safari](https://www.macrumors.com/how-to/clear-safari-cache/), or your chosen browser.
+2. After clearing the cache, refresh the page to see if the issue is resolved.
+
+**Clear your Cloudflare cache:**
+
+1. Log in to your Cloudflare dashboard and go to **Caching > Configuration**.
+
+![2000](/images/docs/09af31c-image.png "image.png")
+
+2. Click **Purge Everything**. Wait up to 30 seconds, then refresh your Opal page.
+
+![2292](/images/docs/9af3698-image2.png "image2.png")
+
+***
+
+What’s Next
+
+Need to set up other managed systems? Check out our guides below.
+
+* [Table of Contents](#)
+
+* * [Security Updates: Kots](#security-updates-kots)
+  * [Troubleshooting updates](#troubleshooting-updates)
+    * [Blank page after update](#blank-page-after-update)

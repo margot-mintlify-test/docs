@@ -1,0 +1,60 @@
+---
+title: "Configure SSO and MFA"
+description: "Learn how to set up MFA for Opal logins and actions."
+---
+
+[Suggest Edits](/edit/configure-sso-and-mfa)
+
+Opal supports MFA for two types of product functions:
+
+1. **Opal logins**: you can configure Opal to require MFA when a user logs in.
+2. **Opal actions**: you configure resources in Opal to require MFA for requesting access, approving an access request, and/or connecting to a session.
+
+Opal can be set up to require validation via its own MFA provider or via your Okta IDP's MFA provider.
+
+## Enable MFA for Opal logins
+
+Toggle the **Require Opal MFA for logins** setting to enable Opal-managed MFA.
+
+![1592](/images/docs/5707446882be420a8db219704595c7f3edc10cd6d5c8c3505a9dab30b8486af2-auth-settings-require-opal-mfa.png "86d3168-Screen_Shot_2023-03-20_at_12.04.34_AM.png")
+
+Alternatively, you can enable MFA through your SAML provider. In this case, disable this setting. See the [Okta multifactor authentication guide](/docs/okta-multifactor-authentication#using-okta-mfa-for-opal-logins) for more detail on the Okta configuration.
+
+## Enable MFA for Opal actions
+
+MFA for Opal actions can be toggled on a per-action, per-resource level. Edit your resource to enable MFA.
+
+![](/images/docs/1ab5ff9-mfa-settings.png)
+
+To modify your MFA Provider settings for Opal Actions, go to **Configuration > Settings > Authentication** and select **Configure** next to **MFA settings for gated Opal Actions**.
+
+![](/images/docs/cad2cf17e1b2c3a6b21ebc77d8d0d0fcca874dc18cc818ed4c5f988f2f99e1f6-auth-settings.png)
+
+Three different options for MFA providers are supported:
+
+1. **Opal managed MFA**: Users can register their MFA devices through Opal.
+2. **[Okta-managed MFA \[Legacy\]](/docs/okta-multifactor-authentication#using-okta-mfa-for-opal-actions-requesting-approving-connecting-legacy)**: Okta Verify and TOTP. Users may only use these two factors for MFA.
+3. **[OIDC MFA](/docs/oidc-provider-setup-for-opal-actions)**: Opal supports any OIDC provider, including Okta and Azure, as a MFA solution. Once configured, users will be able to use any MFA method that your OIDC provider supports, including WebAuthn (Yubikey, TouchID, etc.) and TOTP.
+
+## Reset MFA for users
+
+To reset MFA for an individual user, go to the **Inventory** > **Users** tab, then find the user detail page. Select the **...** dropdown on the upper right, then **Reset MFA for User**.
+
+![](/images/docs/3baacd585e9372c052a5d8ce3fbbcd864931164562ecae5c6ad2bf727de6814f-reset-mfa.png)
+
+Follow the confirmation modal to finish resetting the user's MFA.
+
+![](/images/docs/4cb856c8a488af2f88b255a9ab5bc317d06df55f1f2c37af4c3522cef5546c81-reset-confirmation.png)
+
+***
+
+What’s Next
+
+* [Google SAML Setup](/docs/google-saml-setup)
+* [Okta SAML Setup](/docs/okta-saml-setup)
+
+* [Table of Contents](#)
+
+* * [Enable MFA for Opal logins](#enable-mfa-for-opal-logins)
+  * [Enable MFA for Opal actions](#enable-mfa-for-opal-actions)
+  * [Reset MFA for users](#reset-mfa-for-users)

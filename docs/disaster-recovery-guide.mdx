@@ -1,0 +1,220 @@
+---
+title: "Disaster recovery guide"
+description: "Suggest Edits"
+---
+
+In this guide, you'll learn about potential failure modes when running self-hosted Opal and how to recover from them to minimize downtime.
+
+Typical disaster recovery events may include:
+
+* **Database is not responsive**: See the [configure and restore database backups](#configure-database-backups) section to get the database back up and running.
+* **Kubernetes cluster is not responsive**: Follow the steps in the [reinstall cluster](#reinstall-cluster) section.
+
+## Reinstall cluster
+
+To reinstall the cluster:
+
+1. If Opal is still accessible, toggle the “read-only mode” in Admin settings before cutting traffic over to the new cluster.
+
+![](/images/docs/27075e4-Screenshot_2023-09-20_at_9.51.28_AM.png)
+
+2. Have a copy of the database encryption keys securely stored in a password manager. Opal won’t be able to use the data from an existing database on the new cluster without these keys.
+
+3. Follow the installation instructions while re-using the existing encryption keys and database:
+
+   1. [AWS EKS instructions](self-host-opal-aws-guide)
+   2. [GKE instructions](self-host-opal-gke-guide)
+
+4. We can re-use the existing database, or recreate it from a backup if it's unhealthy.
+
+5. Restore the Admin console backup, if available. This will restore all Kubernetes objects, the Admin console configuration and Opal version.
+
+6. Disable “read-only mode” in Admin settings.
+
+7. Update DNS to point to the load balancer on the new cluster.
+
+## Configure database backups
+
+Time estimate: 15 min
+
+The database is the most sensitive piece of the Opal infrastructure as it holds all the state. The only thing not included is the Admin console configuration. It’s a good practice to set up automated backups in the event that data need to be recovered, or if the database becomes unhealthy.
+
+Here are the steps to enable backups on Amazon RDS:
+
+1. Select the database instance, then click **Modify**:
+
+![](/images/docs/51c45a9-Screenshot_2023-09-06_at_4.46.50_PM.png)
+
+2. Navigate to the **Additional configuration** section and select a Backup retention period. You may also enable Backup replication in another region. This can be helpful in the event of an outage with an entire AWS region. We recommend setting a backup retention period of 30 days.
+
+![](/images/docs/6f91829-Screenshot_2023-09-06_at_9.47.44_PM.png)
+
+3. Click **Continue** to finish the backup configuration, then you can select **Apply immediately**. Finally, click **Modify DB instance**.
+
+![](/images/docs/950a2ed-Screenshot_2023-09-06_at_9.54.11_PM.png)
+
+4. Automated backups are now enabled.
+
+## Restore the database from a backup
+
+Time estimate: 30 min
+
+Here are the steps to restore a database from a backup on Amazon RDS:
+
+1. Select the database instance, then click the **Actions** button, then click **Restore to point in time**.
+
+![](/images/docs/daadb48-Screenshot_2023-09-06_at_10.12.01_PM.png)
+
+2. Select a date to restore data from a specific snapshot:
+
+![](/images/docs/c384924-Screenshot_2023-09-06_at_10.13.17_PM.png)
+
+3. Make sure that the rest of the configuration settings are matching with the existing instance.
+4. Click **Restore to point in time** at the bottom.
+5. A new instance will come online. We now need to switch Opal over to use the restored database.
+6. Rename the existing database:
+
+![](/images/docs/7a67a38-Screenshot_2023-09-06_at_10.31.13_PM.png)
+
+7. Then rename the restored database to match the original database name. This way it will have the same hostname, and there is no additional change needed on the application side.
+8. Triggering a new deployment in the Admin console may be needed to force the application to reset the database connection.
+
+## Back up the Admin console
+
+Time estimate: 30 min
+
+Backups of the Opal Admin console can be created through KOTS. To enable backup support, you will need to install and configure Velero on your cluster.
+
+This section describes backing up the admin console and all application data.
+
+1. **Installing the Velero CLI**
+
+   1. Open a terminal in the environment that you manage the cluster from, which can be a local machine that has `kubectl` installed.
+
+   2. Check for the latest supported release of the Velero CLI in the Velero GitHub repo at [https://github.com/vmware-tanzu/velero/releases](https://github.com/vmware-tanzu/velero/releases). We recommend using the latest supported version. For more information about supported versions, see [Velero Version Compatibility](https://docs.replicated.com/enterprise/snapshots-understanding#velero-version-compatibility). Note the version number for the next step.
+
+   3. Run the following command to download the latest supported Velero CLI version for the Linux AMD64 operating system to the cluster:
+
+      <CodeGroup>
+        ```shell shell
+        curl -LO https://github.com/vmware-tanzu/velero/releases/download/VERSION/velero-VERSION-linux-amd64.tar.gz
+        ```
+      </CodeGroup>
+
+      Replace VERSION with the version number using the format `vx.x.x`.
+
+      Example:
+
+      <CodeGroup>
+        ```shell shell
+        curl -LO https://github.com/vmware-tanzu/velero/releases/download/v1.10.1/velero-v1.10.1-linux-amd64.tar.gz
+        ```
+      </CodeGroup>
+
+   4. Run the following command to uncompress the TAR file:
+
+      <CodeGroup>
+        ```shell shell
+        tar zxvf velero-VERSION-linuxamd64.tar.gz
+        ```
+      </CodeGroup>
+
+      Replace VERSION with the version number using the format `vx.x.x`.
+
+   5. Run the following command to install the Velero CLI:
+
+      <CodeGroup>
+        ```shell bash
+        sudo mv velero-VERSION-linux-amd64/velero /usr/local/bin/velero
+        ```
+      </CodeGroup>
+
+      Replace VERSION with the version number using the format `vx.x.x`.
+
+   6. Run `velero version` to test that the Velero CLI installation worked correctly.
+
+      You might get an error message stating that there are no matches for the server version. This is acceptable, as long as you get a confirmation for the client version. After the Velero installation, you also see the server version.
+
+2. **Set up backups on AWS**
+
+   1. Follow the instructions for [installing Velero on AWS](https://github.com/vmware-tanzu/velero-plugin-for-aws#setup) in the Velero documentation.
+
+   2. Run the `velero install` command with these additional flags: `--use-node-agent --uploader-type=restic --use-volume-snapshots=false`
+
+      Example:
+
+      <CodeGroup>
+        ```bash bash
+        velero install \
+            --provider aws \
+            --plugins velero/velero-plugin-for-aws:v1.7.1 \
+            --bucket $BUCKET \
+            --backup-location-config region=$REGION \
+            --secret-file CREDS_FILE \
+            --use-node-agent \
+            --uploader-type=restic \
+            --use-volume-snapshots=false
+        ```
+      </CodeGroup>
+
+3. **Creating full backups**
+
+Full backups, or instance snapshots, back up the admin console and all application data. You can create a full backup with either the CLI or the Admin console.
+
+* Create a backup with KOTS CLI
+
+To create a full backup with the Replicated kots CLI, run the following command:
+
+<CodeGroup>
+  ```bash bash
+  kubectl kots backup --namespace NAMESPACE
+  ```
+</CodeGroup>
+
+Replace `NAMESPACE` with the namespace where the admin console is installed.
+
+* Create a backup with KOTS Admin Console
+
+To create a full backup in the admin console:
+
+1. Go to **Snapshots** > **Full Snapshots (Instance)**.
+2. Click **Start a snapshot**.
+
+When the backup is complete, it appears in the list of backups on the page, as shown here:
+
+![](/images/docs/d1f132e-snapshot-instance-list-d5fa65a4ad14211a3dae6684c5f2b66d.png)
+
+4. **Restoring from backups**
+
+From a full backup, you can do any of the following types of restores using the kots CLI:
+
+* Full restore: Restores the admin console and the application
+* Partial restore: Restores the application only
+* Admin console: Restores the admin console only
+
+If you are restoring to a healthy cluster, you can skip reinstalling Velero and continue to running the `get backups` and `restore` commands in the last two steps.
+
+To restore a backup on an existing cluster:
+
+1. (New or Unhealthy Clusters Only) Install a version of Velero compatible with the one that was used to make the snapshot backup: refer to section 2 for instructions.
+
+2. Run the `kubectl kots get backups` command to get a list of backups.
+
+3. Run the following command to restore a full backup:
+
+   <CodeGroup>
+     ```bash bash
+     kubectl kots restore --from-backup BACKUP
+     ```
+   </CodeGroup>
+
+   Replace `BACKUP` with the the name of the backup to restore from.
+
+***
+
+* [Table of Contents](#)
+
+* * [Reinstall cluster](#reinstall-cluster)
+  * [Configure database backups](#configure-database-backups)
+  * [Restore the database from a backup](#restore-the-database-from-a-backup)
+  * [Back up the Admin console](#back-up-the-admin-console)

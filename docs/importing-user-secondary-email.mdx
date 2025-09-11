@@ -1,0 +1,51 @@
+---
+title: "Import user secondary emails"
+description: "Learn how to consolidate access for users with multiple email addresses."
+---
+
+[Suggest Edits](/edit/importing-user-secondary-email)
+
+If users in your organization can have multiple email addresses, it's often helpful to consolidate their access footprint under a single Opal account.
+
+You can do this by configuring Opal to import user secondary emails from your IDP. Opal then links users to all third-party user accounts registered under their secondary email. For example:
+
+* Suppose a user Alice has primary email `[email protected]` and secondary email `[email protected]`.
+* Suppose that Alice's Salesforce account is listed under her secondary email, `[email protected]`.
+* When syncing with Salesforce, Opal will recognize that `[email protected]` belongs to Alice, and will represent this Salesforce account's access under Alice's Opal account.
+* When Alice is granted access to Salesforce via Opal, Opal will propagate access to Salesforce under `[email protected]` rather than under Alice's primary email.
+
+## Import user secondary email(s)
+
+To set this up, add a custom attribute mapping to **Secondary email**. See the guide to [importing user attributes](/docs/add-additional-idphr-providers#import-attributes) . If your users can have more than one secondary email, you can configure Opal to import multiple **Secondary email** attributes.
+
+![](/images/docs/5e37c553df0602932393c2d3402226d05cfe7816aab63553783ec0011c69e966-imported-user-attributes-secondary.png "SCR-20230313-kdo.png")
+
+### Auto-merge users by secondary email
+
+<Warning>
+  Auto-merging relies on the secondary email(s) imported from your IDP to be accurate. Inaccurate secondary emails will result in unintended and potentially irreversible auto-merges.
+</Warning>
+
+Even after you've set up user secondary email import, it's possible for a single user identity to have two Opal user accounts: one for their primary email, and one for their secondary email. This can happen if the secondary Opal account was created before a primary Opal account's secondary email was updated.
+
+When this happens, it's helpful to merge these two Opal user accounts. Go to your organization's IDP settings and change the setting for **Auto-merge Opal users by secondary email** to **Enabled**:
+
+![](/images/docs/3f0b1e2b20509a101df21fb0dc837ca39e2f0056a9ae92087d78d2678752f7a1-auto-merge-secondary-email.png "SCR-20230313-keg.png")
+
+When this setting is enabled, Opal users whose email matches the secondary email of another Opal user will be auto-merged during IDP sync.
+
+<Info>
+  In an auto-merge of two Opal users, one Opal user is preserved and the other is deleted. All user data associated with the deleted Opal user is removed. The preserved user is updated as follows:
+
+  * Primary and secondary emails are immediately updated to the correct values.
+  * IDP user attributes will be imported in the following sync.
+  * End-system access for both users will be imported and associated with the preserved user in the following sync. (Notably, no access changes are propagated to any end-systems in an auto-merge.)
+
+  Opal decides which user to preserve by examining which user has logged in more recently. Only logins after Feb 14, 2023 (Opal Cloud) or after `v1.0.396` (Opal Self-Host) are considered.
+</Info>
+
+***
+
+* [Table of Contents](#)
+* * [Import user secondary email(s)](#import-user-secondary-emails)
+    * [Auto-merge users by secondary email](#auto-merge-users-by-secondary-email)

@@ -1,0 +1,127 @@
+---
+title: "Azure"
+description: "Learn how to connect Opal to Azure to manage access."
+---
+
+[Suggest Edits](/edit/azure-ad-1)
+
+With Opal's Azure integration:
+
+* Users can **request time-bounded access** to [supported Azure resources](#supported-resources)
+* Auditors can **initiate access reviews** that assign managers or group admins to periodically review users with long-lived access to Azure resources
+* Admins can **add resources from other Opal integrations** to an Azure AD group so the group's members can automatically gain birthright access to, for example, a GitHub repo, AWS IAM role, etc.
+* Access changes are tracked as [events](/docs/event-types) that can be logged to a Slack channel or exported to your favorite tools
+
+## Supported resources
+
+| Resource                                                            | Read | Grant and revoke access | Connect Opal user sessions to resource | Available in Risk Center |
+| ------------------------------------------------------------------- | ---- | ----------------------- | -------------------------------------- | ------------------------ |
+| Azure Users (as IDP)                                                | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure Enterprise Applications                                       | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure Management Groups                                             | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure Resource Groups                                               | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure SQL Managed Databases and Instances                           | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure User-Assigned Managed Identities                              | ✔️   | ✔️\*                    |                                        | ✔️                       |
+| Azure SQL Servers                                                   | ✔️   | ✔️                      | ✔️                                     | ✔️                       |
+| Azure Storage Accounts and Containers                               | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure AD groups, including Security Groups and Microsoft 365 Groups | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure Virtual Machines                                              | ✔️   | ✔️                      |                                        | ✔️                       |
+| Azure Subscriptions                                                 | ✔️   | ✔️                      |                                        | ✔️                       |
+| Microsoft 365 Groups                                                | ✔️   | ✔️                      |                                        | ✔️                       |
+| Microsoft Entra ID Roles                                            | ✔️   | ✔️                      |                                        | ✔️                       |
+| Microsoft Entra ID Security Groups                                  | ✔️   | ✔️                      |                                        | ✔️                       |
+
+\*You can grant Azure User-Assigned Manage Identities access to resources and groups.
+
+## Requirements
+
+* You must be an Azure and Opal admin.
+* Opal associates Azure AD users to Opal users through their primary email address in Azure AD.
+
+## Set up Azure app registration
+
+### 1. Create app registration
+
+In your [Azure portal](https://portal.azure.com), go to **Azure Active Directory** > **App registrations** > **New Registration**.
+
+![](/images/docs/29c8e1d-Screen_Shot_2022-12-07_at_12.20.12_PM.png "Screen Shot 2022-12-07 at 12.20.12 PM.png")
+
+Use the following settings.
+
+| Field                   | Value                                                                                                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name                    | `Opal`                                                                                                                                                                                  |
+| Supported account types | Choose the option that fits your needs. Typically, you can use the default value.                                                                                                       |
+| Redirect URI            | If you use a Cloud Opal instance, use `https://app.opal.dev/apps/create/azure_ad/callback`. If you use self-hosted Opal, `https\://<my-on-premise-opal>/apps/create/azure_ad/callback`. |
+| Type                    | Web                                                                                                                                                                                     |
+
+Once the app registration is created, save the **Application (client) ID** and **Directory (tenant) ID** on the Overview page. You'll use these values in the following step.
+
+### 2. Generate a client secret
+
+On the app registration page, go to **Certificates & Secrets** > **New client secret**. Choose a name and expiration.
+
+Note that you need to create a new client secret at the expiration interval for your Azure AD connection to continue working. The maximum allowed by Microsoft is 2 years.
+
+![](/images/docs/5b2bf53-Screen_Shot_2022-12-07_at_12.26.33_PM.png "Screen Shot 2022-12-07 at 12.26.33 PM.png")
+
+Save the secret value, which you'll use in the following step. You cannot fetch the secret value after leaving this page.
+
+### 3. Add permissions
+
+![](/images/docs/d4f902c4a015e1025113fb4dc9142ff0243e06b89c256ed66f7d390619e1676e-Screenshot_2025-02-03_at_6.02.11_PM.png "Screen Shot 2022-12-12 at 9.01.27 PM.png")
+
+In the sidebar, go to `API Permissions` and select `Add a permission`. Choose `Microsoft Graph` -> `**Application Permissions**` and add the following permissions:
+
+* `Directory.ReadWrite.All`
+* `CustomSecAttributeAssignment.ReadWrite.All`
+* `RoleManagement.ReadWrite.Directory`
+
+These permissions allow Opal to manage the user membership in groups on your behalf as well as import user attributes as your IDP.
+
+### 4. Create and assign Opal Service Role
+
+To manage access to Azure Subscriptions and Resource Groups, follow the instructions [here](/docs/azure-infrastructure-setup) before continuing. Note that this step can be skipped if you only want to manage Azure AD groups with Opal.
+
+## Set up Opal connection
+
+### 1. Create the Azure connection
+
+In the Opal dashboard, navigate to Apps, click on the + icon, and find the Azure App. Fill out the details for the integration, using the secret from the previous step. The Tenant ID and Client ID are available from the Azure AD app registration page.
+
+### 2. Click the Authorize & Create button
+
+This step will open a pop-up to authorize your newly created app registration with Azure AD. Once the permissions have been accepted, the connection will be created.
+
+![](/images/docs/0342c1f-Screen_Shot_2022-12-07_at_12.31.58_PM.png "Screen Shot 2022-12-07 at 12.31.58 PM.png")
+
+From here, the connection is complete.
+
+### Run app validation checks
+
+After you save your app, you can view existing sync issues from the **Setup** tab on the app detail page. Missing permissions and sync issues show in the **App Validations** section. Select the refresh icon to rerun validation checks.
+
+![](/images/docs/819b84652dd45700cddac46c2d01c802e66e8df637b5b80c7d749eb6ef097b55-azure-app-validation.png)
+
+You can hover over the validation icons to learn why Opal needs a given permission. To correctly sync your app to Opal, ensure you address any sync errors, marked with the red ! icon. Inspect warnings on a case-by-case basis: warnings might impact features you’re not using and may be safely ignored, but this depends on your use case.
+
+***
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+
+  * [Requirements](#requirements)
+
+  * [Set up Azure app registration](#set-up-azure-app-registration)
+
+    * [1. Create app registration](#1-create-app-registration)
+    * [2. Generate a client secret](#2-generate-a-client-secret)
+    * [3. Add permissions](#3-add-permissions)
+    * [4. Create and assign Opal Service Role](#4-create-and-assign-opal-service-role)
+
+  * [Set up Opal connection](#set-up-opal-connection)
+
+    * [1. Create the Azure connection](#1-create-the-azure-connection)
+    * [2. Click the Authorize & Create button](#2-click-the-authorize--create-button)
+    * [Run app validation checks](#run-app-validation-checks)

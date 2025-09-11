@@ -1,0 +1,54 @@
+---
+title: "Manage groups in Opal"
+description: "Learn about the different features Opal provides to manage groups."
+---
+
+[Suggest Edits](/edit/manage-groups-in-opal)
+
+Use the following features to manage and scale groups within Opal.
+
+## Nested groups
+
+In Opal, you can add a group to another group and automatically sync memberships between the groups. This allows you to automatically grant access to resources upon requests and approvals to other resources, and to establish relationships between groups in different end systems, Okta Push Groups, or SAML/OIDC groups.
+
+See the [nested groups guide](/docs/nested-groups) to learn more.
+
+## Add resources to groups
+
+You can add any resource to a group from the **Resources** tab from the group detail page in the **Inventory**. This can be useful to bundle resources, especially in tandem with nested groups.
+
+## Group aliasing
+
+Group aliasing refers to the ability to add groups as customizable roles to apps/resources in Opal.
+
+Add groups as resources if you want groups to be requestable by end users, but don’t want to give users direct access to the resource. This can be especially useful for SCIMPush Groups.
+
+You can also hide and rename groups in Opal to clarify the request experience for end users. See the [group aliasing guide](/docs/okta-group-aliasing) to learn more.
+
+## Group leaders
+
+Users with the **Group leader** role can:
+
+* Request access to a resource on behalf of a group
+* Add and remove users to a group
+* Remove access to resources within a group
+
+Configure the **Group leader** role from the resource detail page. See the [group leaders guide](/docs/group-projects) to learn more.
+
+## Linked groups
+
+Use linked groups in Opal when you have two groups with identical or near-identical sets of members and want to simplify access requests for end users. You set one group as the “source of truth,” and all access requests to the linked group are routed to the source of truth group.
+
+Linked groups do not affect group memberships, nor do they propagate access.
+
+See the [guide to linked groups](/docs/linked-groups) to learn more.
+
+***
+
+* [Table of Contents](#)
+
+* * [Nested groups](#nested-groups)
+  * [Add resources to groups](#add-resources-to-groups)
+  * [Group aliasing](#group-aliasing)
+  * [Group leaders](#group-leaders)
+  * [Linked groups](#linked-groups)

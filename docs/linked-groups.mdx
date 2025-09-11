@@ -1,0 +1,49 @@
+---
+title: "Linked groups"
+description: "Learn how to link identical groups in Opal and set one as the source of truth."
+---
+
+[Suggest Edits](/edit/linked-groups)
+
+Groups pulled from different end systems might have similar names and identical members. In Opal, you can link these groups, setting one as the source of truth, to simplify the request experience for end users. When users request the other linked group, Opal redirects end users to the source of truth group.
+
+In the API, linked groups are available using the [/group-bindings](/reference/getgroupbindings) endpoints.
+
+## Link groups
+
+To get started, admins can go to **Configuration > Linked Groups**. To make finding identical groups easier, Opal provides a list of suggestions based on group membership and naming.
+
+![](/images/docs/53737f1d9cd694375f3e02e4e7edb79262cc4cd268e4a2db49e1dc964918ff97-Screenshot_2024-11-11_at_4.05.09_PM.png)
+
+To confirm a suggestion is in fact an identical group, select **Compare** to identify the differences in naming and membership.
+
+![](/images/docs/994ddaa3bf7ddde935fa27b92e6f70e5ed3e4a2d51cb241928d92071f9cbf8ab-Screenshot_2024-11-11_at_4.07.49_PM.png)
+
+If the groups are unrelated, select the **X**button on the rightmost section of the given row. If the groups are similar enough to be considered identical, select a source of truth. The source of truth is requestable by end users in Opal, and requests to the other groups(s) are redirected to the source of truth. Select **Link Groups** to set up this relationship.
+
+To unlink groups, select the red **X** button on the list of linked groups.
+
+![](/images/docs/6ce801e171a4203ca39f234c797c9a5b29a0a4c9db936f0a5cbb8e266e57ed6f-Screenshot_2024-11-11_at_4.11.28_PM.png)
+
+Select the grey pencil button to edit the relationship. A relationship can be altered by changing the source of truth for the link or adding new groups to the link.
+
+![](/images/docs/30d12240fde6d44894222265a2021f72bf417bcbc40e04a9dcd267c69d874e5b-Screenshot_2024-11-11_at_4.12.20_PM.png)
+
+## End user experience
+
+<Info>
+  If a user's access is removed from any group in a linked group, source of truth or otherwise, access to both groups is revoked.
+</Info>
+
+After you link groups, an end user requesting a non source of truth group sees the following modal:
+
+![](/images/docs/c3544519bdc20ad75eaf688145c905c554eaf84bf1f021c2262b6c9064c70159-Screenshot_2024-11-06_at_11.16.31_AM.png)
+
+Requesting the source of truth redirects users to the correct resource, preventing confusion and clutter.
+
+***
+
+* [Table of Contents](#)
+
+* * [Link groups](#link-groups)
+  * [End user experience](#end-user-experience)

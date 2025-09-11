@@ -1,0 +1,62 @@
+---
+title: "Okta SCIM: Provision Opal Users"
+description: "Suggest Edits"
+---
+
+<Info>
+  For most use cases, you probably don't need to use Okta SCIM provisioning.
+
+  Okta SCIM provisioning is useful if you cannot wait for the [hourly or a manual sync](/docs/sync-schedules-and-triggers) to retrieve users.
+</Info>
+
+This guide provides the steps required to configure User Provisioning from Okta to Opal.
+
+The following provisioning features are supported:
+
+* **Push new users**. New users created through Okta will also be created in Opal.
+* **Push profile updates**. Updates made to the user's profile through Okta will be pushed to Opal.
+* **Push user deactivation**. Deactivating the user or disabling the user's access to the application through Okta deactivates the user in Opal. Note: For this app, deactivating a user means removing all of that user's data and removing the user's account.
+
+## Configuration steps in Opal
+
+You must first connect [Okta as an IDP](/docs/okta-idphris-integration) to use Okta SCIM provisioning.
+
+Next, generate an Opal API token with admin level privileges.
+
+As an admin, go to **Configuration > Settings > API Access Tokens**. Select the **+API Access Tokens** button. Generate a token with the **Full-access** role:
+
+![](/images/docs/299cdd531135964ff1fe4cc9bd7216201975a9913cbaf29c7550274c9eb07f5a-api-token-full-access.png)
+
+Save the generated token.
+
+## Configuration steps in Okta
+
+1. In Okta, go to **Applications** and select the Opal application. Under **General**, ensure **Enable SCIM provisioning** is selected.
+
+![](/images/docs/3c6f6e79f8b61213bd0a14d9b59409c95e42eb082bb9289637b277c623369c25-enable-scim.png)
+
+1. Go to the **Provisioning** tab, then **Integration** on the left sidebar.
+
+2. In the **SCIM connector base URL** field, enter the base URL of your Opal instance. For example, the Base URL field for the Opal Cloud instance is [https://app.opal.dev/scim/v2](https://app.opal.dev/scim/v2). Be sure to append `/scim/v2` to the base domain name.
+
+3. Enter a unique identifier field for users, e.g., `userName`.
+
+4. Under **Supported provisioning actions**, enable your preferred features.
+
+5. Choose **HTTP Header** in the **Authentication Mode** section. In the **Token** field, enter the API token generated from Opal from the previous step.
+
+6. Click **Save**.
+
+![](/images/docs/35b7e255268d9e9870b700696c3816034019069ac598c613e7763a7c8b447fe6-okta-scim.png)
+
+## Troubleshooting
+
+We do not support propagation of updates of the username/email of an Okta user to Opal.
+
+***
+
+* [Table of Contents](#)
+
+* * [Configuration steps in Opal](#configuration-steps-in-opal)
+  * [Configuration steps in Okta](#configuration-steps-in-okta)
+  * [Troubleshooting](#troubleshooting)

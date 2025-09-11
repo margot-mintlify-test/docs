@@ -1,0 +1,37 @@
+---
+title: "SSO with SAML"
+description: "Learn how to set up SAML SSO to authenticate users to Opal."
+---
+
+[Suggest Edits](/edit/sso-with-saml)
+
+You can configure Opal to authenticate users via SAML SSO by setting up a SAML provider. Okta and Google are officially supported, but you should be able to configure other providers. Use the following guides to set up SAML SSO for Okta or Google.
+
+* [Okta SAML Setup](/docs/okta-saml-setup)
+* [Google SAML Setup](/docs/google-saml-setup)
+
+## Restrict logins to SAML only
+
+By default, when you set up SAML SSO in Opal, Opal allows users to log in using either SAML SSO or Opal's traditional sign-in options (e.g. Google, Microsoft 365).
+
+You can alternatively require that users must login to Opal via SAML. To do this:
+
+1. Go to **Settings** > **Authentication** > **SAML SSO Settings**.
+2. Set up a SAML connection using [Okta SAML Setup](/docs/okta-saml-setup) or [Google SAML Setup](/docs/google-saml-setup).
+3. Toggle **Restrict logins to SAML only** to **ON**.
+
+![](/images/docs/e89bea02b85a38853f31d51b51f97896aa2cf507da447e62894761c66c10e739-restrict-logins-to-saml.png)
+
+## SAML breakglass users
+
+Even if you've restricted your organization to log in via SAML, it can still be useful to allow a subset of users to log in with other methods. In Opal, these are called *SAML breakglass users*. To edit this list, ensure that **Restrict logins to SAML only** in **Settings > Authentication > SAML SSO Settings** is turned **ON**. Then:
+
+1. Click the **Users** button to edit the list of SAML breakglass users.
+2. Add or remove users to the list. All users on this list will be able to login to Opal via both SAML and non-SAML methods.
+
+***
+
+* [Table of Contents](#)
+
+* * [Restrict logins to SAML only](#restrict-logins-to-saml-only)
+  * [SAML breakglass users](#saml-breakglass-users)

@@ -1,0 +1,136 @@
+---
+title: "GitLab"
+description: "Connect Opal to your GitLab instance or group to manage and review access."
+---
+
+[Suggest Edits](/edit/gitlab)
+
+Opal supports GitLab for all tiers (free, premium, and ultimate) for [GitLab Self-Managed](https://docs.gitlab.com/ee/subscriptions/self_managed/) and [GitLab.com](https://docs.gitlab.com/ee/subscriptions/gitlab_com/) (formerly GitLab SaaS).
+
+If you use GitLab Self-Managed, admins can import both group and personal repositories.
+
+If you use GitLab.com, admins can **only** import group repositories.
+
+## Supported resources
+
+| Resource                     | Available with GitLab Self-Managed | Available with GitLab.com | Read | Grant and revoke access | Available in Risk Center |
+| ---------------------------- | ---------------------------------- | ------------------------- | ---- | ----------------------- | ------------------------ |
+| GitLab group repositories    | ✔️                                 | ✔️                        | ✔️   | ✔️                      | ✔️                       |
+| GitLab personal repositories | ✔️                                 |                           | ✔️   | ✔️                      | ✔️                       |
+| GitLab projects              | ✔️                                 | ✔️                        | ✔️   | ✔️                      | ✔️                       |
+
+## 1. Create a GitLab service account for Opal
+
+### GitLab.com
+
+Under your top-level group that represents your organization on GitLab.com, create a new user with an **Owner** **role**. Refer to GitLab [instructions](https://docs.gitlab.com/ee/user/profile/account/create_accounts.html) for this step. A new account is preferred because we will be using the personal OAuth access token corresponding to this account.
+
+![](/images/docs/b12e69c-Screen_Shot_2022-12-01_at_18.49.30.png "Screen Shot 2022-12-01 at 18.49.30.png")
+
+### GitLab Self-Managed
+
+Log into your self-managed GitLab instance as an admin, and go to the **Admin Area** section by from the **Main menu > Admin Area > Users**.
+
+Create a new user and appoint the new user with the access level **Administrator**.
+
+![](/images/docs/2e0a497-Screenshot_2022-11-22_at_3.21.06_PM.png "Screenshot 2022-11-22 at 3.21.06 PM.png")
+
+## 2. Create a GitLab OAuth app
+
+Opal requires an Application to be set up on GitLab to handle projects and groups synchronization, as well as user pairing.
+
+### GitLab.com
+
+Follow the [instructions in GitLab](https://docs.gitlab.com/ee/integration/oauth_provider.html#group-owned-applications) to create a new OAuth App in your top-level GitLab group.
+
+![](/images/docs/89128c4-Screen_Shot_2022-12-01_at_19.01.58.png "Screen Shot 2022-12-01 at 19.01.58.png")
+
+During the OAuth app creation process, for **Name**, you can enter **Opal** or any name you prefer.
+
+For **Redirect** **URL**, enter your domain name, followed by`/callback/gitlab/` e.g., `https://app.opal.dev/callback/gitlab/`. On a new line, enter your domain name, followed by `/callback/gitlab-connection/`, e.g., `https://app.opal.dev/callback/gitlab-connection/`.
+
+<Warning>
+  The backlashes at the end of these two *Redirect URLs* are very important to GitLab, so ensure you include them.
+</Warning>
+
+Set the app as **Trusted** and **Confidential**. Under **Scopes**, select **api**, **profile**, and **email**.
+
+After creating your app, record the Application ID and copy the **secret**. These are used in the **Application ID** and **Application Secret** fields in Step 3.
+
+### GitLab Self-Managed
+
+Follow the [instructions in GitLab](https://docs.gitlab.com/ee/integration/oauth_provider.html#instance-wide-applications) to create a new OAuth App in your GitLab Self-Managed instance.
+
+![](/images/docs/c67ee97-Screen_Shot_2022-12-01_at_19.06.03.png "Screen Shot 2022-12-01 at 19.06.03.png")
+
+For **Redirect** **URL**, enter your domain name, followed by`/callback/gitlab/` e.g., `https://app.opal.dev/callback/gitlab/`. On a new line, enter your domain name, followed by `/callback/gitlab-connection/`, e.g., `https://app.opal.dev/callback/gitlab-connection/`.
+
+Set the app as **Trusted** and **Confidential**. Under **Scopes**, select **api**, **profile**, and **email**.
+
+<Warning>
+  The backlashes at the end of these two *Redirect URLs* are very important to GitLab, so ensure you include them.
+</Warning>
+
+After your app is created, record the Application ID and copy the secret. These are used in the **Application ID** and **Application Secret** fields in Step 3.
+
+## 3. Create an Opal app
+
+Go to the **Inventory** page and select **+ App**. Then select the **GitLab** tile.
+
+![](/images/docs/76d68ef2d82bd7daef9b1ec5408a3e651495b20136e987baee39bc6ab54c19d9-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+If you use **GitLab Self-Managed**, click on **Custom Domain** and enter the domain of your instance.
+
+For **App ID** and **App Secret**, use the generated credentials from Step 2.
+
+If this step is successful, you then need to create a sync token.
+
+Click on the **Setup** tab in the App overview page, and click on **Connect OAuth Admin Token**. This will redirect you to your Gitlab instance and you should use the GitLab account created in Step 1 to complete the OAuth flow.
+
+For **GitLab Self-Managed**, sync should start working automatically.
+
+For **GitLab.com**, every Opal user in your organization must complete the following step to permit access management to your repositories in Opal.
+
+## 4. Link GitLab identities to Opal accounts (GitLab.com only)
+
+To enable Opal to manage access to GitLab.com, each user must link their GitLab account to their Opal account.
+
+Opal requires this step because GitLab only makes the email address of a GitLab account available via its API if a user has elected to publicly display their email address. Thus, Opal needs another way to match GitLab identities with Opal accounts. For security reasons, users must log in to both Opal and GitLab to link their accounts.
+
+<Info>
+  The following steps require that the GitLab account you want to integrate has a verified email address corresponding to your Opal email address.
+</Info>
+
+1. In the bottom left, click your **User** > **Account Settings**.
+
+![](/images/docs/6e3fdc90c8a0edcaaaa4fd3f5e2b9cf5a85ca62f0a4a62ba2371be16bd90dabf-account-settings.png "SCR-20230313-o39.png")
+
+2. Click **Connect** next to the GitLab integration.
+
+![](/images/docs/a919820860150571414a3219e31dd453433a09815f4cd10290044a7b5172e425-gitlab-connect-settings.png "SCR-20230313-o4c.png")
+
+3. You will be redirected to a GitLab.com page, which will ask you to log into your GitLab account.
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+
+  * [1. Create a GitLab service account for Opal](#1-create-a-gitlab-service-account-for-opal)
+
+    * [GitLab.com](#gitlabcom)
+    * [GitLab Self-Managed](#gitlab-self-managed)
+
+  * [2. Create a GitLab OAuth app](#2-create-a-gitlab-oauth-app)
+
+    * [GitLab.com](#gitlabcom-1)
+    * [GitLab Self-Managed](#gitlab-self-managed-1)
+
+  * [3. Create an Opal app](#3-create-an-opal-app)
+
+  * [4. Link GitLab identities to Opal accounts (GitLab.com only)](#4-link-gitlab-identities-to-opal-accounts-gitlabcom-only)

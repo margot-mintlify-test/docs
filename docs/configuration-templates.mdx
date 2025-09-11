@@ -1,0 +1,53 @@
+---
+title: "Configuration templates"
+description: "Suggest Edits"
+---
+
+**Configuration templates** are groupings of settings you can reuse across multiple resources and groups. Streamlined configuration settings allows your team to move faster, and increases security by avoiding policy drift.
+
+## Create templates
+
+To create a template, go to **Templates**, then select **Configuration Templates**. Click **+ Configuration Template**.
+
+![](/images/docs/b70cfbde097a9e1d2ab20c9f1510216e1860bf653da34b007cac1c761be991be-create-configuration-template.png)
+
+You can provide a name, select an admin, optionally link a Slack channel, optionally add on-call members, optionally add break-glass users, and configure MFA settings, the same as you would in an resource-specific request configuration.
+
+![](/images/docs/cc01cea-Screenshot_2024-03-14_at_4.52.58_PM.png)
+
+## Apply templates
+
+To apply a template to a resource or group, edit the field on the resource or group page:
+
+![](/images/docs/3b37c74-applyconfigtemp.png)
+
+When a template is applied, **all its access management settings are configured by the values in the template**:
+
+* If a configuration template is modified, all resources and groups linked to the template are also modified
+* The settings cannot be directly edited except by unlinking the configuration template
+
+Configuration templates can be set in bulk:
+
+![](/images/docs/0ca5f6dd3e0e27826bd03bcf6c64bd3d9d17801c2df582ac5217258ed4d6eaf7-select-resources-bulk.png) ![](/images/docs/7cae519-bulkeditresources_2.png)
+
+## Set templates using tags
+
+<Info>
+  Importing based on tags is not supported for custom apps, so template mapping does not apply for custom apps.
+</Info>
+
+You can also configure Opal to automatically set a configuration template using tags. Go to **Configuration > Templates > Template Mapping and Priority** and associate a tag with a template that you have configured.
+
+When resources or groups are imported with certain tags, the set templates are automatically applied.
+
+Note that templates are only applied on **import**, so you must first create and define the mapping, then import the resources. If you import a resource and later define a template or tag the resource, the template will not be applied. ![](/images/docs/0ca34d352655b9ece6fc30d0e7936397ce6feaa00c244d45a148ba595cd3a264-template-mapping.png)
+
+You can also reorder template mappings by selecting **Reorder**, so resources with multiple tags use the template with the highest priority.
+
+***
+
+* [Table of Contents](#)
+
+* * [Create templates](#create-templates)
+  * [Apply templates](#apply-templates)
+  * [Set templates using tags](#set-templates-using-tags)

@@ -1,0 +1,63 @@
+---
+title: "Workday groups and roles"
+description: "Learn how to manage access to Workday groups and roles."
+---
+
+[Suggest Edits](/edit/workday-groups-and-roles)
+
+Opal’s integration with Workday allows administrators to view and manage user access to Workday entities, such as User Security Groups and Organization Roles, which are typically tied to Domain Security Policies and Role Based Security Groups, respectively.
+
+## 1. Add additional Domain Security Policy Permissions in Workday
+
+Go to the Workday Search bar, enter **Maintain Permissions for Security Group**, and select the corresponding Task.
+
+![2312](/images/docs/0dc8eee-Screenshot_2024-08-08_at_10.55.08_AM.png "SCR-20230313-n1j.png")
+
+In the task modal, first set the **Operation** to **Maintain** and set the **Source Security Group** to the Security Group you created in Step 2 of *Getting Started*.
+
+![2312](/images/docs/4454c3a-Screenshot_2024-08-08_at_10.56.01_AM.png "SCR-20230313-n1j.png")
+
+Then, edit the **Domain Security Policy Permissions** and add the following operations:
+
+| View/Modify Access | Domain Security Policy                   |
+| ------------------ | ---------------------------------------- |
+| GET and PUT        | User-Based Security Group Administration |
+| GET ONLY           | Manage: Organization Roles               |
+| GET ONLY           | Manage: Organization Integration         |
+
+## 2. Edit Business Security Policy in Workday
+
+Navigate to the Workday Search bar, enter **Edit Business Security Policy**, and select the corresponding Task.
+
+![](/images/docs/9923075ed459e6f31df9f3a9ee444dc17fa86ee0aaf552fdafaf10f9872c3a41-image.png)
+
+In the task modal, set Business Process Type to **Assign Roles**.
+
+![](/images/docs/56234167960422b496779be09a2ff3e5eabb8e36b04390a84056db832715bcd0-image.png)
+
+Then, add the Security Group you created in Step 2 of *Getting Started* to **Assign Roles (Web Service)**.
+
+![](/images/docs/0d4cf8362cfc89798c02449acf8d01894e642c9d341df5a19cb09dbd603d362e-image.png)
+
+## 3. Activate All Pending Authentication Policy Changes in Workday
+
+Navigate to the Workday Search bar, enter **Activate All Pending Authentication Policy Changes**, and select the corresponding Task.
+
+![2312](/images/docs/40b3c1d-Screenshot_2024-08-08_at_3.04.13_PM.png "SCR-20230313-n1j.png")
+
+Add any comments, review, and check the **Confirm** box to activate the Authentication Policy Changes.
+
+## 4. Import Workday items in Opal
+
+In Opal, go to the **Inventory** and select the **Workday** app, then in the upper left, select **...** > **Import items**. Select the User Based Security Groups and Organization Roles that you want to manage.
+
+![](/images/docs/eb70ffabfc14afc803eba704d44085b394683017a78dea924e4b70dad2a833e4-Screenshot_2024-10-03_at_10.45.03_AM.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Add additional Domain Security Policy Permissions in Workday](#1-add-additional-domain-security-policy-permissions-in-workday)
+  * [2. Edit Business Security Policy in Workday](#2-edit-business-security-policy-in-workday)
+  * [3. Activate All Pending Authentication Policy Changes in Workday](#3-activate-all-pending-authentication-policy-changes-in-workday)
+  * [4. Import Workday items in Opal](#4-import-workday-items-in-opal)

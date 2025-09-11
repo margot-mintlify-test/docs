@@ -1,0 +1,35 @@
+---
+title: "OIDC Provider Setup for Opal Actions"
+description: "Suggest Edits"
+---
+
+You can use OpenID Connect (OIDC) to authenticate users for actions that require additional authentication, configured at the resource level. This includes requesting access, approving an access request, and/or connecting to a session.
+
+## OIDC Provider Setup
+
+<Warning />
+
+Use the callback URL `https://{YOUR_OPAL_BASE_URL}/callback/oidc`, substituting in your Opal base URL (e.g. `https://app.opal.dev/callback/oidc`) .For more information about obtaining these credentials, refer to your IdP's documentation: [Okta OIDC docs](https://help.okta.com/en-us/Content/Topics/Apps/Apps_App_Integration_Wizard_OIDC.htm), [Google OIDC docs](https://developers.google.com/identity/openid-connect/openid-connect)
+
+When registering your OIDC provider with Opal, you must have the following information available: **Client ID, Client Secret,** and **Issuer URL**.
+
+The OIDC provider must be configured to require MFA for every sign-in attempt. Password authentication is not required.
+
+<Frame caption="Example Okta OIDC Policy">
+  <img src="/images/docs/5bbe61e-image.png" />
+</Frame>
+
+## Configure settings in Opal
+
+1. In Opal, go to **Configuration > Settings** in the left sidebar.
+2. Click **Authentication**, then **MFA settings for gated Opal Actions**. Click **Configure**.
+3. Select **OIDC MFA** and fill in the Client ID, Client Secret, and Issuer URL from your IdP.
+
+![](/images/docs/c030434ae43e2177a273d76c9cf013aa7f4b27b77c69d510c1768135e5532593-configure-mfa-settings-oidc.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [OIDC Provider Setup](#oidc-provider-setup)
+  * [Configure settings in Opal](#configure-settings-in-opal)
