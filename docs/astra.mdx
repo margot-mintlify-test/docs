@@ -1,0 +1,50 @@
+---
+title: "Astra"
+description: "Learn how to connect your Opal instance with Astra."
+---
+
+[Suggest Edits](/edit/astra)
+
+Opal's integration with Astra allows you to manage access to DataStax Astra roles and users.
+
+## Supported resources
+
+| Resource    | Read | Grant and revoke access |
+| ----------- | ---- | ----------------------- |
+| Astra Roles | ✔️   | ✔️                      |
+
+## Requirements
+
+Before you begin, you must:
+
+* Be an Opal Admin
+* Be on version 1.1045.0, if you self-host Opal
+
+## 1. Retrieve an API token in Astra
+
+To allow Opal to access to your Astra roles and grant permission to assign and remove roles from users, you must first create an [application token](https://docs.datastax.com/en/astra-db-serverless/administration/manage-application-tokens.html#org-token).
+
+In Astra, go to **Settings** > **Token**. Give the token the **Organization Administrator** role and a suitable description and select **Generate Token**.
+
+Save the token, as you won't be able to retrieve it later.
+
+<Info>
+  The Organization Administrator role is necessary for Opal to assign and remove roles. A more restrictive role will restrict the types of roles that can be assigned through this token.
+</Info>
+
+## 2. Create Astra app in Opal
+
+In Opal, go to **Inventory** > **+App** and select the **Astra** card. Name your Astra app, provide a description, and enter the token you generated in step 1.
+
+After you save the app, you can import roles from **...** > **Import items**.
+
+![](/images/docs/a15d2af7373a0d25db7884d16bfbfadd49c9a421d20a552ec3c8c1835bae1baf-astra.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [Requirements](#requirements)
+  * [1. Retrieve an API token in Astra](#1-retrieve-an-api-token-in-astra)
+  * [2. Create Astra app in Opal](#2-create-astra-app-in-opal)

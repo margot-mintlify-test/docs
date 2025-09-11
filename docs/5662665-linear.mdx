@@ -1,0 +1,42 @@
+---
+title: "Linear"
+description: "Suggest Edits"
+---
+
+With Opal's Linear integration, you can sync access requests with your Linear support tickets to grant access for the lifetime of the support ticket. When the ticket is closed (marked *Done*, *Canceled*, or *Trashed*), access is also revoked.
+
+## 1. Create a Linear Personal API key
+
+To enable the Linear integration, your Linear workspace administrator should [create a Personal API key](https://linear.app/settings/account/security). Enter a label for the key, click **Create Key** and save the generated key. You'll use it in the following step.
+
+![](/images/docs/9a09bab8863e1e6d44e2fc6cab7858b733b78d5ad5f8519ff8e785dbdc58ad93-linear-api-key.png)
+
+## 2. Add your Linear Personal API key to Opal
+
+In the Opal dashboard, go to the **Configuration** > **Settings** > **Productivity Integrations**. Select **Linear** and enter the API key from the previous step. Once complete, you've successfully integrated Linear with Opal. You can then load and bind Linear issues.
+
+## Access requests with Linear tickets
+
+For any access request, binding to a support ticket is optional. After you integrate Linear, when making a request, you can enable the option to **Expire access when ticket is closed**.
+
+![2408](/images/docs/8b2545b49a18fd4d7fa6c935eb5947188330aa7629a19991bb73eb68a3dcb2f4-request-access-linear-ticket.png "SCR-20230313-l5n.png")
+
+When you select **Search for tickets**, a list of Linear issues populates, only including issues assigned to you in Linear, based on the Linear account which corresponds to your Opal email address.
+
+Click on any of these support tickets to attach the ticket to the access request.
+
+By default, an expiration time bound is required when making any access request.
+
+After the request is approved, access expiration is determined by the combination of this expiration time bound and the closure of the support ticket. Access will expire according to the minimum of these two events: if the ticket is closed before the expiration time bound is reached, access will be revoked when the ticket is closed.
+
+Similarly, if the expiration time bound is reached before the closure of the ticket, access is revoked when the expiration time bound is reached.
+
+If you want to attach an access request to a support ticket, without an expiration time bound, you may select **Indefinite** under the expiration options and bind the request to a support ticket
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Create a Linear Personal API key](#1-create-a-linear-personal-api-key)
+  * [2. Add your Linear Personal API key to Opal](#2-add-your-linear-personal-api-key-to-opal)
+  * [Access requests with Linear tickets](#access-requests-with-linear-tickets)

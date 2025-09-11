@@ -1,0 +1,34 @@
+---
+title: "Add a project"
+description: "Read about how to add a GCP project to Opal so you can manage temporary access to them."
+---
+
+[Suggest Edits](/edit/5525120-adding-a-project)
+
+Opal lets your developers find and request access to GCP projects. You can currently request `viewer` and `editor` roles to projects. Use the following steps to add a project.
+
+## 1. Go to the Resource Manager
+
+Access the [resource manager using this link](https://console.cloud.google.com/cloud-resource-manager) or find it by navigating to it: **IAM & Admin > Manage Resources**.
+
+## 2. Label your project
+
+Opal only adds resources for projects that you label with `opal`. To do this, add a label to your project in the Resource Manager dashboard.
+
+<Frame caption="Adding a label to a project in GCP.">
+  <img src="/images/docs/482f15b-Screen_Shot_2020-12-03_at_9.03.01_PM.png" />
+</Frame>
+
+## Access a project in Opal
+
+If you successfully labeled your project in GCP, the project shows on the **Resources** page after the next sync.
+
+If you already have access to the project in GCP, through Opal or otherwise, you'll see a **Connected** label in the top right corner of the resource. The permissions to this project are granted to the GCP user that matches your email address.
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Go to the Resource Manager](#1-go-to-the-resource-manager)
+  * [2. Label your project](#2-label-your-project)
+  * [Access a project in Opal](#access-a-project-in-opal)

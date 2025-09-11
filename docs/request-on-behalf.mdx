@@ -1,0 +1,58 @@
+---
+title: "Request on behalf rules"
+description: "Learn how request configurations and visibility settings affect requesting access on behalf of other users."
+---
+
+[Suggest Edits](/edit/request-on-behalf)
+
+Certain users—Opal Admins, resource and group admins, and managers—can request access in Opal on behalf of other users. Refer to this guide to determine whether users can request on behalf of others, given the applied request configurations and group membership.
+
+## Prerequisites
+
+To enable the ability to request on behalf in an organization, admins must enable the **Global requestor** role in **Organization Settings > Access Requests**.
+
+![](/images/docs/0cb7376035214ece30c09bde178ccab1e67e2d51bb788a870ceb2a37e091e328-global-requestor-enable.png)
+
+## Multiple request configurations
+
+The following table applies to resources and groups which have one or more request configurations applied.
+
+Request configuration are applied **after** visibility checks. If your resources and groups have limited visibility, first apply [visibility rules](#visibility-rules), then the request configurations tables.
+
+| First matching configuration  | Default configuration | Requester    | Target User  | Can requester request |
+| ----------------------------- | --------------------- | ------------ | ------------ | --------------------- |
+| With group -> Not requestable | Requestable           | In group     | Not in group | ✅                     |
+| WIth group -> Not requestable | Requestable           | Not in group | In group     | ❌                     |
+| With group -> Not requestable | Requestable           | In group     | In group     | ❌                     |
+| With group -> Not requestable | Requestable           | Not in group | Not in group | ✅                     |
+| With group -> Not requestable | Not requestable       | In group     | Not in group | ❌                     |
+| With group -> Not requestable | Not requestable       | Not in group | Not in group | ❌                     |
+| With group -> Requestable     | Not requestable       | In group     | Not in group | ❌                     |
+| With group -> Requestable     | Not requestable       | In group     | In group     | ✅                     |
+| With group -> Requestable     | Not requestable       | Not in group | In group     | ✅                     |
+| With group -> Requestable     | Not requestable       | Not in group | Not in group | ❌                     |
+| *Default only*                | Requestable           | n/a          | n/a          | ✅                     |
+| *Default only*                | Not requestable       | n/a          | n/a          | ❌                     |
+
+For example, the first *With group -> Not requestable* row means if requester R is a member of group G, and the configuration disallows requests from members of group G, requester R can still request on behalf of user B, because user B is not a member of group G.
+
+## Visibility rules
+
+The following table applies groups and resources which have limited visibility settings applied.
+
+| Requester visibility | Target user visibility | Can requester request |
+| -------------------- | ---------------------- | --------------------- |
+| Can view item        | Can view item          | ✅                     |
+| Can view item        | Can’t view item        | ✅                     |
+| Can’t view item      | Can view item          | ❌                     |
+| Can’t view item      | Can’t view item        | ❌                     |
+
+If the target user cannot view the requested item, but the request is created, they cannot see the item until the request is approved—creating the request does not escalate view privileges.
+
+***
+
+* [Table of Contents](#)
+
+* * [Prerequisites](#prerequisites)
+  * [Multiple request configurations](#multiple-request-configurations)
+  * [Visibility rules](#visibility-rules)

@@ -1,0 +1,59 @@
+---
+title: "Group leaders"
+description: "Suggest Edits"
+---
+
+With the **Group leader** role, users can request access, optionally timebound, on behalf of a group. The group leader role can allow you to set up groups that map to temporary cross-functional internal projects, especially when used in tandem with other group features, such as nested groups.
+
+## Group leaders
+
+A user with the **Group leader** role can request access to a resource on behalf of a group, add and remove users to a group, and remove access to items for a group.
+
+To assign a group leader to a group, go to the resource detail page and select the edit icon. Next, check the box enabling group leaders and select user(s) to assign leaders.
+
+![](/images/docs/a35f0a2-Screenshot_2024-07-16_at_2.52.30_PM.png)
+
+To request a resource for a group, a group leader can request access to a resource as usual, and choose the group to request on behalf of from the dropdown list.
+
+![](/images/docs/8e55a88-Screenshot_2024-07-16_at_2.54.59_PM.png)
+
+To add or remove users from a group, go to the group detail page, select the **User Access** tab, and select the users to add or remove. Alternatively, select the users you want to add with the **+ Add Users** button.
+
+![](/images/docs/1628549-Screenshot_2024-07-16_at_2.56.50_PM.png)
+
+![](/images/docs/741d430-Screenshot_2024-07-16_at_2.56.59_PM.png)
+
+## JIT access for group projects
+
+After access to an item on behalf of a group has been requested and approved, the item shows on the group detail page under the **Resources** tab. Items in the **Resources** tab show the expiration date of the item, or indefinite if the access to the resource is not timebound.
+
+![](/images/docs/ee7b1a0-Screenshot_2024-07-16_at_2.56.23_PM.png)
+
+## Revoke access from groups
+
+Group leaders can revoke user access to a group or group access to an item at any time by removing the user or item in from the **User Access** and **Resources** tabs, respectively, on a group detail page.
+
+Select **Remove** from the **User Access** page to revoke user access.
+
+![](/images/docs/48fc28c5674d5d5a6acf076387abca983c0b57219398e6e42fde1ca30faac320-remove-users-from-group.png)
+
+Select **Remove** from the **Resources** tab to remove the resource.
+
+![](/images/docs/c1a10a4-Screenshot_2024-07-16_at_2.56.59_PM.png)
+
+## API endpoints
+
+For group projects, you can use Opal's API to retrieve the user ID of group leaders, add a group leader to a group, and make a request by a group leader on behalf of the group.
+
+* To get a group leader, use [GET /groups](/reference/getgroups)
+* To add a group leader, use [PUT /groups](/reference/updategroups)
+* To make a request, use [POST /requests](/reference/createrequest)
+
+***
+
+* [Table of Contents](#)
+
+* * [Group leaders](#group-leaders)
+  * [JIT access for group projects](#jit-access-for-group-projects)
+  * [Revoke access from groups](#revoke-access-from-groups)
+  * [API endpoints](#api-endpoints)

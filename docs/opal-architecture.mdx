@@ -1,0 +1,84 @@
+---
+title: "Opal architecture"
+description: "Learn about components in Opal's identity management platform."
+---
+
+[Suggest Edits](/edit/opal-architecture)
+
+Use this guide for an overview of Opal's architecture and system components.
+
+![](/images/docs/ee15b39733d0c0a906ffcf5ab0d132afdb812aef52b0d55654e05005ca2e4bd3-diagram.svg)
+
+### End user experience
+
+**End users** [request access](/docs/welcome-to-the-app-catalog) to your resources using Opal's [web UI](/docs/end-user-faq), [Slack](/docs/5526194-slack), [Google Chat](/docs/google-chat), or the [Opal CLI](/docs/opal-cli). AI agents can request access using Opal's [MCP server](/docs/mcp-server).
+
+### Orchestration layer
+
+In the **Orchestration layer**, admins can:
+
+* Configure [approval workflows](/docs/configure-reviewers) to customize how resources are requested and approved
+* Use the [Risk Center](/docs/least-privilege-posture-management) to view insights on anomalous access and proactively remediate vulnerabilities
+* Create [user access reviews](/docs/access-reviews) to streamline compliance
+* Use [Access Rules](/docs/access-rules) to assign access to resources based on user attributes (ABAC), enabling Joiner-Mover-Leaver (JML) workflows
+
+### Data fabric layer
+
+The **Data fabric** is composed of an access graph, where Opal tracks and exposes all direct and indirect access paths. Opal's integration catalog lets you easily connect to your [HR, identity, cloud, data, SaaS, and custom systems](/docs/5564104-set-up-connections). Custom connections provide the flexibility to combine and connect additional systems.
+
+Remote systems connect to the data fabric layer through a robust **Bidirectional sync**, which propagates all access changes to and from your end systems. Okta, AWS, and Azure also support real-time syncs, so access stays up-to-date.
+
+See individual integrations guides—e.g., [AWS](/docs/setting-up-your-aws-organization-in-opal) and [GCP](/docs/google-cloud-platforj)—for details on capabilities.
+
+#### Additional data sources
+
+Additionally enrich your user data by syncing attributes from **User directories** and systems of record, such as Okta.
+
+#### On-call schedules
+
+Sync Opal groups with **On-call schedules** pulled from services such as [PagerDuty](/docs/5526196-pagerduty) and [Opsgenie](/docs/5526200-opsgenie).
+
+### Orchestration tools
+
+To scale and configure your Opal deployment, you can:
+
+* [Set up Terraform](/docs/use-terraform-with-opal) to programmatically manage your Opal configuration and orchestrate your configuration
+* Use Opal's [REST API](/reference/) to connect to Opal objects
+* Connect to Opal's [MCP server](/docs/mcp-server) to allow your AI agents to interact with Opal
+
+### SIEM and logging tools
+
+Opal's integrations with SIEM providers and logging tools allow you to stream Opal events directly to your logging providers, such as DataDog and SumoLogic. Set up [events streaming](/docs/events-streaming) to get started.
+
+### ITSM tools
+
+Opal can connect to your [ticketing providers](/docs/ticket-propagation-1)–Jira, Linear, or ServiceNow—to propagate access using tickets, create audit tickets, and link requests to existing tickets in Opal.
+
+### Deploy Opal
+
+Deploy Opal with your preferred method:
+
+* Use [Opal Cloud](/docs/set-up-cloud) to quickly connect to Opal's cloud instance
+* Set up self-hosted Opal on [AWS EKS](/docs/self-host-opal-aws-guide) or [GKE](/docs/self-host-opal-gke-guide) using [Helm](/docs/install-opal-using-helm) or KOTS to configure deployments
+* Configure [airgapped deployments](/docs/setup-an-airgrapped-opal-environment) for self-hosted Opal
+
+***
+
+* [Table of Contents](#)
+
+* * [End user experience](#end-user-experience)
+
+  * [Orchestration layer](#orchestration-layer)
+
+  * [Data fabric layer](#data-fabric-layer)
+
+    * [Additional data sources](#additional-data-sources)
+    * [On-call schedules](#on-call-schedules)
+
+  * [Orchestration tools](#orchestration-tools)
+
+  * [SIEM and logging tools](#siem-and-logging-tools)
+
+  * [ITSM tools](#itsm-tools)
+
+  * [Deploy Opal](#deploy-opal)

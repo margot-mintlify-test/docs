@@ -1,0 +1,70 @@
+---
+title: "Add your first IDP/HR provider"
+description: "Suggest Edits"
+---
+
+Connect your first IDP/HR system with Opal to sync your organization's identities and attributes from a predefined source of truth. To learn more about how Opal interacts with the end system, see [Connect Identity or HR Provider](/docs/connect-your-identity-provider-idp).
+
+Opal currently supports integrations to:
+
+* Okta
+* Google
+* Microsoft Entra ID
+* Workday
+
+## Add a new IDP/HRIS integration
+
+Under the **Configuration** section, go to **Settings**, then **IDP & HR Integrations**. Click **+ IDP/HRIS Connection** on the top right.
+
+![](/images/docs/92b44fd8a617580d787da73d355660e3095ab91e9d3cb6e0d5b8a52e9c14f98e-add-idp-hris.png)
+
+Select your IDP/HRIS provider and click **+ Connect** .
+
+![](/images/docs/4db4f03f7003b954646775f742b91a6be0ef5d50f5c492939f43f3bcf994577a-settings-connect-idp-options.png)
+
+### Use existing connection
+
+If you previously set up a connection with your IDP/HRIS provider outside of the IDP/HRIS integration flow—e.g., a connection for managing entitlements—Opal shows you a dropdown selection of existing connections associated with the provider.
+
+![](/images/docs/5818285a2f17df9fcaaa8c49f30a93cedeb250b1ff76708c5e5a304dda8ad354-Screenshot_2024-12-08_at_8.42.14_PM.png)
+
+### Add new connection
+
+If this is the first time you are setting up a connection to the provider, you must create an App for the provider first. Opal will direct you to the connection set up page for the App.
+
+Follow Opal's integration guides to set up the app on the end system:
+
+* [Okta](/docs/okta)
+* [Google Workspace](/docs/google-workspace)
+* [Microsoft Entra ID](/docs/azure-ad-1)
+* [Workday](/docs/workday)
+
+![](/images/docs/89309dcfacd4b863eb7bd466305ea5537f1d2f8fc2c6151eabe30f2132e27d35-Screenshot_2024-12-08_at_8.42.01_PM.png)
+
+## Import attributes
+
+After you connect to your IDP/HRIS provider, you can import attributes. Attributes can be imported as either:
+
+* **User Tags**—custom attributes
+* **Opal System Attributes**—such as the user's Name, Manager, or Position
+
+![](/images/docs/ec7e4cca32eda208ae0d4b8be31f48e4788f7be637b59665b8f3824105255958-Screenshot_2024-12-08_at_6.31.25_PM.png)
+
+**User Tags (custom attributes)** are linked to the IDP or HRIS provider they are imported from. You can view the source providers for imported user tags from the **Inventory** > **Tags** > **Users** page.
+
+![](/images/docs/451757e5d0f8145d9196638b43f06c023688267a7d462ad234557a069f07b1a5-inventory-tags.png)
+
+***
+
+What’s Next
+
+Check out how to add additional IDP/HR providers if your organization has multiple instances or providers
+
+* [Table of Contents](#)
+
+* * [Add a new IDP/HRIS integration](#add-a-new-idphris-integration)
+
+    * [Use existing connection](#use-existing-connection)
+    * [Add new connection](#add-new-connection)
+
+  * [Import attributes](#import-attributes)

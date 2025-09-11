@@ -1,0 +1,113 @@
+---
+title: "Assign and complete reviews"
+description: "Learn how to assign and complete User Access reviews in Opal."
+---
+
+[Suggest Edits](/edit/assigning-and-completing-reviews)
+
+This guide assumes you have already [created a User Access Review](/docs/access-reviews).
+
+## Assign reviewers
+
+<Info>
+  If you don't see an option to assign reviewers, ensure you're an **Opal Auditor** or an owning team admin.
+</Info>
+
+If you are an **Auditor&#xA0;**&#x6F;r **owning team admin**, you can assign reviewers.
+
+In the **User Review** tab, you can manage and assign reviewers for user access points. Assign reviewers to a single user row by clicking **Assign Reviewers** for that row, or bulk assign by selecting multiple rows and clicking **Assign Reviewers** in the top right.
+
+![](/images/docs/9303bbfbee9b245a373c715b94c6ec22a5859ccb20d1e4d61d18b45ef051fbf2-uar-assign-reviewers.png)
+
+In the **Group Review** tab, you can manage and assign reviewers for group access points. Assign reviewers to a single user row by clicking **Assign Reviewers** for that row, or bulk assign by selecting multiple rows and clicking **Assign Reviewers** in the top right.
+
+![](/images/docs/d9d268d0396d5688a7a4893d965541c7e0642e17bf58412a93acf6b1f7d3a872-uar-assign-groups.png)
+
+After you assign a reviewer, Opal shows one of several reviewer statuses.
+
+![](/images/docs/bc4708fe95c05a9e2cb24f35682f08e3421cef990ceed587cb13ea1f72bc3a09-uar-status.png)
+
+The following are possible status types:
+
+* **Not Started:&#xA0;**&#x4E;o reviewer(s) have taken action
+
+* **Completed**: All reviewer(s) have completed the review
+
+* **Partially Completed:&#xA0;**&#x49;f there is only one reviewer, then the reviewer has started but has not completed the review. If there are multiple reviewers, then not all reviewers have completed the review.
+
+* **Needs Attention:**
+
+  * This status type indicates an error that needs to be addressed. Click on the **Needs Attention&#xA0;**&#x73;tatus to see error details. In this example, the warning indicates **Self reviews are not allowed**, and an admin must add another owner for approval.
+
+![](/images/docs/6c9d9e3-Screenshot_2023-07-26_at_3.27.31_PM.png)
+
+## Complete reviews
+
+After an admin assigns a reviewer, a snapshot for the resource and/or group is created for review. If an admin changes a resource or group after a review begins, the review won't capture this change.
+
+**My Reviews** shows reviews assigned to the logged-in user. After reviewers select a row to review, they are shown an overview of users and groups whose access to a resource must be reviewed.
+
+<Info>
+  To review access for a resource or group, ensure you select the **row**, not the resource or group name.
+</Info>
+
+The **Group by User** and **Group by Resource** buttons control how reviews are grouped, which can be useful to change based on your requirements. These options are available on Opal Cloud and self-hosted Opal versions 1.0.912 and later.
+
+![](/images/docs/6ffca1ac9e58cbcecb14f1b46b69600ad274d333d147db5682d9f559c9644cda-group-by.png) ![](/images/docs/00bd257-ReviewModal.png)
+
+For each row, reviewers can:
+
+* **Approve** the user or resource by clicking on the **Accept** checkmark button
+
+![](/images/docs/d6c7265-Screenshot_2024-03-05_at_4.35.25_PM.png)
+
+* **Reject** the user or resource by clicking on the **Revoke** x button
+
+![](/images/docs/f98b731-Screenshot_2024-03-05_at_4.36.19_PM.png)
+
+* Select **Add note** to explain access decisions:
+
+![](/images/docs/5b53148-Screenshot_2024-03-05_at_4.39.43_PM.png)
+
+Reviewers can also perform bulk actions on multiple rows by selecting rows and choosing an option from the top bulk action bar.
+
+![](/images/docs/0ee4ea1636a86fcf4b23b892e095bb90e807303361f1cf5665eaada384795f14-bulk-accept.png)
+
+After you review all users or resources, select **Submit access review** in the bottom right. You cannot modify approvals and revocations after you've submitted. Changes are only propagated to end systems when all the UAR's items have been reviewed and the review is marked as completed.
+
+<Frame caption="Submit reviews to mark approvals and revocations for users or resources.">
+  <img src="/images/docs/474912732659e3e594d15c38aa4ea46ee7fef7762e3e4a219c0ccbeebedfb546-submit-uar.png" />
+</Frame>
+
+<Frame caption="Mark reviews as completed to propagate access changes in the end system.">
+  <img src="/images/docs/f7ff8e4539706b3b05ab9f74bd96497128837b2a83ae469c2becf2ba95e0cb77-completed-access-review.png" />
+</Frame>
+
+### Access Changes
+
+To view and manage proposed changes, go to the **Access Changes** tab.
+
+![](/images/docs/af31e7e9933b6486e2b1499632d9dbf327a1dbba674bb1cc49a0b0aa319e1d5c-access-changes.png)
+
+### Revocation rules
+
+**For connected applications**, Opal automatically revokes access on the end system based on the reviewer's decision, so after submitting a revoke decision, you do not need to perform any more actions.
+
+If your connection uses a **custom connector**, you must implement the [DELETE](/docs/api-spec#delete-groupsgroup_idusersuser_id) `/groups/{group_id}/users/{user_id}` or [DELETE](/docs/api-spec#delete-resourcesresource_idusersuser_id) `/resources/{resource_id}/users/{user_id}` endpoints to revoke users on your end system.
+
+If the endpoint returns a 200 success code, Opal marks the access as revoked. If the endpoint is not implemented or returns an error code, access is marked **Needs end-system revocation** and you must manually update it.
+
+![](/images/docs/3ede9ba-SCR-20230726-oszh.png) ![](/images/docs/eef151b-SCR-20230726-otib.png)
+
+If the connection uses **webhooks**, access will be marked as **Needs end-system revocation**, because webhooks only perform push events. Opal does not interpret webhook responses, so you'll need to manually mark access as revoked.
+
+***
+
+* [Table of Contents](#)
+
+* * [Assign reviewers](#assign-reviewers)
+
+  * [Complete reviews](#complete-reviews)
+
+    * [Access Changes](#access-changes)
+    * [Revocation rules](#revocation-rules)

@@ -1,0 +1,146 @@
+---
+title: "Google Chat"
+description: "Learn how to connect Opal to Google Chat."
+---
+
+[Suggest Edits](/edit/google-chat)
+
+You can connect Opal to Google Chat to send notifications to users about access reviews and requests. Use the following steps to set up an Opal Google Chat app that can send messages to your users.
+
+## 1. Create a Project
+
+In the GCP console, [create a new project](https://console.cloud.google.com/projectcreate) where your chat app will live.
+
+## 2. Set up Service Account Credentials
+
+[Create a service account](https://console.cloud.google.com/iam-admin/serviceaccounts/create) for the project, giving it an appropriate name.
+
+Then go to the **Keys** tab of your service account and create a new JSON key. The key will be downloaded after creation.
+
+Opal uses the non-sensitive [`https://www.googleapis.com/auth/chat.bot` scope ](https://developers.google.com/workspace/chat/authenticate-authorize)for most operations. However, the chat app also needs domain-wide delegation for the readonly directory scope in order to find users and send them direct messages.
+
+To do that, go to [domain-wide delegation](https://admin.google.com/ac/owl/domainwidedelegation), select **Add New**, and enter your service account's client ID, granting it the following scope:
+
+```
+https://www.googleapis.com/auth/admin.directory.user.readonly
+```
+
+## 3. Set up Google Chat App
+
+Enable the Google Chat API for the project in the [APIs library](https://console.cloud.google.com/apis/library).
+
+Then configure the [chat app settings](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat). Set the Application Info with the following:
+
+* **App Name**: `Opal`
+* **Avatar URL**: `https://opal-logos.s3.us-east-2.amazonaws.com/opal-thumbnail-logo.png`
+* **Description**: Chat app for Opal notifications.
+
+### Self-hosted
+
+For self-hosted customers, Opal supports interaction through Google Chat messages directly to take actions like approving or denying requests. To do so, we will use [pub/sub](https://developers.google.com/workspace/chat/quickstart/pub-sub).
+
+First, create a pub/sub topic in your project [here](https://console.cloud.google.com/cloudpubsub/topic/list). Keep **Add a default subscription** enabled and leave the other options as the defaults.
+
+* Name your topic `opal-chat`.
+* This creates a topic and an associated subscription named `opal-chat-sub`.
+* Edit the subscription and ensure that the retry policy is **Retry after exponential backoff**.
+
+Assign the **Pub/Sub Publisher** role on your project to the following service account :`chat-api-push@system .gserviceaccount.com`.
+
+Assign the **Pub/Sub Subscriber** role on the subscription to the service account you created for the chat app above.
+
+Go back to the Google Chat API configuration, toggle on **Enable Interactive Features** and enter the following settings:
+
+* Enable **Receive 1:1 messages** and **Join spaces and group conversations**.
+* Select **Cloud Pub/Sub** and enter your topic's name, e.g., `projects/<project-name>/topics/opal-chat`.
+
+Leave everything else default and save.
+
+### Cloud
+
+For cloud customers, Opal's Google Chat integration does not yet support interactivity. To allow the app to be published and installed into your workspace, go to the Google Chat API configuration, toggle on **Enable Interactive Features** and enter the following settings:
+
+* Enable **Receive 1:1 messages** and **Join spaces and group conversations**.
+* Select **Cloud Pub/Sub** and enter the topic name, e.g., `projects/<project-name>/topics/opal-uninteractive-chat`.
+
+Leave everything else default and save.
+
+## 4. Publish the Chat App
+
+Enable the Google Workspace Marketplace SDK\*\* API on your project.
+
+On the App configuration tab, enter the following:
+
+* **App Visibility**: `Private`
+* **Installation Settings**: `Individual + Admin Install`
+* **App Integration**: `Chat app`
+* For the OAuth scopes, enter `https://www.googleapis.com/auth/admin.directory.user.readonly`.
+
+For Developer info, enter:
+
+* **Developer Name**: `Opal`
+* **Developer Website URL**: `https://www.opal.dev/`
+* **Developer Email**: `[email protected]`
+
+Save the draft.
+
+There will be a prompt at the top of the App configuration section about setting up the OAuth consent screen. Use it to navigate to the [setup page](https://console.cloud.google.com/apis/credentials/consent). For the settings, enter:
+
+* **User Type**: `Internal`
+* **App Name**: `Opal`
+* **User Support Email**: Select an appropriate support contact from the dropdown.
+* **Developer Contact Information**: [\[email protected\]](/cdn-cgi/l/email-protection#72010702021d0006321d02131e5c161704)
+* Select **Save and continue**, then skip the scope section for now by selecting it again.
+
+Go back to the `Google Workspace Marketplace SDK` API page, where you should no longer see the warning about the OAuth screen. Go to the **Store Listing** tab to publish the app. Enter the following:
+
+* **Category**: Communication
+* **Graphics Assets**: Download Opal's [logo](https://files.readme.io/5dec2a0fe3c00ceaa88ac200ab36823d09bc93c182a99bc0538389de5e87b0b7-opal-logo.png) and [banner](https://files.readme.io/d3cc5c572e555879c006fdc585858bf18e6ea5ea935acf86ed5025e8c2edafd6-opal-banner.png)
+* **Screenshots**: Use [this screenshot](https://files.readme.io/c5a5169b38d3748e1cee7c69293da7be1d3dc4814599c6b90e70940fce26dd8e-Screenshot_2025-01-23_at_2.45.45_PM.png)
+* **Terms of Service URL**: `https://www.opal.dev/tos`
+* **Privacy Policy URL**: `https://www.opal.dev/privacy-policy`
+* **Support URL**: `https://opal.instatus.com/`
+* **Regions**: Select `All Regions`.
+
+Save the draft, then publish.
+
+## 5. Install the Chat App to your workspace
+
+Go to the [admin console](https://admin.google.com/ac/apps/gmail/marketplace/apps) to view apps installed in your workspace.
+
+Search for `Opal` and select the app. Select **Admin Install**, make sure **Everyone at your organization** is selected, and select **Finish**.
+
+## 6. Connect Google Chat to Opal
+
+In the Opal dashboard, go to **Configuration** > **Settings** > **Productivity Integrations**. Select the option to connect a **Google Chat Integration**. You'll need two pieces of credentials:
+
+* The service account key JSON that you downloaded earlier
+
+![](/images/docs/0552251ba5a6f521b9f086b30e82097ae8f9a8eb97cf28211a2f42af6119ca82-Screenshot_2025-01-23_at_4.05.38_PM.png)
+
+* The email of an admin user which the chat app can authenticate as to use the domain wide delegated scopes you granted earlier
+
+![](/images/docs/01735ff8b77bb2ad05d3f6190f5a2dd3498f7527bf654b44483aaa4b8916e874-Screenshot_2025-01-23_at_4.07.57_PM.png)
+
+After you select **Create**, you're done setting up the app. Users will begin to receive notifications about access requests and reviews and can toggle their notifications in their account settings.
+
+![](/images/docs/848f474a1ce0647dd62bef8cac6389d6a3e64e60eeb61f1621ef19e5284ff8fc-google-chat.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Create a Project](#1-create-a-project)
+
+  * [2. Set up Service Account Credentials](#2-set-up-service-account-credentials)
+
+  * [3. Set up Google Chat App](#3-set-up-google-chat-app)
+
+    * [Self-hosted](#self-hosted)
+    * [Cloud](#cloud)
+
+  * [4. Publish the Chat App](#4-publish-the-chat-app)
+
+  * [5. Install the Chat App to your workspace](#5-install-the-chat-app-to-your-workspace)
+
+  * [6. Connect Google Chat to Opal](#6-connect-google-chat-to-opal)

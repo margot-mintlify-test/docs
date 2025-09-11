@@ -1,0 +1,1166 @@
+---
+title: "Custom Connector API Spec"
+description: "Suggest Edits"
+---
+
+Use this API spec to build your custom connector after you've generated boilerplate code following the steps in [Create your own connector](/docs/how-to-create-your-own-connector). You can also reference the [Datadog custom connector](https://github.com/opalsecurity/opal-datadog-connector) as you build your implementation.
+
+# Endpoints
+
+## GET `/status`
+
+Checks the status of the connector. This endpoint is mainly used for successfully creating the app in Opal and verifying that the connector is properly configured.
+
+**Query params**
+
+| param   | type   | description                                                                                                                                        |
+| ------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The Opal app ID to list resources for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints |
+
+**Response params (200)**
+
+No body is required in the response for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                                           |
+| ------- | ------- | ------------------------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                                 |
+| code    | integer | The error code that describes the error. See [Error Codes](#error-codes) for details. |
+
+## GET `/resources`
+
+Returns a list of all resources for the app in question. This endpoint is called after you've [imported resources](/docs/import-and-configure-resources-and-groups#manual-import) to the app, so you may not see it being called when you first create your app.
+
+To distinguish resources pulled from multiple sources, you can include the type in the identifier, then base64-encode the ID so it can be properly parsed—e.g., `base64(resource-type:1)`.
+
+**Query params**
+
+| param      | type   | description                                                                                                                                                                                                                                                                                         |
+| ---------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id    | string | The Opal app ID to list resources for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints.                                                                                                                                                 |
+| cursor     | string | For pagination. Empty string on the first call, then set to the value provided via `next_cursor`.                                                                                                                                                                                                   |
+| parent\_id | string | **Optional**: Used for nested resources. If you enable **Nested Resources** in the Opal connector form, this endpoint finds the resource specified by `parent_id` and returns its immediate children. See [Create your own connector](/docs/how-to-create-your-own-connector) for more information. |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                         |
+| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| resources    | array of objects | List of the resource objects. See below for what each resource should include.                                                      |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all resources have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**Resource object**
+
+| field       | type   | description                                                                                            |
+| ----------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| id          | string | The id of the resource that uniquely identifies it in your system. It can be at most 65535 characters. |
+| name        | string | The name of the resource.                                                                              |
+| description | string | The description of the resource.                                                                       |
+
+**Example response**
+
+<CodeGroup>
+  ```json json
+  {
+    "next_cursor": "gjroieapghnfagjfdgpadshfasd",
+    "resources": [
+      {
+        "id": "1",
+        "name": "Gooli Metadata",
+        "description": "Access to Gooli customer metadata"
+      },
+      {
+        "id": "2",
+        "name": "Eviato Metadata",
+        "description": "Access to Eviato customer metadata",
+        "can_have_usage_data": true
+      },
+      {
+        "id": "3",
+        "name": "Moolybib Metadata",
+        "description": "Access to Moolybib customer metadata"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## GET `/resources/{resource_id}`
+
+Get a specific resource by its ID.
+
+**Path params**
+
+| param        | type   | description             |
+| ------------ | ------ | ----------------------- |
+| resource\_id | string | The id of the resource. |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                         |
+| ------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The Opal app ID to list resources for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints. |
+
+**Response params (200)**
+
+| field    | type   | description     |
+| -------- | ------ | --------------- |
+| resource | object | Resource object |
+
+**Resource object**
+
+| field                  | type    | description                                                                                                                                                                                                                   |
+| ---------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id                     | string  | The id of the resource that uniquely identifies it in your system. It should match the ID (`<resource_id>`) of the request.                                                                                                   |
+| name                   | string  | The name of the resource.                                                                                                                                                                                                     |
+| description            | string  | The description of the resource.                                                                                                                                                                                              |
+| can\_have\_usage\_data | boolean | **Optional**. This property is used to enable ingesting usage events for a resource to enable LPPM for custom connections. See [the events endpoint](/docs/api-spec#get-events) for more information. `false` if unspecified. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**Example response**
+
+<CodeGroup>
+  ```json json
+  # GET /resources/1?app_id=app_unique_id
+  {
+    "resource": {
+        "id": "1",
+        "name": "Gooli Metadata",
+        "description": "Access to Gooli customer metadata"
+     }
+  }
+  ```
+</CodeGroup>
+
+## GET `/resources/{resource_id}/access_levels`
+
+<Info>
+  If your resource doesn't require any access level, this endpoint can return `"access_levels": []`.
+</Info>
+
+Returns all available access levels for a resource, paginated. Access levels are exposed in the Opal dashboard and to end users as roles, which users select when they request access to the resource.
+
+**Path params**
+
+| param        | type   | description                                              |
+| ------------ | ------ | -------------------------------------------------------- |
+| resource\_id | string | The id of the resource to retrieve the access levels of. |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                        |
+| ------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The Opal app ID to list resources for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then set to the value provided via next\_cursor                                                    |
+
+**Response params (200)**
+
+| param          | type             | description                                                                                                                                              |
+| -------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| access\_levels | array of objects | List of the access levels objects. See below for what each object should include. If your resource doesn't require any access level, it can return `[]`. |
+| next\_cursor   | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all resources have been fetched.                      |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**Access level object**
+
+| field | type   | description                                   |
+| ----- | ------ | --------------------------------------------- |
+| id    | string | ID of the access level to grant to this user. |
+| name  | string | The user-facing name of the access level.     |
+
+**Example response**
+
+<CodeGroup>
+  ```json json
+  {
+    "next_cursor": "gjroieapghnfagjfdgpadshfasd",
+    "access_levels": [
+      {
+        "id": "1",
+        "name": "Admin"
+      },
+      {
+        "id": "2",
+        "name": "Read-Only Admin"
+      },
+      {
+        "id": "3",
+        "name": "Guest"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## GET `/resources/{resource_id}/users`
+
+Returns the users that currently have access to the provided resource.
+
+**Path params**
+
+| param        | type   | description                                                                                                                  |
+| ------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| resource\_id | string | The id of the resource you’re trying to list the details of, as returned as `id` in the `/resources/<resource_id>` endpoint. |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                                                               |
+| ------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then passed values provided via next\_cursor                                                                                              |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                         |
+| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| users        | array of objects | List of the resource user objects. See below for what each resource should include                                                  |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all resources have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message to expose in the Opal UI.                            |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**ResourceUser object**
+
+| field         | type   | description                                                                                                                                                                     |
+| ------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| user\_id      | string | The user identifier used in the remote system, this will be provided back to you when making access changes.                                                                    |
+| email         | string | The email of the user. This will be used on our end to correlate it with Opal users. Although not required at the moment, we'd like implementers to include this value as well. |
+| access\_level | object | The access level granted to the user. If omitted, the default access level remote ID value (empty string) is used.                                                              |
+
+**Example response**
+
+<CodeGroup>
+  ```Text JSON
+  {
+    "next_cursor": "bpaubmkeospb",
+    "users": [
+      {
+        "email": "[email protected]",
+        "user_id": "1",
+        "access_level": {
+          "id": "1",
+          "name": "Admin"
+        }
+      },
+      {
+        "email": "[email protected]",
+        "user_id": "2",
+        "access_level": {
+          "id": "2",
+          "name": "Read-Only Admin"
+        }
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## POST `/resources/{resource_id}/users`
+
+Adds a user to the access list of the specified resource.
+
+**Path params**
+
+| param        | type   | description                                             |
+| ------------ | ------ | ------------------------------------------------------- |
+| resource\_id | string | The id of the resource you’re trying to add the user to |
+
+**Body params (JSON encoded)**
+
+| param             | type              | description                                                                                                                                                                               |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id           | string            | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| user\_id          | string            | The id of the user to add to the resource                                                                                                                                                 |
+| access\_level\_id | string (optional) | The ID of the access level to assign to the user.                                                                                                                                         |
+
+**Example request**
+
+<CodeGroup>
+  ```Text JSON
+  {
+  	"app_id": "datadog-production",
+    "user_id": "568d0cd1-284d-4e82-a6c7-9c98b5e51a65",
+    "access_level_id": "12f5ef35-5de6-4224-a006-7fe4c20db5c6"
+  }
+  ```
+</CodeGroup>
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## DELETE `/resources/{resource_id}/users/{user_id}`
+
+Remove a user from the access list of the specified resource.
+
+**Path params**
+
+| param        | type   | description                          |
+| ------------ | ------ | ------------------------------------ |
+| resource\_id | string | The id of the resource to be edited. |
+| user\_id     | string | The id of the user to be removed.    |
+
+**Query params**
+
+| param             | type              | description                                                                                                                                                                               |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id           | string            | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| access\_level\_id | string (optional) | The ID of the access level associated to the user for this resource.                                                                                                                      |
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## GET `/groups`
+
+Returns a list of all groups for the app in question. The `/groups` endpoints are only called if **Connector Groups** is enabled in the [custom app form](/docs/how-to-create-your-own-connector#4-create-a-custom-app).
+
+**Query params**
+
+| param   | type   | description                                                                                                                                     |
+| ------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The Opal app ID to list groups for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then set to the value provided via next\_cursor                                                 |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                      |
+| ------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| groups       | array of objects | List of the group objects. See below for what each group should include                                                          |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all groups have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**Group object**
+
+| field       | type   | description                                                     |
+| ----------- | ------ | --------------------------------------------------------------- |
+| id          | string | The id of the group that uniquely identifies it in your system. |
+| name        | string | The name of the group                                           |
+| description | string | The description of the group                                    |
+
+**Example response**
+
+<CodeGroup>
+  ```json json
+  {
+    "next_cursor": "gjroieapghnfagjfdgpadshfasd",
+    "groups": [
+      {
+        "id": "1",
+        "name": "Eng team",
+        "description": "Eng team users"
+      },
+      {
+        "id": "2",
+        "name": "Finance team (North America)",
+        "description": "Users in the finance team in NA"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## GET `/groups/{group_id}`
+
+Get a specific group by its id.
+
+**Path params**
+
+| param     | type   | description            |
+| --------- | ------ | ---------------------- |
+| group\_id | string | The id of the resource |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                        |
+| ------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The Opal app ID to list resources for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints |
+
+**Response params (200)**
+
+| field | type   | description     |
+| ----- | ------ | --------------- |
+| group | object | A Group object. |
+
+**Group object**
+
+| field       | type   | description                                                        |
+| ----------- | ------ | ------------------------------------------------------------------ |
+| id          | string | The id of the resource that uniquely identifies it in your system. |
+| name        | string | The name of the resource                                           |
+| description | string | The description of the resource                                    |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**Example response**
+
+<CodeGroup>
+  ```json json
+  # GET /groups/1?app_id=app_unique_id
+  {
+    "group": {
+        "id": "1",
+        "name": "Eng team",
+        "description": "Your friendly eng team."
+     }
+  }
+  ```
+</CodeGroup>
+
+## GET `/groups/{group_id}/users`
+
+Returns the users that currently belong to the provided group.
+
+**Path params**
+
+| param     | type   | description                                              |
+| --------- | ------ | -------------------------------------------------------- |
+| group\_id | string | The id of the group you’re trying to list the details of |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                                                               |
+| ------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then passed values provided via next\_cursor                                                                                              |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                         |
+| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| users        | array of objects | List of the group user objects. See below for what each group should include                                                        |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all resources have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message to expose in the Opal UI.                            |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**GroupUser object**
+
+| field    | type   | description                                                                                                                                                                     |
+| -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| user\_id | string | The user identifier used in the remote system, this will be provided back to you when making access changes.                                                                    |
+| email    | string | The email of the user. This will be used on our end to correlate it with Opal users. Although not required at the moment, we'd like implementers to include this value as well. |
+
+**Example response**
+
+<CodeGroup>
+  ```Text JSON
+  {
+    "next_cursor": "bpaubmkeospb",
+    "users": [
+      {
+        "email": "[email protected]",
+        "user_id": "1",
+      },
+      {
+        "email": "[email protected]",
+        "user_id": "2",
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## POST `/groups/{group_id}/users`
+
+Adds a user to the access list of the specified group.
+
+**Path params**
+
+| param     | type   | description                                          |
+| --------- | ------ | ---------------------------------------------------- |
+| group\_id | string | The id of the group you’re trying to add the user to |
+
+**Body params (JSON encoded)**
+
+| param    | type   | description                                                                                                                                                                               |
+| -------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id  | string | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| user\_id | string | The id of the user to add to the group                                                                                                                                                    |
+
+**Example request**
+
+<CodeGroup>
+  ```Text JSON
+  {
+  	"app_id": "datadog-production",
+    "user_id": "568d0cd1-284d-4e82-a6c7-9c98b5e51a65",
+  }
+  ```
+</CodeGroup>
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## DELETE `/groups/{group_id}/users/{user_id}`
+
+Remove a user from the access list of the specified group.
+
+**Path params**
+
+| param     | type   | description                       |
+| --------- | ------ | --------------------------------- |
+| group\_id | string | The id of the group to be edited. |
+| user\_id  | string | The id of the user to be removed. |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                                                               |
+| ------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## GET `/groups/{group_id}/resources`
+
+Returns the resources that currently belong to the provided group.
+
+**Path params**
+
+| param     | type   | description                                              |
+| --------- | ------ | -------------------------------------------------------- |
+| group\_id | string | The id of the group you’re trying to list the details of |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                                                               |
+| ------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then passed values provided via next\_cursor                                                                                              |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                         |
+| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| resources    | array of objects | List of the group resource objects. See below for what each group should include                                                    |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all resources have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message to expose in the Opal UI.                            |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**GroupResource object**
+
+| field         | type   | description                                                                                                      |
+| ------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| resource\_id  | string | The resource identifier used in the remote system, this will be provided back to you when making access changes. |
+| access\_level | object | The access level the group has access to the resource with.                                                      |
+
+**Example response**
+
+<CodeGroup>
+  ```Text JSON
+  {
+    "next_cursor": "bpaubmkeospb",
+    "resources": [
+      {
+        "resource_id": "1",
+        "access_level": {
+          "id": "1",
+          "name": "Admin"
+        }
+      },
+      {
+        "resource_id": "2",
+        "access_level": {
+          "id": "2",
+          "name": "Read-Only Admin"
+        }
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## POST `/groups/{group_id}/resources`
+
+Adds a resource to the access list of the specified group.
+
+**Path params**
+
+| param     | type   | description                                              |
+| --------- | ------ | -------------------------------------------------------- |
+| group\_id | string | The id of the group you’re trying to add the resource to |
+
+**Body params (JSON encoded)**
+
+| param             | type              | description                                                                                                                                                                               |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id           | string            | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| resource\_id      | string            | The id of the resource to add to the group                                                                                                                                                |
+| access\_level\_id | string (optional) | The ID of the access level to assign to the group to the resource.                                                                                                                        |
+
+**Example request**
+
+<CodeGroup>
+  ```Text JSON
+  {
+  	"app_id": "datadog-production",
+    "resource_id": "568d0cd1-284d-4e82-a6c7-9c98b5e51a65",
+    "access_level_id": "12f5ef35-5de6-4224-a006-7fe4c20db5c6"
+  }
+  ```
+</CodeGroup>
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## DELETE `/groups/{group_id}/resources/{resource_id}`
+
+Remove a resource from the access list of the specified group.
+
+**Path params**
+
+| param        | type   | description                           |
+| ------------ | ------ | ------------------------------------- |
+| group\_id    | string | The id of the group to be edited.     |
+| resource\_id | string | The id of the resource to be removed. |
+
+**Query params**
+
+| param             | type              | description                                                                                                                                                                               |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id           | string            | The app id specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints |
+| access\_level\_id | string (optional) | The ID of the access level associated to the group for this resource.                                                                                                                     |
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## GET `/groups/{group_id}/member-groups`
+
+Returns member groups for the specified group. Required if you enable **Nested Groups** when you create the custom app.
+
+**Path params**
+
+| param     | type   | description                 |
+| --------- | ------ | --------------------------- |
+| group\_id | string | The ID of the parent group. |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                    |
+| ------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The Opal app ID to list users for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then set to the value provided via next\_cursor                                                |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                         |
+| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| groups       | array of objects | List of the member groups. See the following **Member group object** for fields.                                                    |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all resources have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**Member group object**
+
+| field       | type   | description                                                            |
+| ----------- | ------ | ---------------------------------------------------------------------- |
+| group\_id   | string | The id of the member group that uniquely identifies it in your system. |
+| name        | string | The name of the group.                                                 |
+| description | string | The description of the group.                                          |
+
+## POST `/groups/{group_id}/member-groups`
+
+Add a member group to the specified group. Required if you enable **Nested Groups** when you create the custom app.
+
+**Path params**
+
+| param     | type   | description                 |
+| --------- | ------ | --------------------------- |
+| group\_id | string | The ID of the parent group. |
+
+**Body params (JSON encoded)**
+
+| param     | type   | description                        |
+| --------- | ------ | ---------------------------------- |
+| group\_id | string | The ID of the member group to add. |
+| app\_id   | string | The ID of the custom app.          |
+
+**Example request**
+
+<CodeGroup>
+  ```Text JSON
+  {
+  	"group_id": "member-group-id-123",
+    "app_id": "unique-app-id-456",
+  }
+  ```
+</CodeGroup>
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## GET `/users`
+
+Returns a list of users for your custom connector app.
+
+**Query params**
+
+| param   | type   | description                                                                                                                                    |
+| ------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | The Opal app ID to list users for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then set to the value provided via next\_cursor                                                |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                         |
+| ------------ | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| users        | array of objects | List of the user objects. See below for what each user should include                                                               |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all resources have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**User object**
+
+| field | type   | description                                                            |
+| ----- | ------ | ---------------------------------------------------------------------- |
+| id    | string | The id of the user that uniquely identifies it in your system.         |
+| email | string | The email of the user, this is required to associate the user in Opal. |
+
+**Example**
+
+<CodeGroup>
+  ```Text JSON
+  {
+    "next_cursor": "kjhiufewnoi",
+    "users": [
+      {
+        "email": "[email protected]",
+        "id": "6bac7de4-08d7-4437-8397-75f44b6f76ae"
+      },
+      {
+        "email": "[email protected]",
+        "id": "c1623a9c-cfb8-4c50-bd89-ea05bf597d60"
+      },
+      {
+        "email": "[email protected]",
+        "id": "968bf191-ba81-4fa0-a5a9-aaff71655fbd"
+      },
+      {
+        "email": "[email protected]",
+        "id": "d67d4184-6cdf-4c43-9d65-698997bd0c52"
+      }
+    ]
+  }
+  ```
+</CodeGroup>
+
+## POST `/users`
+
+This endpoint enables users to be provisioned into a custom connector app. This functionality is only available if user provisioning has been enabled for the connection.
+
+**Body params (JSON encoded)**
+
+| field      | type           | description                                                        |
+| ---------- | -------------- | ------------------------------------------------------------------ |
+| user\_id   | string         | The Opal User ID being created in your end system                  |
+| attributes | UserAttributes | The attributes of the user to create in your custom connector app. |
+| manager    | UserAttributes | The attributes of the manager of the user                          |
+| user\_tags | Array          | The tags of the user that were ingested by Opal                    |
+
+**UserAttributes object**
+
+| field             | type   | description                                    |
+| ----------------- | ------ | ---------------------------------------------- |
+| email             | string | The email of the user                          |
+| first\_name       | string | The first name of the user                     |
+| last\_name        | string | The last name of the user                      |
+| title             | string | The title of the user, if available            |
+| team              | string | The team the user is a part of, if available   |
+| profile\_url      | string | A URL to the user's profile photo              |
+| secondary\_emails | Array  | The secondary emails of the user, if available |
+
+**UserTag object**
+
+| field          | type   | description                                                   |
+| -------------- | ------ | ------------------------------------------------------------- |
+| key            | string | The key of the tag in Opal                                    |
+| value          | string | The value of the tag in Opal                                  |
+| tag\_id        | string | The Opal ID of the tag                                        |
+| connection\_id | string | The Opal ID of the connection where this tag was sourced from |
+
+**Response params (200)**
+
+| param            | type   | description                                                                                                                                                |
+| ---------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| remote\_user\_id | string | The ID of the user in the custom connector app. This must be returned by your implementation and will be used by Opal to refer to this user in the future. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## DELETE `/users/{user_id}`
+
+This endpoint deprovisions user accounts in a custom connector application. This functionality is only available if user deprovisioning has been enabled for the connection.
+
+**Path params**
+
+| param    | type   | description                                            |
+| -------- | ------ | ------------------------------------------------------ |
+| user\_id | string | The ID of the user to be removed from the application. |
+
+**Query params**
+
+| param   | type   | description                                                                                                                                                                                |
+| ------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| app\_id | string | The app ID specified by the end user during connection process. This can be used in your end system to distinguish apps if you are supporting multiple apps via the same set of endpoints. |
+
+**Response params (200)**
+
+No body is required as part of this endpoint for status code 200.
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+## GET `/events`
+
+This endpoint is only called if **Connector Event Ingestion** is enabled in the [custom app form](/docs/how-to-create-your-own-connector#4-create-a-custom-app).
+
+**Query params**
+
+| param   | type   | description                                                                                                                                                   |
+| ------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| app\_id | string | **Required**. The Opal app ID to list events for. This allows your service to distinguish apps if it’s supporting multiple apps via the same set of endpoints |
+| cursor  | string | For pagination. Empty string on the first call, then set to the value provided via next\_cursor                                                               |
+| start   | string | Return events starting from this date. Use the format `YYYY-MM-DDT00:00:00Z`.                                                                                 |
+| end     | string | Return events ending before this date. Use the format `YYYY-MM-DDT00:00:00Z`.                                                                                 |
+
+**Response params (200)**
+
+| param        | type             | description                                                                                                                     |
+| ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| events       | array of objects | List of the event objects. See below for what each event should include                                                         |
+| next\_cursor | string           | The cursor that should be used for the next call. If cursor is an empty string, it is assumed that all evets have been fetched. |
+
+**Response params (Error)**
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message that will be exposed in the Opal UI.                 |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+**Event object**
+
+| field                                                  | type                                     | description                                                                                                                                                    |
+| ------------------------------------------------------ | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| event\_id                                              | string                                   | The id of the event that uniquely identifies it in your system.                                                                                                |
+| event\_type                                            | OneOf: `login.success`                   | The type of the event.                                                                                                                                         |
+| [occurred\_at](https://www.rfc-editor.org/rfc/rfc3339) | RFC3339 datetime string                  | The date and time at which the event occurred. Return as a string using the following format: `{year}-{month}-{day}T{hour}:{minute}:{second}.{microsecond}%z`. |
+| actor\_user\_identifier                                | ActorUserIdentifier object               | An ActorUserIdentifier object uniquely identifying the user that performed this event. See below for what this object should include.                          |
+| event\_content                                         | OneOf: `EventContentLoginSuccess `object | The content of this event, which is specific to the event type. See below for what each event content should include.                                          |
+
+**ActorUserIdentifier object**
+
+| field       | type   | description                                                            |
+| ----------- | ------ | ---------------------------------------------------------------------- |
+| user\_id    | string | The id of the user that uniquely identifies it in your system.         |
+| user\_email | string | The email of the user, this is required to associate the user in Opal. |
+
+**EventContentLoginSuccess object**
+
+| field        | type   | description                                        |
+| ------------ | ------ | -------------------------------------------------- |
+| resource\_id | string | The id of the resource that the user logged in to. |
+
+**Example**
+
+<CodeGroup>
+  ```Text JSON
+  {
+    "next_cursor": "kjhiufewnoi",
+    "events": [
+      {
+          "event_id": "1",
+          "event_type": "login.success",
+          "occurred_at": "2025-01-15T00:58:33.967628+0000",
+          "actor_user_identifier": {
+              "user_id": "6bac7de4-08d7-4437-8397-75f44b6f76ae",
+              "user_email": "[email protected]",
+          },
+          "event_content": {"resource_id": "568d0cd1-284d-4e82-a6c7-9c98b5e51a65"},
+      },
+      {
+          "event_id": "2",
+          "event_type": "login.success",
+          "occurred_at": "2025-01-15T00:58:33.967628+0000",
+          "actor_user_identifier": {
+              "user_id": "[email protected]",
+              "user_email": "c1623a9c-cfb8-4c50-bd89-ea05bf597d60",
+          },
+          "event_content": {"resource_id": "568d0cd1-284d-4e82-a6c7-9c98b5e51a65"},
+      },
+      {
+          "event_id": "3",
+          "event_type": "login.success",
+          "occurred_at": "2025-01-15T00:58:33.967628+0000",
+          "actor_user_identifier": {
+              "user_id": "d67d4184-6cdf-4c43-9d65-698997bd0c52",
+              "user_email": "[email protected]",
+          },
+          "event_content": {"resource_id": "568d0cd1-284d-4e82-a6c7-9c98b5e51a65"},
+      },
+    ]
+  }
+  ```
+</CodeGroup>
+
+# Error codes
+
+All error codes need to implement the following object:
+
+| param   | type    | description                                                           |
+| ------- | ------- | --------------------------------------------------------------------- |
+| message | string  | An error message to expose in the Opal UI.                            |
+| code    | integer | The error code that describes the error. See Error Codes for details. |
+
+In addition, you can distinguish the type of error and meaning by following these codes
+
+| Status code | Meaning                                              |
+| ----------- | ---------------------------------------------------- |
+| 200         | Response successful.                                 |
+| 401         | Invalid request signature error.                     |
+| 404         | Entity not found (eg. resource, user, access level). |
+| 500         | Unexpected error.                                    |
+
+# Signature
+
+To ensure that the API calls originate from Opal, we provide a header in each request that represents the encrypted request payload with a secret that is generated when creating the app connector in Opal. See [Setup connector app in Opal](/docs/setup-connector-app-in-opal) for more details.
+
+On each HTTP request that Opal sends, we add an `X-Opal-Signature` HTTP header. The signature is created by combining the signing secret with the body of the request we're sending using a standard HMAC-SHA256 keyed hash.
+
+Here is an example with Node to compute the signature using your signing secret. You may compare it against the value retrieved from the `X-Opal-Signature` header:
+
+<CodeGroup>
+  ```js Typescript
+  const timestamp = request.header('X-Opal-Request-Timestamp')
+  const signingSecret = 'SIGNING_SECRET'
+  // In Typescript/JS, request.body is always an empty object
+  const sigBaseString = 'v0:' + timestamp + ':' + JSON.stringify(request.body)
+  const hmac = crypto.createHmac('sha256', signingSecret);
+  hmac.write(sigBaseString)
+  console.log(hmac.digest('hex'))
+  ```
+
+  ```Text Go (Gin)
+  func generateSignature(
+  	signingSecret string,
+  	timestamp string,
+  	serializedBlob []byte,
+  ) (string, error) {
+  	// Concatenate base string
+  	sigBaseString := "v0:" + timestamp + ":" + string(serializedBlob)
+
+  	// Hash base string to get signature
+  	hash := hmac.New(sha256.New, []byte(signingSecret))
+  	_, err := hash.Write([]byte(sigBaseString))
+  	if err != nil {
+  		return "", errors.Wrap(err, "error writing hash")
+  	}
+
+  	return hex.EncodeToString(hash.Sum(nil)), nil
+  }
+
+  func validateOpalSignature(signingSecret string) gin.HandlerFunc {
+  	return func(c *gin.Context) {
+  		opalSignature := c.GetHeader("X-Opal-Signature")
+  		if opalSignature == "" {
+  			c.AbortWithStatusJSON(http.StatusUnauthorized, &Error{
+  				Code:    http.StatusUnauthorized,
+  				Message: "X-Opal-Signature header is missing",
+  			})
+  			return
+  		}
+  		opalRequestTimestamp := c.GetHeader("X-Opal-Request-Timestamp")
+  		if opalRequestTimestamp == "" {
+  			c.AbortWithStatusJSON(http.StatusUnauthorized, &Error{
+  				Code:    http.StatusUnauthorized,
+  				Message: "X-Opal-Request-Timestamp header is missing",
+  			})
+  			return
+  		}
+
+  		var bodyStr string
+  		// Read request body, once the request body is read, it cannot be read again
+  		// so we need to save it in a variable and then reassign it to the Request.Body
+  		var bodyBytes []byte
+  		var err error
+  		if c.Request.Body != nil {
+  			bodyBytes, err = ioutil.ReadAll(c.Request.Body)
+  			if err != nil {
+  				c.AbortWithStatusJSON(http.StatusInternalServerError, &Error{
+  					Code:    http.StatusInternalServerError,
+  					Message: "Unable to read request body",
+  				})
+  				return
+  			}
+  			c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+  			bodyStr = strings.TrimSpace(string(bodyBytes))
+  		}
+  		if bodyStr == "" {
+  			bodyStr = "{}"
+  		}
+
+  		signature, err := GenerateSignature(signingSecret, opalRequestTimestamp, []byte(bodyStr))
+  		if signature != opalSignature || err != nil {
+  			c.AbortWithStatusJSON(http.StatusUnauthorized, &Error{
+  				Code:    http.StatusUnauthorized,
+  				Message: "Invalid signature",
+  			})
+  			return
+  		}
+
+  		c.Next()
+  	}
+  }
+  ```
+</CodeGroup>
+
+Note: when the body is empty, do coalesce the empty/null stringified body to `{}`. See the link below for more examples.
+
+Check [Create your own connector](/docs/how-to-create-your-own-connector#example-of-x-opal-signatures) for signature examples.
+
+***
+
+* [Table of Contents](#)
+
+* * [Endpoints](#endpoints)
+
+    * [GET `/status`](#get-status)
+    * [GET `/resources`](#get-resources)
+    * [GET `/resources/{resource_id}`](#get-resourcesresource_id)
+    * [GET `/resources/{resource_id}/access_levels`](#get-resourcesresource_idaccess_levels)
+    * [GET `/resources/{resource_id}/users`](#get-resourcesresource_idusers)
+    * [POST `/resources/{resource_id}/users`](#post-resourcesresource_idusers)
+    * [DELETE `/resources/{resource_id}/users/{user_id}`](#delete-resourcesresource_idusersuser_id)
+    * [GET `/groups`](#get-groups)
+    * [GET `/groups/{group_id}`](#get-groupsgroup_id)
+    * [GET `/groups/{group_id}/users`](#get-groupsgroup_idusers)
+    * [POST `/groups/{group_id}/users`](#post-groupsgroup_idusers)
+    * [DELETE `/groups/{group_id}/users/{user_id}`](#delete-groupsgroup_idusersuser_id)
+    * [GET `/groups/{group_id}/resources`](#get-groupsgroup_idresources)
+    * [POST `/groups/{group_id}/resources`](#post-groupsgroup_idresources)
+    * [DELETE `/groups/{group_id}/resources/{resource_id}`](#delete-groupsgroup_idresourcesresource_id)
+    * [GET `/groups/{group_id}/member-groups`](#get-groupsgroup_idmember-groups)
+    * [POST `/groups/{group_id}/member-groups`](#post-groupsgroup_idmember-groups)
+    * [GET `/users`](#get-users)
+    * [POST `/users`](#post-users)
+    * [DELETE `/users/{user_id}`](#delete-usersuser_id)
+    * [GET `/events`](#get-events)
+
+  * [Error codes](#error-codes)
+
+  * [Signature](#signature)

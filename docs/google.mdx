@@ -1,0 +1,53 @@
+---
+title: "Overview"
+description: "Suggest Edits"
+---
+
+Opal supports integrations with Google Groups and Google Workspace. Use the following guide for Google Groups and Google Workspace, and the [Google Cloud Platform integration](/docs/google-cloud-platform) guide for GCP resources.
+
+## Supported resources
+
+The Google Workspace integration supports the following:
+
+| Resource               | Read | Grant and revoke access | Available in Risk Center |
+| ---------------------- | ---- | ----------------------- | ------------------------ |
+| Users                  | ✔️   | ✔️                      | ✔️                       |
+| User attributes        | ✔️   |                         |                          |
+| Google Workspace Roles | ✔️   | ✔️                      | ✔️                       |
+
+The Google Groups integration supports the following:
+
+| Resource      | Read | Grant and revoke access | Available in Risk Center |
+| ------------- | ---- | ----------------------- | ------------------------ |
+| Users         | ✔️   | ✔️                      | ✔️                       |
+| Google Groups | ✔️   | ✔️                      | ✔️                       |
+
+## 1. Add a Service Account for Opal
+
+To connect to Google Groups or Google Workspace, you'll need to create a Google service account with proper permission scopes.
+
+1. Open the [Service accounts page](https://console.developers.google.com/iam-admin/serviceaccounts). If prompted, select a project.
+2. Select **+ Create Service Account**. Enter a name, ID, and description, then click **Done**.
+3. Select your newly-created service account, and go to the **Keys** tab.
+4. Select **Add key** > **Create new key**.
+5. Select **JSON** as the **Key type** and click **Create**. Your new public/private key pair is generated and downloaded to your machine.
+
+## 2. Configure Permission Scopes for the Service Account
+
+1. Select your newly-created service account, and go to the **Details** tab.
+2. Open the **Advanced Settings** section, look under **Domain-wide Delegation**, and follow [the instructions](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) for setting up domain-wide delegation for your service account.
+
+Alternatively, use the following instructions:
+
+1. From your Google Workspace domain's [Admin console](https://admin.google.com/ac/owl), go to **Main menu > Security > Access and data controls > API controls**.
+2. In the **Domain wide delegation** pane, select **Manage Domain Wide Delegation**. Click **Add new**.
+3. In the **Client ID** field, enter the client ID under your service account's **Details** tab > **Unique ID**.
+4. In the **OAuth Scopes** field, enter the desired scopes. Details for what scopes the [Google Groups](/docs/google-groups) and [Google Workspace](/docs/google-workspace) integrations need are on their setup pages.
+
+***
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [1. Add a Service Account for Opal](#1-add-a-service-account-for-opal)
+  * [2. Configure Permission Scopes for the Service Account](#2-configure-permission-scopes-for-the-service-account)

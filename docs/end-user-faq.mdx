@@ -1,0 +1,135 @@
+---
+title: "End user FAQ"
+description: "Learn answers to frequently asked questions for end users interacting with Opal."
+---
+
+[Suggest Edits](/edit/end-user-faq)
+
+## What is Opal?
+
+Opal is an access management platform that helps organizations securely manage access to resources. As an end user, you'll primarily use Opal to request access to resources, review your existing access, and participate in access reviews.
+
+## How do I request access to resources?
+
+You can request access in the Opal UI, or using Slack or Google Chat.
+
+### Request access in the Opal UI
+
+Request access through the **Catalog** or using the **Request Access** button. You can also find apps from the **Search** page.
+
+![](/images/docs/f48a7b28a6475ab574dbe049ae35c573c2ab8386722a25c71a106dbb7867790c-app-catalog.png "SCR-20230313-jtf.png")
+
+After selecting an app, you can choose **Resources** that you want to request. **Resources** are specific permissions within applications. Example resources include:
+
+* Salesforce: Roles, profiles, and permission sets
+* GitHub: Repositories, Teams
+* Amazon Web Services: IAM Roles, databases (RDS), and compute (EC2)
+
+To make a request, open the resource and select **Request** in the **Actions** column, or select **Request Access** in the sidebar.
+
+![](/images/docs/bbad1ce426b646425e555d16e671a3072c58823c162a491856708dce01832154-request-access.png "SCR-20230313-jun.png")
+
+Enter the following fields:
+
+* **Reason**: By default, this is a required field. Admins can hide this field using the [request configuration](/docs/organize-access-via-tags) settings. Ensure you include enough context in your reason for your reviewers to approve your request.
+* **Expires in**: Specify how long you need access. Use the default values, or request a custom range by selecting **Custom**.
+* **Expire access when ticket is closed**: If you don't know how long you'll need access, you can bind the access request to a support ticket that is assigned to you. Once the ticket is completed, your access will be automatically revoked.
+
+![](/images/docs/5fb2561b02e7b25d1ae74292a0c123fdcd8582e4f07c4274d56311c5fe6625d5-app-catalog-request-modal.png "SCR-20230313-jwa.png")
+
+You may request access on behalf of another user. For security reasons, this functionality is limited to the following groups.
+
+* **Opal Admins** can request access on behalf of all users for all resources.
+* **Resource and group admins** can request access on behalf of others for those resources and groups where they are an admin.
+* **Managers** can request access on behalf of their reports for those resources to which the manager has access.
+
+### Request access in Slack
+
+In Slack, type `/Opal` or `/access` to browse apps, resources, and assets in Opal.
+
+![](/images/docs/ed75a78-Screen_Shot_2022-08-24_at_12.25.28_PM.png "Screen Shot 2022-08-24 at 12.25.28 PM.png")
+
+Select a resource, group, or app to request, then add an expiration and reason. Ensure you add enough context in the reason, so your reviewers have enough information to approve your request.
+
+![](/images/docs/e64094b-Screen_Shot_2022-08-24_at_12.26.46_PM.png "Screen Shot 2022-08-24 at 12.26.46 PM.png")
+
+![](/images/docs/df840d6-302636f-Screen_Shot_2022-08-24_at_12.32.52_PM.png "302636f-Screen_Shot_2022-08-24_at_12.32.52_PM.png")
+
+## What happens after my access request?
+
+Once approved, you'll be notified over email and in Slack. Go to **My Access** in the Opal web **Catalog** to view all resources you currently have access to.
+
+If you want to learn more about your request, you can click on the **Access request pending** button in Slack, or go to the **Requests** page in the Opal dashboard.
+
+From here you can:
+
+* See the status of your request
+* See who the reviewers are
+* Send reminders to your reviewers
+* Cancel your request
+* Escalate approval of your request to your skip manager by clicking **Escalate to skip manager**
+
+![](/images/docs/d480d1884515336a40970e50d3aac58ee601975cd0b8cf1e6927d21f531f93d0-Screenshot_2025-05-16_at_8.42.54_AM.png)
+
+## How can I escalate my request?
+
+If your approver is your manager, you can escalate your request to your skip manager by selecting **Escalate to skip manager** on the request. Your skip manager will be notified to approve your request. This is especially useful if your manager is unavailable and your request is urgent.
+
+![](/images/docs/d2d840bc111a46eaa6e4c22357599b3b96928a93ad088c16adbf325fd6f68f6d-Screenshot_2025-05-16_at_8.50.00_AM.png)
+
+## How do I check the status of my access request?
+
+You can view the status of your access requests in the **Sent** tab of the **Requests** page. Each request shows its current status (Pending, Approved, Denied, etc.) and any pending approval steps.
+
+## How long does my access request take to process after it's approved?
+
+Most approved access requests are propagated to end systems within two minutes.
+
+## How can I approve access requests?
+
+You will be notified via Slack and email if you are a reviewer. In Slack, approvers can approve or reject access requests. This automatically provisions access.
+
+![](/images/docs/f6a5283-Screen_Shot_2022-08-24_at_2.43.55_PM.png "Screen Shot 2022-08-24 at 2.43.55 PM.png")
+
+Requestors and requestees can also leave comments in Slack. Replies in the thread via Slack will show as comments in Opal. These comments bi-directionally sync with Opal's web UI.
+
+![](/images/docs/c36d8a343d2006a03c8b0fc682c76003bbbe2697b51d4a2f3ee9e71052c5a735-pending-request-admin.png "SCR-20230313-jzc.png")
+
+## What happens if my access expires?
+
+If you have been granted short-lived access to a resource and the time limit has expired, then Opal will automatically revoke your access.
+
+![](/images/docs/83fd592d4bf5f7ac79b5ef828f8ceff2edb18fa948d2c6d8ac781dc108949bdd-re-request-access.png "Screen Shot 2022-09-19 at 10.46.18 AM.png")
+
+If your request is for more than 24 hours, Opal will send out notifications one day and one hour before to remind you to extend access. You will only receive a reminder notification if your access originated from a request. You will not get a notification if you were manually added to the resource or group by an admin.
+
+![](/images/docs/e37d31a-Screen_Shot_2022-09-19_at_10.48.28_AM.png "Screen Shot 2022-09-19 at 10.48.28 AM.png")
+
+If your organization has enabled it, you may be able to extend your access from Slack or the Opal UI. Extended access does not need to be approved again.
+
+![](/images/docs/0ccf3a74073a5bf8a0a2a4abf6b194f6be53b03455aeebe8b182c2297742c1c3-favorites-req-extensions.png)
+
+When your access expires after the requested duration, Opal sends you a Slack notification with a link to easily re-request.
+
+***
+
+* [Table of Contents](#)
+
+* * [What is Opal?](#what-is-opal)
+
+  * [How do I request access to resources?](#how-do-i-request-access-to-resources)
+
+    * [Request access in the Opal UI](#request-access-in-the-opal-ui)
+    * [Request access in Slack](#request-access-in-slack)
+
+  * [What happens after my access request?](#what-happens-after-my-access-request)
+
+  * [How can I escalate my request?](#how-can-i-escalate-my-request)
+
+  * [How do I check the status of my access request?](#how-do-i-check-the-status-of-my-access-request)
+
+  * [How long does my access request take to process after it's approved?](#how-long-does-my-access-request-take-to-process-after-its-approved)
+
+  * [How can I approve access requests?](#how-can-i-approve-access-requests)
+
+  * [What happens if my access expires?](#what-happens-if-my-access-expires)

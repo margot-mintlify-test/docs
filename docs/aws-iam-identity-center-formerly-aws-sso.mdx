@@ -1,0 +1,70 @@
+---
+title: "AWS IAM Identity Center Workflows"
+description: "Manage your permission sets, users, and groups in Opal"
+---
+
+[Suggest Edits](/edit/aws-iam-identity-center-formerly-aws-sso)
+
+# Admin Workflows
+
+After you've created and synchronized the app, you should see that your AWS accounts are populated under the **Resources** tab. Additionally, you should see that each permission set has a resource nested under every AWS account, regardless of whether that permission set is already provisioned to some users in that account.
+
+Because this Opal resource more accurately represents the AWS-managed role that would be in that account instead of the actual permission set, the resource is referred to as an **"AWS IAM Identity Center Role"**.
+
+![2312](/images/docs/3aafe60305a536a2c23418cfbcc61af53925d1f5b9c2561bf5c2a06d835d4f5f-aws-administratoraccess.png "SCR-20230313-mfa.png")
+
+As an example, if a user is added to the **DatabaseAdministrator** IAM Identity Center Role under the **eng-prod** account resource, then Opal will create that user assignment in IAM Identity Center, automatically provisioning the AWS-managed role if it doesn't already exist (this will happen if the account does not already have any groups or users provisioned to it for a given permission set).
+
+This duplication across accounts is necessary for Opal to provide you greater granularity into setting request and reviewer policies on a permission set. In a highly sensitive account, you will likely have more stringent policies on the same permission set as compared to an account with less sensitive access, such as a playground environment.
+
+Opal also supports managing relationships with your **IAM Identity Center groups**. Like users, groups can also be assigned to IAM Identity Center Roles, and Opal will create the relevant assignment in AWS. Users can also be added to and removed from groups, and Opal will make the appropriate membership updates in AWS.
+
+<Info>
+  If you use an external IdP source to provision your IAM Identity Center groups, Opal may be unable to synchronize group memberships between IAM Identity Center and the IdP.
+
+  For Okta, IAM Identity Center group memberships do not automatically refresh when another party updates them. In this case, we recommend only updating user-to-group relationships in Okta and group-to-permission-set relationships in Opal's IAM Identity Center app to avoid inconsistencies.
+</Info>
+
+<Frame caption="IAM Identity Center groups can be imported in Opal">
+  <img src="/images/docs/434c6a65361d253494f6ca477c649127f16bb1f3aafb72625b002d81c1480408-aws-developers.png" />
+</Frame>
+
+## Scoping down sensitive access
+
+Opal automatically creates a resource for each of your permission sets under every AWS account, but you may have some permission sets with particularly sensitive permissions that you want to hide from being requested. There are a couple of ways to achieve this:
+
+1. You can adjust the **visibility setting for the IAM Identity Center Role** to be one or many privileged groups. If you do this, then only the members in those groups can view or request this role.
+2. You can adjust the **visibility setting for the parent account**, which will also apply to any permission sets nested underneath it. Note accounts can only be set to "Global" or "Admin Only" visibility. By setting the latter, it also makes all IAM Identity Center Roles under the account "Admin Only" and hide it even from users with access.
+
+<Frame caption="The AdministratorAccess Role in the prod AWS account should probably have a small requestable audience">
+  <img src="/images/docs/f7b533d-AWSvisibility.png" />
+</Frame>
+
+# End User Workflows
+
+As with any other resource, **IAM Identity Center Roles** can be requested by users either through Opal's web UI or through Slack. **AWS Account** resources serve as containers and *cannot* be requested or assigned directly to users or groups.
+
+Once a user gains access to a role, they can click the **Connect** button to directly link to the AWS Access Portal from which they can gain console access or CLI access credentials for the desired role.
+
+<Frame caption="The &#x22;Connect&#x22; action links the user directly to the AWS console below.">
+  <img src="/images/docs/1892b95ba8a46c3ac2bf17591775528ae46f7a1e6fb4daba3e417bd34e65760c-aws-connect.png" />
+</Frame>
+
+![](/images/docs/db8658f-SCR-20221102-mjz.png "SCR-20221102-mjz.png")
+
+# Troubleshooting
+
+***
+
+### Opal user is not an AWS IAM Identity Center user
+
+This means that the user in Opal does not exist as a user in AWS IAM Identity Center. Currently, Opal does not have permissions to create new IAM Identity Center users, so you must do this either in the AWS Console or your external IdP source.
+
+***
+
+* [Table of Contents](#)
+
+* * [Admin Workflows](#admin-workflows)
+    * [Scoping down sensitive access](#scoping-down-sensitive-access)
+  * [End User Workflows](#end-user-workflows)
+  * [Troubleshooting](#troubleshooting)

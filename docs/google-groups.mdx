@@ -1,0 +1,98 @@
+---
+title: "Google Groups"
+description: "Connect your Google Groups organization to Opal to manage and review access."
+---
+
+[Suggest Edits](/edit/google-groups)
+
+Opal's integration with Google Groups supports the following, and more:
+
+* Users can **request time-bounded access** to your Google groups.
+* Auditors can **initiate access reviews** that assign managers or group admins to periodically review users with long-lived access to Google groups.
+* Admins can **add resources from other Opal integrations** to an Google group so an Google group's members can automatically gain birthright access to, for example, a GitHub repo, AWS IAM role, etc.
+* All access changes are tracked in a **permanent audit log** that can be logged to a Slack channel or exported to your favorite tools.
+
+## Create a Google Groups app
+
+To get started, go to the **Catalog** page, and click **+ App**. Then, click on the Google Groups tile.
+
+![2312](/images/docs/eb8b199c3dbe4b6e0c51a9433b636f42ded7857810cb7dc0ebc28955a0a33e5c-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+You will see a form to be completed. Opal requires the following credentials in order to manage your Google Groups.
+
+## 1. Configure a service account for Opal
+
+For Opal to manage your Google Groups on your behalf, you'll need a Google service account with proper permission scopes to retrieve metadata, such as group name and description, as well as to update the group.
+
+Follow the instructions for [creating a service account](/docs/google#setting-up-a-service-account-for-opal) if you haven't already, and ensure it is granted the following scope:
+
+<CodeGroup>
+  ```text text
+  https://www.googleapis.com/auth/admin.directory.group
+  ```
+</CodeGroup>
+
+If you only want to view user's access to groups and not grant/revoke them, then you can use the `admin.directory.group.readonly` scope.
+
+## 2. Create Opal Google Group
+
+Create an Opal Google Group. We will use this Google Group's domain to import groups during syncs.
+
+![](/images/docs/37e3d78a259162025604e5d82e381ad06cdba1f890adda70217669c916a61f87-Screenshot_2025-03-07_at_4.22.12_PM.png)
+
+## 3. Fill out Opal form
+
+Back in Opal, fill in details about your Google Groups service account:
+
+* For Opal group email, enter the email of the Google group created in Step 2.
+* For Google Workspace admin email, enter the email of someone in your organization with admin privileges.
+* For domain, optionally enter the domain of the Google Workspace. If your Google Workspace has multiple domains, Google Groups will only import Google Groups associated with the domain you enter. By default, if this is not filled out, it is the domain of the Google Workspace admin email. Then, click to upload the downloaded JSON file for the created service account.
+
+If this step is successful, you've completed setting up the Google Groups app.
+
+## 3. Import Google groups into Opal
+
+You can import your Google groups into Opal manually or automatically.
+
+*Note: Opal does not currently support syncing entire Organizational Units (OUs) or OU sub trees.*
+
+### Manual import
+
+You can use the Opal UI to manually select which Google Groups to import into Opal. To do this, click on the "..." -> "Import Items" and then select your groups.
+
+![2312](/images/docs/989c95f558de5cf252ba1c5fc0774dfb090726db4ba5b371ccc0216423590cf3-google-groups-import-items.png "SCR-20230313-ngp.png") ![2312](/images/docs/65fbae4-import-GG.png "SCR-20230313-ngw.png")
+
+This will query Google Groups to list all groups in your account. From here, you can select which Google Groups you'd like to import into Opal.
+
+### Automatic import
+
+You can configure your Google Groups to be auto-imported into Opal each time the Google Groups app is synced.
+
+To automatically import your groups from Google Groups:
+
+* In Google Groups, create a Google group called **Opal**. Any groups that you add as members of this group will automatically be imported into Opal.
+* In Opal, navigate to **Catalog** > Google Groups App
+* Click the **Edit** button on the top right, then under **Import Settings**, toggle the setting to **Auto-import tagged**.
+
+![2312](/images/docs/c5635c9-GoogleGroup-ImportSettings.png "SCR-20230313-nhm.png")
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Create a Google Groups app](#create-a-google-groups-app)
+
+  * [1. Configure a service account for Opal](#1-configure-a-service-account-for-opal)
+
+  * [2. Create Opal Google Group](#2-create-opal-google-group)
+
+  * [3. Fill out Opal form](#3-fill-out-opal-form)
+
+  * [3. Import Google groups into Opal](#3-import-google-groups-into-opal)
+
+    * [Manual import](#manual-import)
+    * [Automatic import](#automatic-import)

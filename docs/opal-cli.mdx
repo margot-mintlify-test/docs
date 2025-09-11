@@ -1,0 +1,134 @@
+---
+title: "Opal CLI"
+description: "Learn how to configure and use the Opal CLI."
+---
+
+[Suggest Edits](/edit/opal-cli)
+
+Developers can use the Opal CLI to:
+
+* Request access to assets in Opal, and view outgoing requests
+* Assume IAM roles, Kubernetes roles, start database sessions, and SSH sessions
+* Get information on a particular resource
+* Use SCP to copy files to and from a compute instance
+
+## Requirements
+
+Before you begin, install the following:
+
+* [Homebrew](https://brew.sh/)
+* [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
+* [AWS CLI - Session Manager Plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+* [Node v18 or later](https://github.com/nvm-sh/nvm)
+
+## Installation
+
+### OSX
+
+Install directly from npm:
+
+<CodeGroup>
+  ```shell Shell
+  npm install -g opal-security
+  ```
+</CodeGroup>
+
+Alternatively, install the Opal CLI using Homebrew:
+
+<CodeGroup>
+  ```shell Shell
+  brew install opalsecurity/brew/opal-security
+  ```
+</CodeGroup>
+
+To upgrade the CLI using Homebrew:
+
+<CodeGroup>
+  ```shell Shell
+  brew update
+  brew upgrade opal-security
+  ```
+</CodeGroup>
+
+### Linux and Windows
+
+On these platforms, you can install directly from npm:
+
+<CodeGroup>
+  ```shell Shell
+  npm install -g opal-security
+  ```
+</CodeGroup>
+
+## Usage
+
+See the Opal CLI [npm page](https://www.npmjs.com/package/opal-security) for a list of all available CLI commands.
+
+### Authentication
+
+Use `opal login` to authenticate to the Opal CLI. This creates an authentication session token and stores it securely for future commands. This token expires based on your organization settings, found in **Organization Settings > Authentication > Login session lifetime**.
+
+On OSX, the keychain stores this token.
+
+On Linux and Windows, the CLI requires a separate password to store this token securely. Use a password that differs from your Opal and existing passwords. You'll be prompted for this password on all subsequent CLI calls.
+
+### Create requests
+
+<Info>
+  You must be on version 3.2.1 or later of the CLI to use the `request` commands.
+</Info>
+
+The CLI includes the following [commands](https://www.npmjs.com/package/opal-security#opal-request-create) for creating access requests.
+
+`opal request create`: Create an access request following an interactive prompt.
+
+`opal request create --assets [asset_id]`: Create an access request for a given group or resource.
+
+`opal request get --id [request_id]`: Retrieve details about an access request.
+
+`opal request ls --n`: List `n` most recent outgoing requests.
+
+`opal request list`: Retrieve all access requests created by the calling user.
+
+#### Examples
+
+1. Request a resource or group by ID, where the ID can be found in the URL, e.g., `app.opal.dev/resources/{resource_id}` or, for admins, the resource or group **Details** tab.
+
+```
+$ opal request create --assets {resource_id} 
+$ opal request create --assets {group_id}
+$ opal request create --assets ac4833298-8f5e-4e46-a032-73fc946dff6a
+```
+
+2. Request a group or resource with a given role.
+
+```
+$ opal request create —-assets {resource_id}:{roleName}
+$ opal request create —-assets ac4833298-8f5e-4e46-a032-73fc946dff6a:readonly
+```
+
+## Troubleshooting
+
+If you run into errors from Node (e.g. `incompatible architecture`), make sure your local environment is using the Node version that you installed the Opal CLI on.
+
+If you're using `nvm`, you can view a list of installed Node versions via `nvm ls` and switch using `nvm use <VERSION>`.
+
+If you have conflicting packages named `opal`, you may need to set an alias: `alias op="npx opal-security"`.
+
+***
+
+* [Table of Contents](#)
+
+* * [Requirements](#requirements)
+
+  * [Installation](#installation)
+
+    * [OSX](#osx)
+    * [Linux and Windows](#linux-and-windows)
+
+  * [Usage](#usage)
+
+    * [Authentication](#authentication)
+    * [Create requests](#create-requests)
+
+  * [Troubleshooting](#troubleshooting)

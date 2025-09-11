@@ -1,0 +1,136 @@
+---
+title: "Google Kubernetes Engine (GKE)"
+description: "Learn how to manage user access with Google Kubernetes Engine (GKE)."
+---
+
+[Suggest Edits](/edit/5608466-google-kubernetes-engine-getting-started)
+
+This integration allows you to manage user access with Google Kubernetes Engine (GKE). This relies on the Google Groups integration with GKE. It enables you to grant roles to the members of a group in Google Groups.
+
+## Add a Google Groups App
+
+To get started, go to the **Inventory**, select the **+App** button at the top right of the screen, and choose the Google Groups tile.
+
+![](/images/docs/2a0593cb7c058d6252c8804b16fe2fd938f5aa880c54f43c05871c3bc0000d79-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+Opal requires multiple credentials in order to manage your Google Groups.
+
+## 1. Configure a service account for Opal
+
+For Opal to manage your Google Groups on your behalf, you need to create a service account with proper permission scopes.
+
+* Open the [Service accounts page](https://console.developers.google.com/iam-admin/serviceaccounts). If prompted, select a project.
+* Click **+ Create Service Account**. Enter a name and description for the service account. When done click **Create**.
+* The **Service account permissions** section that follows is not required. Click **Continue**.
+* On the **Grant users access to this service account** screen, click **Done**.
+* Select the new service account.
+* Click the **Keys** tab.
+* Click the **Add key** drop-down menu, then select **Create new key**.
+* Select **JSON** as the **Key type** and click **Create**.
+* Your new public/private key pair is generated and downloaded to your machine.
+* Click **Close** on the **Private key saved to your computer** dialog, then return to the table of your service accounts. We then need to enable G Suite domain-wide delegation with the following steps:
+* Locate the newly-created service account in the table. Under **Actions**, click **Manage details**.
+* In the service account details, click **Show domain-wide delegation**, then ensure the **Enable G Suite Domain-wide Delegation checkbox** is checked.
+* If you haven't yet configured your app's OAuth consent, you must do so before you can enable domain-wide delegation. Follow the on-screen instructions to configure the OAuth consent screen, then repeat the above steps and re-check the checkbox.
+* Click **Save** to update the service account, and return to the table of service accounts. A new column, **Domain-wide delegation**, can be seen. Click **View Client ID** to obtain and make a note of the client ID. Now let's delegate domain-wide authority to your service account:
+
+To access user data on a Google Workspace domain, the service account that you created needs to be granted access by a super administrator for the domain. To delegate domain-wide authority to a service account, follow those steps:
+
+* From your Google Workspace domain's [Admin console](https://admin.google.com/), go to **Main menu > Security > API controls**.
+* In th&#x65;**&#xA0;Domain wide delegation** pane, select **Manage Domain Wide Delegation**.
+* Click **Add new**.
+* In the **Client ID** field, enter the client ID obtained from the service account creation steps above.
+* In the **OAuth Scopes** field, enter the following scope:
+
+```
+https://www.googleapis.com/auth/admin.directory.group
+```
+
+* Click **Authorize**. Your service account now has domain-wide access to the Google Admin Directory API for all the users of your domain with admin access.
+
+## 2. Enable the Google Admin API
+
+* Go to the [Google Admin API overview](https://console.cloud.google.com/apis/api/admin.googleapis.com/overview) in Google Cloud.
+* Click **Enable API**.
+
+## 3. Create Opal group
+
+* Create a Google Group called **Opal**. This group can be used later to automatically import groups into Opal (outside of GKE) by adding them as members of this group.
+
+## 4. Complete Opal form
+
+Back in Opal, fill in details about your Google Groups service account:
+
+* For Opal group email, you should enter the email of the Google group created above.
+* For Google Workspace admin email, you should enter the email of someone in your organization with at least `Groups Admin` privileges. If the service account is used outside of GKE, then `Super Admin` privileges are required on the admin email.
+* Then click to upload the downloaded JSON file for the created service account. If this step is successful, you have completed setting up the Google Groups server connection.
+
+## Set up your GKE clusters
+
+### 1. Enable Google Groups for RBAC
+
+In the [GKE console](https://console.cloud.google.com/kubernetes/list/), select a cluster and click **Edit.**
+
+* Look for the setting Google Groups for RBAC and click the Edit button.
+* Check **Enable Google Groups for RBAC.**
+* Complete the security group name with your domain name.
+* Click **Save changes.**
+
+![](/images/docs/f400002-GoogleK8_2.png "GoogleK8_2.png")
+
+### 2. Create Google Groups for access levels
+
+Go to [Google Groups](https://groups.google.com/).
+
+* Create a group with the name gke-security-groups. Make sure the gke-security-groups group has the **View Members** permission for **Group Members**.
+* Create a group for cluster admin access level. Please use the following format for naming: opal\_CLUSTER\_NAME\_ACCESS\_LEVEL. Each group must have the **View Members** permission for **Group Members**. - Example: if your cluster name is Acme-prod, and access level is admin, the group name should be opal\_Acme-prod\_admin.
+* In the gke-security-groups group, click **Add member&#xA0;**&#x61;nd add the group we just created.
+
+### 3. Define cluster role bindings in Kubernetes
+
+Next, assign the Google Group to a Kubernetes RBAC role.
+
+* Run `kubectl edit clusterrolebinding cluster-admin`
+* Edit the subjects array so it contains the following:
+
+<CodeGroup>
+  ```yaml yaml
+  subjects:
+  - apiGroup: rbac.authorization.k8s.io  
+    kind: Group  
+    name: system:masters
+  - apiGroup: rbac.authorization.k8s.io  
+    kind: Group  
+    name: opal\_Acme-prod\[email protected]
+  ```
+</CodeGroup>
+
+Save and exit.
+
+## Access your clusters in Opal
+
+The groups that were added under the gke-security-groups group will show up as Roles for your clusters.
+
+Users are then able to request access to the Roles defined earlier. Once the access is granted users will be able to run kubectl commands after connecting to the cluster with gcloud.
+
+***
+
+* [Table of Contents](#)
+
+* * [Add a Google Groups App](#add-a-google-groups-app)
+
+  * [1. Configure a service account for Opal](#1-configure-a-service-account-for-opal)
+
+  * [2. Enable the Google Admin API](#2-enable-the-google-admin-api)
+
+  * [3. Create Opal group](#3-create-opal-group)
+
+  * [4. Complete Opal form](#4-complete-opal-form)
+
+  * [Set up your GKE clusters](#set-up-your-gke-clusters)
+
+    * [1. Enable Google Groups for RBAC](#1-enable-google-groups-for-rbac)
+    * [2. Create Google Groups for access levels](#2-create-google-groups-for-access-levels)
+    * [3. Define cluster role bindings in Kubernetes](#3-define-cluster-role-bindings-in-kubernetes)
+
+  * [Access your clusters in Opal](#access-your-clusters-in-opal)

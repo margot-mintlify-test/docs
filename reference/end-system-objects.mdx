@@ -1,0 +1,56 @@
+---
+title: "Identifying End System Objects"
+description: "Learn how Opal tracks the resources and groups that it syncs with end systems."
+---
+
+## Remote IDs
+
+For each resource or group that Opal syncs with an end system app, Opal stores a Remote ID to map it to the corresponding end system object.
+
+This means that when you [create a resource](/reference/createresource) or [create a group](/reference/creategroup) via our API, you'll need to supply a Remote ID indicating which end system item this created item corresponds to.
+
+The table below describes what each Remote ID corresponds to for various end system resource types and group types. For most resource and group types, the remote ID is simply the unique identifier for the item on the remote system.
+
+| Resource Type      | Remote ID                               | Example                                                       |
+| ------------------ | --------------------------------------- | ------------------------------------------------------------- |
+| AWS EKS Cluster    | ARN                                     | arn:aws:eks:us-east-2:490306312345:cluster/examplecluster     |
+| AWS IAM Role       | ARN                                     | arn:aws:iam::490306312345:role/IamRole                        |
+| GCP Bucket         | Bucket ID                               | example-bucket                                                |
+| GCP Folder         | folders/\{Folder ID}                    | folders/592319123456                                          |
+| GCP GKE Cluster    | Cluster Name                            | example-cluster                                               |
+| GCP Project        | Project ID                              | example-project-312345                                        |
+| Okta Standard Role | \{Role\_Type}-\{Opal\_Organization\_ID} | GROUP\_MEMBERSHIP\_ADMIN-c2b572d7-6f36-47bf-81e3-8819bf123456 |
+| Okta Custom Role   | Role ID                                 | br04xma47yJwwLWab12de                                         |
+
+## Metadata
+
+Opal also stores metadata with each Opal resource or group to help it identify the corresponding end system object. This will also need to be supplied when [creating a resource](/reference/createresource) or [creating a group](/reference/creategroup) via our API.
+
+The table below describes the required metadata format for various end system resource types and group types.
+
+| Group Type             | Metadata JSON Example                                                        |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| Active Directory Group | `{"ad_group": {"object_guid": "abcdef39-7e75-44e5-bd04-2ed02a123456"}}`      |
+| Google Group           | `{"google_groups_group": {"group_id": "abcm2jsg218b123"}}`                   |
+| LDAP Group             | `{"ldap_group": {"group_uid": "fac0d608-01f1-103b-8def-5fa100c7884c"}}`      |
+| Okta Group             | `{"okta_directory_group": {"group_id": "00g1839iewP7YaQs25d7"}}`             |
+| Duo Group              | `{"duo_group": {"group_id": "abcdefsfhaxdls123456"}}`                        |
+| GitHub Team            | `{"git_hub_team": {"org_name": "example-org", "team_slug": "example-team"}}` |
+
+| Resource Type           | Metadata JSON Example                                                                                                                                                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AWS EC2 Instance        | `{"aws_ec2_instance": {"instance_id":"i-abcdefab163123456", "region":"us-east-2"}}`                                                                                                                                                    |
+| AWS EKS Cluster         | `{"aws_eks_cluster": {"cluster_name":"example-name", "cluster_region": "us-east-2", "cluster_arn": "arn:aws:eks:us-east-2:457823123456:cluster/example-name"}}`                                                                        |
+| AWS MySQL Instance      | `{"aws_rds_instance": {"instance_id": "example-mysql-db", "engine": "mysql", "region": "us-east-2", "resource_id": "db-ABCDEFEWPOB52OBTQWELABCDEF", "database_name": "example_db"}}`                                                   |
+| AWS PostgreSQL Instance | `{"aws_rds_instance": {"instance_id": "example-mysql-db", "engine": "postgres", "region": "us-east-2", "resource_id": "db-ABCDEFEWPOB52OBTQWELABCDEF", "database_name": "example_db"}}`                                                |
+| AWS IAM Role            | `{"aws_role": {"arn": "arn:aws:iam::490306123456:role/RoleName", "name": "RoleName"}}`                                                                                                                                                 |
+| GCP Bucket              | `{"gcp_bucket_role":{"bucket_id":"bucket-id"}}`                                                                                                                                                                                        |
+| GCP Compute Instance    | `{"gcp_compute_instance": {"instance_id": "example-instance", "project_id": "example-project", "zone": "us-east1"}}`                                                                                                                   |
+| GCP Folder              | `{"gcp_folder_role": {"folder_id": "folders/592319123456"}}`                                                                                                                                                                           |
+| GCP GKE Cluster         | `{"gcp_gke_cluster": {"cluster_name": "clustername"}}`                                                                                                                                                                                 |
+| GCP Project             | `{"gcp_project_role": {"project_id": "proj-id-456123"}}`                                                                                                                                                                               |
+| GCP SQL Instance        | `{"gcp_sql_instance":{"instance_id":"example-db-instance","project_id":"example-project"}}`                                                                                                                                            |
+| GitHub Repo             | `{"git_hub_repo":{"org_name":"example-name", "repo_name":"another-name"}}`                                                                                                                                                             |
+| Okta App                | `{"okta_directory_app": {"app_id": "0hgjthrgkfsTvbabc123", "logo_url": "https://ok12static.oktacdn.com/fs/bcg/4/geflkp5y2qNcK12ba3c"}}`                                                                                                |
+| Okta Role               | `{"okta_directory_role":{"role_id":"GROUP_MEMBERSHIP_ADMIN-abcdefd7-6f36-47bf-81e3-8819bf123456","role_type":"GROUP_MEMBERSHIP_ADMIN"}}` Custom role:`{"okta_directory_role":{"role_id":"cJ04xma47yJwwL123aBC","role_type":"CUSTOM"}}` |
+| Salesforce Profile      | `{"salesforce_profile": {"user_license": "1004Y000001Qb512ABC"}}`                                                                                                                                                                      |

@@ -1,0 +1,60 @@
+---
+title: "Okta Multifactor Authentication"
+description: "Suggest Edits"
+---
+
+## Using Okta MFA for Opal logins
+
+For logins, you must do 3 things:
+
+1. Setup Okta as your SAML provider. [For instructions, see here.](/docs/okta-saml-setup)
+2. In Okta, configure your Opal SAML app to [require MFA for login](https://help.okta.com/en-us/Content/Topics/Security/MFA_App_Level.htm).
+3. In Opal, ensure that the **Require Opal MFA for logins** setting is off.
+
+![1592](/images/docs/5707446882be420a8db219704595c7f3edc10cd6d5c8c3505a9dab30b8486af2-auth-settings-require-opal-mfa.png "86d3168-Screen_Shot_2023-03-20_at_12.04.34_AM.png")
+
+## Using Okta MFA for Opal actions: requesting, approving, connecting \[Legacy]
+
+<Warning>
+  * Okta Verify TOTP
+  * Okta Verify Push
+
+  If you'd like to use WebAuthn (Yubikey, TouchID) in addition to Okta Verify, follow the instructions to use an OIDC Provider: [https://docs.opal.dev/docs/oidc-provider-setup-for-opal-actions](/docs/oidc-provider-setup-for-opal-actions)
+</Warning>
+
+First, go to the resource(s) you want to require MFA for and click "Edit." Then, in the left pane, toggle on the desired setting:
+
+* **MFA to approve requests** requires reviewers to have completed an MFA in the past 5 minutes prior to approving a request.
+* **MFA to connect** (applies to select resource types) requires the user to have completed an MFA in the past 5 minutes prior to connecting to a resource.
+
+![884](/images/docs/7adff71-mfa-settings.png "Screen Shot 2023-03-20 at 12.10.35 AM.png")
+
+Then, in your organization's settings, configure the following setting in the **Authentication** section:
+
+![960](/images/docs/ffc27f6d1eb2bb9a0d0698853e657ea99f958c5bd3159539bbfa8823293bfbaf-auth-settings-mfa-gated-admins.png "50a8c90-Screen_Shot_2023-02-06_at_5.40.03_PM.png")
+
+### Requirements for Okta Verify Push
+
+When a push notification is sent to the Okta Verify app, the location associated with the user agent is included to prevent phishing. Here is an example:
+
+![750](/images/docs/82fc536-214995159-4eb5f510-29d3-455f-812b-0322c5abd312.png "214995159-4eb5f510-29d3-455f-812b-0322c5abd312.png")
+
+Opal's [IP ranges](/docs/ip-ranges) must be added to the allowlist in your org's network security settings as a trusted proxy to forward the user agent's original IP address with the `X-Forwarded-For` HTTP header.
+
+Note: If running Opal self-hosted, please use the public IP ranges for your infrastructure.
+
+Navigate to the **Configuration** section in Okta:
+
+* Under **Security**, click **Networks**.
+* Edit the allowlist IP zone.
+* Add the IP ranges under **Trusted proxy IPs**, like so:
+
+![1718](/images/docs/c76e769-Screen_Shot_2023-02-06_at_6.00.24_PM.png "Screen Shot 2023-02-06 at 6.00.24 PM.png")
+
+***
+
+* [Table of Contents](#)
+
+* * [Using Okta MFA for Opal logins](#using-okta-mfa-for-opal-logins)
+  * [Using Okta MFA for Opal actions: requesting, approving, connecting Legacy](#using-okta-mfa-for-opal-actions-requesting-approving-connecting-legacy)
+    * [Requirements for Okta Verify Push](#requirements-for-okta-verify-push)

@@ -1,0 +1,79 @@
+---
+title: "Concepts"
+description: "Learn about fundamental concepts and objects in Opal."
+---
+
+[Suggest Edits](/edit/opal-101)
+
+## Resources
+
+A **Resource** is an object from a remote system that a user can request to access. For example, you might want to request access to an RDS database, customer impersonation tool, or a popular SaaS application.
+
+In the **Catalog**, Opal lists all the resources at your organization, so they're easy to both discover and request to access.
+
+Admins can manage resources from the **Inventory**.
+
+![](/images/docs/241f410660f37a0b0b83c814f3c3f91e80a63cc9728d138f18122cd9561f17c6-opal-101-resources.png)
+
+## Roles
+
+**Roles** are permissions that you can request access to within a resource. Different **Roles** give you the ability to take different actions. For example, you might request access to **read-only** role to a RDS database or an **admin** role to a SaaS application.
+
+![](/images/docs/c48819a-Roles_addUser.png "SCR-20230313-jov.png")
+
+## Apps
+
+**Apps** are the system that Opal uses to import resources. For example, an individual AWS account is an app. From that app, you can import EKS clusters, SSH instances, RDS databases, or IAM roles as resources. Additionally, an Okta account is an app. From that app, you can import Okta apps and Okta groups.
+
+Admins can manage apps from the **Inventory**.
+
+![](/images/docs/192bb50d7e6cc2c1846ea2f6fb150a827814767af916f74439b08edd144b485a-opal-101-apps.png "SCR-20230313-jpi.png")
+
+## Owners
+
+**Owners** are specified groups of users you can set as the **Admin** or **Required Reviewers** for **Resources** and **Groups**. **Owners** are used to decentralize access management.
+
+* **Admins** can manage approval and security configurations.
+* **Required Reviewers** can approve or reject access requests.
+
+Admins can manage owners from the **Inventory**.
+
+![](/images/docs/fdecf8f0e332a1b678cd1ce8ff92008b491500f833f0150360bbb3a623a7d295-opal-101-owners.png "SCR-20230313-jr4.png")
+
+## Groups
+
+**Groups** are resources which grant a collection of other resources to users. Groups can grant member users [access to other groups](/docs/nested-groups), and both member users and member resources can be configured for just-in-time access. Existing groups from identity providers, such as Google Groups, Okta, Active Directory, can be imported into Opal.
+
+You can also create groups directly in Opal, under the **Opal** app in the Inventory.
+
+Groups can be synced to on-call schedules. This enables privileged access to be granted if users are on-call and removed if users are off-call.
+
+<Frame caption="Example of an Opal group">
+  <img src="/images/docs/e4cadecf2bb08f10fa344f12a0f64f7874cf3b3b523f39cb6a54e473fc6003cb-opal-101-groups.png" />
+</Frame>
+
+## Tags
+
+**Tags** are key-value pairs that can be associated with Users, Groups, and Resources. Tags can be imported from end systems or natively created within Opal, and they are particularly useful for attaching metadata to objects. In the following example, the imported Tag `security:green` applies to Resource `opal-dev-sandbox` from AWS. Similarly, a Tag`department:engineer` that applies to User `Jane Doe` can be imported from an IDP or HR system like Okta or Workday to reflect a User's attribute.
+
+![](/images/docs/bbbd767d23adb7dc4f1936bd3c0d106c6fc07e34c951b6d3e6a5eb9a75c9f368-opal-101-tags.png "SCR-20230313-jsg.png")
+
+## Non-human identities (NHIs)
+
+In Opal, non-human identities (NHIs) are identities that interact with an end system's resources or infrastructure and have some access rights.
+
+[GCP Service Accounts](/docs/service-accounts), [Azure Service Principals](/docs/azure-ad-1), and [Databricks Service Principals](/docs/databricks) are classified as NHIs and found in the **Inventory > NHIs** page after you import them. You can grant NHIs access to resources and groups, the same way you'd grant users access.
+
+[AWS IAM Roles](/docs/adding-an-iam-role) are not currently treated as NHIs, but can be imported as resources. You can grant users and groups access to IAM roles.
+
+***
+
+* [Table of Contents](#)
+
+* * [Resources](#resources)
+  * [Roles](#roles)
+  * [Apps](#apps)
+  * [Owners](#owners)
+  * [Groups](#groups)
+  * [Tags](#tags)
+  * [Non-human identities (NHIs)](#non-human-identities-nhis)

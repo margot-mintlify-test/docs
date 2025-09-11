@@ -1,0 +1,83 @@
+---
+title: "Set up Self-Hosted"
+description: "Learn the prerequisites required to deploy Opal on your own infrastructure."
+---
+
+[Suggest Edits](/edit/self-host-overview)
+
+Opal fully supports deployment on your own infrastructure and is built to support the most complex environments and regulatory requirements.
+
+You should deploy self-hosted Opal on a managed Kubernetes service:
+
+* [AWS EKS](/docs/self-host-opal-aws-guide)
+* [Google Cloud GKE](/docs/self-host-opal-gke-guide)
+
+## Prerequisites
+
+### Obtain a license
+
+An Opal team member will provide you with a license.
+
+### DNS configuration
+
+Set up a DNS record with your DNS provider that will be used for Opal. You'll also need a TLS certificate that's valid for the configured DNS record.
+
+*Example: opal.acme.com is an A record pointing to the public IP address of the on-premise instance.*
+
+## Networking configuration
+
+### Inbound ports (required)
+
+| Port range | Protocol | Source          | Description                     |
+| ---------- | -------- | --------------- | ------------------------------- |
+| 22         | TCP      | Internet or VPC | SSH to connect to instance      |
+| 80         | TCP      | Internet or VPC | Redirect to HTTPS               |
+| 443        | TCP      | Internet or VPC | HTTPS to access Opal            |
+| 8800       | TCP      | Internet or VPC | Opal On-Premise setup dashboard |
+
+### Outbound hosts (required)
+
+| Port | Hostname                                                                      | Description                                                               |
+| ---- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| 443  | app.opal.dev                                                                  | Opal platform                                                             |
+| 443  | proxy.replicated.com                                                          | Docker image registry                                                     |
+| 443  | k8s.kurl.sh                                                                   | Repository for pulling installer bundle                                   |
+| 443  | endpoint6.collection.us2.sumologic.com                                        | Log forwarding for debugging purposes (Deprecated)                        |
+| 443  | http-intake.logs.datadoghq.com                                                | Log forwarding for debugging purposes                                     |
+| 443  | stream.launchdarkly.com events.launchdarkly.com clientstream.launchdarkly.com | Feature flag management, critical to how Opal safely deploys new features |
+| 443  | auth.opal.dev                                                                 | Auth0 tenant, required for authentication                                 |
+
+If you restrict outbound traffic to specific IPs, you'll also need to add IPs for the following services to your allowlist:
+
+* [LaunchDarkly](https://docs.launchdarkly.com/home/infrastructure/ip-list)
+* [Auth0](https://auth0.com/docs/secure/security-guidance/data-security/allowlist)
+* [Replicated](https://docs.replicated.com/enterprise/installing-general-requirements#firewall-openings-for-online-installations)
+
+### Outbound hosts (optional based on integrations)
+
+| Port | Hostname                                                                                                        | Description           |
+| ---- | --------------------------------------------------------------------------------------------------------------- | --------------------- |
+| 443  | iam.\<REGION>.amazonaws.com ec2.\<REGION>.amazonaws.com rds.\<REGION>.amazonaws.com eks.\<REGION>.amazonaws.com | AWS                   |
+| 443  | cloudresourcemanager.googleapis.com                                                                             | Google Cloud Platform |
+| 443  | api.github.com                                                                                                  | Github                |
+| 443  | api.pagerduty.com                                                                                               | PagerDuty             |
+
+***
+
+What’s Next
+
+* [Self-Hosted on AWS EKS](/docs/self-host-opal-aws-guide)
+* [Self-Hosted on GKE](/docs/self-host-opal-gke-guide)
+
+* [Table of Contents](#)
+
+* * [Prerequisites](#prerequisites)
+
+    * [Obtain a license](#obtain-a-license)
+    * [DNS configuration](#dns-configuration)
+
+  * [Networking configuration](#networking-configuration)
+
+    * [Inbound ports (required)](#inbound-ports-required)
+    * [Outbound hosts (required)](#outbound-hosts-required)
+    * [Outbound hosts (optional based on integrations)](#outbound-hosts-optional-based-on-integrations)

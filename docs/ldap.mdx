@@ -1,0 +1,59 @@
+---
+title: "LDAP"
+description: "Connect your LDAP server to use Opal to manage and review access."
+---
+
+[Suggest Edits](/edit/ldap)
+
+Opal's integration with LDAP supports the following, and more:
+
+* Users can **request time-bounded access** to your LDAP groups.
+* Auditors can **initiate access reviews** that assign managers or group admins to periodically review users with long-lived access to LDAP groups.
+* Admins can **add resources from other Opal integrations** to an LDAP group so an LDAP group's members can automatically gain birthright access to, for example, a GitHub repo, AWS IAM role, etc.
+* All access changes are tracked in a **permanent audit log** that can be logged to a Slack channel or exported to your favorite tools.
+
+## Supported resources
+
+| Resource    | Read | Grant and revoke access | Available in Risk Center |
+| ----------- | ---- | ----------------------- | ------------------------ |
+| LDAP Groups | ✔️   | ✔️                      | ✔️                       |
+
+## 1. Create an app in Opal
+
+To get started, go to the **Inventory** page, click **+ App** at the top right. Then, click on the **LDAP** tile.
+
+![2312](/images/docs/217d69946efcad8a7ad97a14e4f4ed08f49c7ea1238b5dc9fe062fbb0c4ef148-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+Opal requires the following credentials in order to manage access to your LDAP groups.
+
+## 2. Configure an LDAP binder account for Opal
+
+In order for Opal to manage your LDAP server on your behalf, you need to create an LDAP service account for your server with proper permission scopes. In OpenLDAP, this is also known as a binder account.
+
+## 3. Finish creating Opal app
+
+Back in Opal, fill in details about your LDAP server and binder account:
+
+| Field                             | Value                                                                                  | Note                                                                               |
+| --------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Server hostname                   | The hostname of your LDAP server.                                                      | Ensure your LDAP hostname is reachable from the instance that hosts your Opal app. |
+| Server port                       | The port for your LDAP server.                                                         |                                                                                    |
+| Base distinguished name           | The Distinguished Name (DN) of the OU from which Opal should begin directory searches. |                                                                                    |
+| Root username                     | The username for the LDAP binder account you created in the previous step.             |                                                                                    |
+| Root password                     | The password for the LDAP binder account you created in the previous step.             |                                                                                    |
+| Group attribute unique identifier | The name of the attribute that your LDAP server uses to uniquely identity groups.      | This is often **entryUUID**.                                                       |
+
+Save the app. If this step is successful, you have completed setting up the LDAP server connection.
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [1. Create an app in Opal](#1-create-an-app-in-opal)
+  * [2. Configure an LDAP binder account for Opal](#2-configure-an-ldap-binder-account-for-opal)
+  * [3. Finish creating Opal app](#3-finish-creating-opal-app)

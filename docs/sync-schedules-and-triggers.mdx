@@ -1,0 +1,77 @@
+---
+title: "Sync schedules and triggers"
+description: "Learn how Opal syncs apps, groups, resources, and users from remote systems."
+---
+
+[Suggest Edits](/edit/sync-schedules-and-triggers)
+
+<Info>
+  Real-time sync, which syncs objects on an event-driven basis as they're updated in end systems, is supported for Okta, Azure, and AWS. Follow the guides to enable real-time sync for [Azure](/docs/azure-real-time-sync) or [AWS](/docs/aws-real-time-sync). [Okta real-time sync](/docs/okta#real-time-sync) is automatically enabled.
+</Info>
+
+Learn about the different ways Opal supports syncing items from your end system.
+
+**Note** that syncs, both automatic and manual, may be throttled to preserve service.
+
+## Automatic syncs
+
+Opal periodically syncs resources, apps, groups, and users from your end systems.
+
+**Managed** resources are apps, groups, and resources you’ve imported to Opal. **Unmanaged** resources exist in your end system but are not imported to Opal. See the guide to [import items to Opal](/docs/import-and-configure-resources-and-groups) to learn more.
+
+### Periodic syncs
+
+Multiple times per day, [user attributes](/docs/add-additional-idphr-providers#import-attributes) from IDP/HRIS data, and managed resources and groups are synced. These syncs may be skipped if they overlap with other syncs.
+
+Multiple times per week, all apps, groups, and resources are synced, including unmanaged ones, to reconcile any discrepancies between the end system and objects in Opal. These syncs may be delayed given high volume.
+
+Both of these syncs may create and remove users in Opal if they've changed in the remote app.
+
+### High-priority syncs
+
+The following tasks are considered high-priority and are executed soon after they’re triggered:
+
+* On-call schedules synced from [productivity integrations](/docs/connect-your-productivity-tools)
+* [Access rule](/docs/access-rules) membership updates
+* Notification sends for escalated request or access reviews
+* [Ticket propagation](/docs/ticket-propagation-1)
+
+## Trigger manual syncs
+
+### Managed resources and groups
+
+To sync resources, groups, and users for an individual app, go to the detail page for the app in the **Inventory** and select the **Sync item** button on the upper right.
+
+To sync all apps, resources, groups, and users, go to **Inventory** > **Apps** and select the **Sync Inventory** button the upper right.
+
+Both of these syncs may create and remove users in Opal if they've changed in the remote app. These syncs do **not** sync user attributes.
+
+![](/images/docs/a94287d271b0df9525a5b42640a8030ceaeddbdb611359cb5747e9fa5041b00e-sync-item.png)
+
+### User attributes
+
+To sync user attributes from your IDP/HRIS—title, manager, etc.—go to the **Inventory** > **Users** tab and select the **Sync Users** button on the upper right. This does not create new users, but it populates attributes for existing users.
+
+## View sync status
+
+Use the **Sync Status** modal by clicking the last synced date on the upper right to see when and how objects were last synced—this includes manual, high-priority, hourly, and weekly syncs. Scheduled syncs show the **Synced by** field set to **Opal System**.
+
+![](/images/docs/cd506b87447cef1dba550ca33a3657e77bfd02e2c6e70e124ded51521100f0b0-sync-status.png)
+
+You can also use the `GET sync_errors` [API endpoint](/reference/getsyncerrors) to programmatically retrieve errors since the last successful sync.
+
+***
+
+* [Table of Contents](#)
+
+* * [Automatic syncs](#automatic-syncs)
+
+    * [Periodic syncs](#periodic-syncs)
+    * [High-priority syncs](#high-priority-syncs)
+
+  * [Trigger manual syncs](#trigger-manual-syncs)
+
+    * [Managed resources and groups](#managed-resources-and-groups)
+    * [User attributes](#user-attributes)
+
+  * [View sync status](#view-sync-status)

@@ -1,0 +1,94 @@
+---
+title: "Google SAML Setup"
+description: "Learn how to configure Opal to authenticate users via Google SAML SSO."
+---
+
+[Suggest Edits](/edit/google-saml-setup)
+
+Use this guide to configure Opal to allow or require users to log in with Google SAML SSO.
+
+## Setup
+
+1. When logged into Google Workspace as an administrator, select **Apps > Web and mobile apps** on the left sidebar.
+
+![](/images/docs/db29d41-setup_1.png "setup_1.png")
+
+2. Click on **Add App**, then **Add custom SAML app**.
+
+![](/images/docs/a63d993-setup_2.png "setup_2.png")
+
+3. Name your SAML app **Opal**. You can use [this brand asset](https://drive.google.com/uc?export=download\&id=17DAV1wD6Ldc4hPmrX1smq4i4s6w-1brL) as the app icon. When ready, click **Continue**.
+4. Copy the value of the **SSO URL&#xA0;**&#x66;ield.
+5. In the **Settings > Authentication** section of the Opal dashboard, click **Setup** and paste the **SSO URL** into the **Identity Provider SAML 2.0 SSO URL (HTTPS)** field.
+
+![2262](/images/docs/20beaf800ff544c673c944779f499199d10da7e645a313c37fe5f4ceb37611b7-saml-sso-settings.png "SCR-20230313-lio.png") ![2262](/images/docs/0b4aab981ffd6eebddbfc58d896ec7a3fbf1b7323c1c83c384058db0dfbe2428-opal-saml-sso.png "SCR-20230313-lje.png")
+
+6. Download the Google IDP public certificate by clicking the down arrow icon next to the certificate.
+
+![](/images/docs/2b96db4-setup_4.png "setup_4.png")
+
+7. In Opal, upload the certificate with the **Upload Certificate** button.
+
+![2262](/images/docs/ad8fb82cddff2bd09218020bd8ee1fb47222766296d18ab12fbbff706d4f86f1-opal-saml-sso-upload-cert.png "SCR-20230313-ljq.png")
+
+8. Click **Save Changes** to save this data to Opal.
+9. Open the **Setup** modal again and copy the **ACS URL&#xA0;**&#x61;nd **Entity ID** values. Go back to the Google SAML app creation page and paste these fields to the corresponding **ACS URL&#xA0;**&#x61;nd **Entity ID** fields.
+
+![](/images/docs/53119bd-setup_6.1.png "setup_6.1.png")
+
+10. Click **Continue**.
+11. In the **Attribute Statements** page, map the following **Google Directory** attributes to **App attributes**:
+
+* **First name**: **given\_name**
+* **Last name**: **family\_name**
+* **Primary email**: **email**
+
+![](/images/docs/a205155-setup_7.png "setup_7.png")
+
+12. Click **Finish** to complete the creation of the Google SAML app.
+13. Turn on the SAML app by selecting **OFF for everyone** in the SAML app page, then **ON for everyone**, then **Save.**
+
+![](/images/docs/5049985-setup_8.png "setup_8.png")
+
+## Test login via SAML
+
+1. Go to Opal, then log out of your Opal account.
+2. Click on **Continue with SAML** on the Opal login screen.
+3. Manually type your email address in the **Email field**. This email must have the same domain name as the user who created the SAML app in the Opal UI. For example, if [\[email protected\]](/cdn-cgi/l/email-protection#d1bbbebf91bea1b0bdffb5b4a7) created the SAML integration, the SAML integration will be tied only to users with the `opaltest.com` domain.
+4. Click **Continue with SAML**. This should prompt you to log in with Google.
+5. You may arrive at the following linking screen. If so, click **Continue** and log in with the account corresponding to your email address.
+
+![804](/images/docs/0ac87fa-setup_10.png "setup_10.png")
+
+7. At this point, you should be able to log into Opal.
+
+## Test IDP-initiated flow from Gmail
+
+1. Log in to Gmail.
+2. On the upper right corner, click on the **Google Apps** dots icon, then **Opal**.
+
+![](/images/docs/f24d9a0-setup_11.png "setup_11.png")
+
+3. This should prompt you to log in with Google.
+4. At this point, you should be able to log into Opal.
+
+## Common issues
+
+Adding a SAML connection in Google and enabling it for your users can take up to **24 hours** to propagate. As a result, there are occasionally caching issues after you add a new SAML connection.
+
+Manifestations of this problem include the following errors:
+
+* **403 app\_not\_configured**
+* **403 not\_a\_saml\_app**
+* **500**
+
+In some cases, these caching issues can be circumvented by **clearing browser state** for Opal and Google, or attempting to log in using an incognito browser tab or a different browser. The most consistent fix is to wait up to 24 hours for the app to propagate.
+
+***
+
+* [Table of Contents](#)
+
+* * [Setup](#setup)
+  * [Test login via SAML](#test-login-via-saml)
+  * [Test IDP-initiated flow from Gmail](#test-idp-initiated-flow-from-gmail)
+  * [Common issues](#common-issues)

@@ -1,0 +1,47 @@
+---
+title: "Add a Cloud SQL Instance"
+description: "Suggest Edits"
+---
+
+Opal lets your developers find and request access to GCP Cloud SQL instances. Use the following steps to add SQL instances to your Opal dashboard.
+
+## 1. Go to SQL in GCP
+
+Access the [SQL browser using this link](https://console.cloud.google.com/sql/instances) or find it by navigating to SQL in the search bar.
+
+## 2. Configure your SQL instance
+
+Select your instance and click **Edit**.
+
+* Under **Customize your instance**, click **Flags**.
+* Click **Add Flag**.
+* Select cloudsql.iam\_authentication.
+* Click **Done**.
+
+![](/images/docs/122ebe7-SQL_1.png "SQL_1.png")
+
+Opal only adds resources for SQL instances that you label with `opal`.
+
+* Scroll down to **Labels&#xA0;**&#x61;nd add the opal label.
+* Click **Done**.
+* Click **Save**
+
+![](/images/docs/2a59b02-SQL_2.png "SQL_2.png")
+
+## Access a SQL instance in Opal
+
+If you successfully labeled your SQL instance in GCP, the new SQL resource shows in the **Resources** tab.
+
+![2312](/images/docs/221fe4965775b1c1b627d7b551a651e516afb1a82db2d0f6a835290cb255ca49-gcp-cloud-sql.png "SCR-20230313-ncu.png")
+
+Access to this instance is granted to the GCP user that matches your email address.
+
+Opal [adds IAM users](https://cloud.google.com/sql/docs/mysql/add-manage-iam-users#creating-a-database-user) to the Cloud SQL instance, so users can log in, but by default accounts do **not** have any database privileges. Use the [Google guide](https://cloud.google.com/sql/docs/mysql/add-manage-iam-users#grant-db-privileges) to learn how to grant users database privileges.
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Go to SQL in GCP](#1-go-to-sql-in-gcp)
+  * [2. Configure your SQL instance](#2-configure-your-sql-instance)
+  * [Access a SQL instance in Opal](#access-a-sql-instance-in-opal)

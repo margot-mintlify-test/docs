@@ -1,0 +1,62 @@
+---
+title: "Duo"
+description: "Connect your Duo instance to use Opal to manage and review access."
+---
+
+[Suggest Edits](/edit/duo)
+
+Opal's integration with Duo supports the following, and more:
+
+* Users can **request time-bounded access** to your Duo groups.
+* Auditors can **initiate access reviews** that assign managers or group admins to periodically review users with long-lived access to Duo groups.
+* Admins can **add resources from other Opal integrations** to an Duo group so an Duo group's members can automatically gain birthright access to, for example, a GitHub repo, AWS IAM role, etc.
+* All access changes are tracked in a **permanent audit log** that can be logged to a Slack channel or exported to your favorite tools.
+
+## Supported resources
+
+| Resource   | Read | Grant and revoke access | Available in Risk Center |
+| ---------- | ---- | ----------------------- | ------------------------ |
+| Duo Groups | ✔️   | ✔️                      | ✔️                       |
+
+## Requirements
+
+To set up your Duo app:
+
+* You must be an Opal Admin
+* Your users must also have the optional email field populated in Duo to be imported to Opal
+* You must have the ability to set up [Admin API credentials](https://duo.com/docs/adminapi#first-steps) in Duo
+
+## 1. Create a Duo app
+
+To get started, go to the **Inventory** page, click **+ App** at the top right. Then, click on the Duo tile.
+
+![](/images/docs/ea8116616ade46f8308e30ae3eaef4b57a3626e31b7f132c9fd3ab7b39f71e7e-opal-101-apps-add-app.png "SCR-20230313-n1j.png")
+
+## 2. Generate Admin API credentials
+
+Opal requires Admin API credentials in order to manage your Duo Groups on your behalf. To learn more about setting up Admin API credentials, [see the Duo documentation](https://duo.com/docs/adminapi#first-steps).
+
+The following permissions must be granted for Opal to successfully manage access to your Duo instance. Admin API permissions can be found in the Duo Admin Portal under **Applications > Admin API > Permissions**.
+
+* Grant read information
+* Grant read log
+* Grant read resource
+* Grant write resource
+
+## 3. Fill out Opal form
+
+Back in the Opal app creation form, fill in the details about your Duo account and select **Create**. If this step is successful, you have completed setting up the Duo connection.
+
+***
+
+What’s Next
+
+* [Import and Configure Resources](/docs/import-and-configure-resources-and-groups)
+
+* [Table of Contents](#)
+
+* * [Supported resources](#supported-resources)
+  * [Requirements](#requirements)
+  * [1. Create a Duo app](#1-create-a-duo-app)
+  * [2. Generate Admin API credentials](#2-generate-admin-api-credentials)
+  * [3. Fill out Opal form](#3-fill-out-opal-form)

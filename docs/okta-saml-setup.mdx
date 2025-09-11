@@ -1,0 +1,65 @@
+---
+title: "Okta SAML Setup"
+description: "Learn how to configure Opal to authenticate users via Okta SAML SSO."
+---
+
+[Suggest Edits](/edit/okta-saml-setup)
+
+You can set up Opal to allow or require users to login via Okta SAML SSO.
+
+## Setup
+
+1. Log in to Okta as an administrator, then from the left sidebar, select **Applications** > **Create App Integration** > **SAML 2.0** > **Next**. On the **General Settings** page, fill in the following fields, then click **Next**.
+
+* **App name:** Opal
+* **App logo:** [Download](https://files.readme.io/54e771f-logo-black.png) and use Opal's logo.
+
+2. In a new tab, log in to the Opal dashboard, then go to **Configuration > Settings > Authentication > SAML SSO Settings > Setup**. You should see the following screen:
+
+![2262](/images/docs/0b4aab981ffd6eebddbfc58d896ec7a3fbf1b7323c1c83c384058db0dfbe2428-opal-saml-sso.png "SCR-20230313-lje.png")
+
+2. Back in Okta, go to the next page. On the **Configure SAML** screen, fill in the following fields, then click **Next**. Leave all other fields in their default state.
+
+   * **Single sign on URL:** Use the **ACS URL** from the Opal modal.
+     * Leave **Use this for Recipient URL and Destination URL** checked.
+
+   * **Audience URI**: Use **Entity ID** from the Opal modal.
+
+   * **Attribute Statements:**
+
+     * `given_name` > `user.firstName`
+     * `family_name` > `user.lastName`
+     * `email` > `user.email`
+
+![2070](/images/docs/4919424-Screen_Shot_2022-10-11_at_7.34.05_PM.png "Screen Shot 2022-10-11 at 7.34.05 PM.png")
+
+4. On the next page in Okta, select **I'm an Okta customer adding an internal app**, then click **Finish**.
+5. On the new Okta app page, click the **Assignments** tab and assign any users or groups who you want to grant access to Opal via Okta SAML SSO. Each email in Okta must match the email of the Opal account in order for the user's SAML login to succeed.
+
+![2048](/images/docs/bbfe764-Screen_Shot_2022-10-11_at_7.39.34_PM.png "Screen Shot 2022-10-11 at 7.39.34 PM.png")
+
+6. Next, in the **Sign On** tab select **View SAML setup instructions**.
+
+![2076](/images/docs/253e332-Screen-Shot-2022-10-11-at-7-44-24-PM.png "Screen-Shot-2022-10-11-at-7-44-24-PM.png")
+
+7. Back in Opal, enter the following information, then click **Save**:
+
+   * **Identity Provider SAML 2.0 SSO URL:** Use **Identity Provider Single Sign-On URL** from Okta.
+   * **Identity Provider Public Certificate**: Download the **X.509 Certificate** from Okta and upload it to Opal.
+
+![2262](/images/docs/ad8fb82cddff2bd09218020bd8ee1fb47222766296d18ab12fbbff706d4f86f1-opal-saml-sso-upload-cert.png "SCR-20230313-ljq.png")
+
+Your SAML SSO setup should now be complete. For more options on configuring your SAML connection, see [the SSO SAML guide](/docs/sso-with-saml).
+
+## Test SAML login
+
+To test SAML login to Opal, log out of your Opal account and try to log in again. The next time you log in, you should see the following screen, which lets you choose to log in via SAML.
+
+![2408](/images/docs/a325482-SCR-20230313-lkq.png "SCR-20230313-lkq.png")
+
+***
+
+* [Table of Contents](#)
+
+* * [Setup](#setup)
+  * [Test SAML login](#test-saml-login)

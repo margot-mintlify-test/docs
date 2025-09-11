@@ -1,0 +1,160 @@
+---
+title: "Workday IDP/HRIS Integration"
+description: "Learn how to connect Workday to Opal as an IDP/HRIS integration."
+---
+
+[Suggest Edits](/edit/workday-idphris-integration)
+
+If your organization uses Workday as an HR Provider, you can designate it as an [IDP/HRIS Integration](/v3.2/docs/add-your-first-idphr-provider). This allows Opal to sync your Workday identities and their attributes, on top of syncing and managing access to entitlements (e.g. Workday Security Groups, Workday Organization Roles, etc).
+
+## Requirements
+
+Before you set up Workday as your IDP, you must first create an Workday Directory App in Opal. To do this, [follow the instructions here](/docs/workday).
+
+Next, set up Workday as your IDP using the following instructions:
+
+* [Add Your First IDP/HR Provider](/v3.2/docs/add-your-first-idphr-provider)
+* [Add Additional IDP/HR Providers](/v3.2/docs/add-additional-idphr-providers)
+
+## HRIS/User attribute source configuration
+
+To configure Workday as an attribute source in Opal, go to **Settings > IDP & HR Integrations** and select your existing Workday connection as an IDP/HRIS provider.
+
+### Default attributes ingested
+
+The following attributes are ingested from Workday by default. These attributes can be mapped to Opal's user attributes from the **Settings** > **IDP & HRIS Integrations** page.
+
+| Workday Attribute  | Default Opal Mapping | Description                                              |
+| ------------------ | -------------------- | -------------------------------------------------------- |
+| `email`            | Email                | The user's email address.                                |
+| `remoteID`         | -                    | Workday object WID.                                      |
+| `employeeID`       | -                    | The user's employee ID.                                  |
+| `firstName`        | -                    | The user's first name.                                   |
+| `lastName`         | -                    | The user's last name.                                    |
+| `managerEmail`     | Manager              | The email address of the user's manager.                 |
+| `position`         | -                    | The user's job position.                                 |
+| `workLocation`     | -                    | The location where the user works.                       |
+| `businessTitle`    | Title                | The user's business title.                               |
+| `employeeType`     | -                    | The type of employment (e.g., full-time, part-time).     |
+| `employeeTimeType` | -                    | The time type of the employee (e.g., regular, contract). |
+| `hireDate`         | -                    | The date when the user was hired.                        |
+| `managementLevel`  | -                    | The management level of the user.                        |
+| `organization`     | Team                 | The organization to which the user belongs.              |
+| `onLeave`          | -                    | Indicates whether the user is currently on leave.        |
+| `active`           | -                    | Indicates whether the user is an active worker.          |
+| `secondaryEmails`  | -                    | Comma-separated list of user's contact emails.           |
+
+**Note:** In addition to the attributes listed above, Opal also ingests the worker's provisioning status and secondary email addresses. These attributes are automatically mapped to Opal's system attributes.
+
+You can customize these mappings based on your organization's specific requirements by visiting the IDP/HRIS settings page. Ensure that the attributes are correctly mapped to ensure accurate data synchronization between Workday and Opal.
+
+### Ingest custom attributes
+
+To ingest custom attributes from Workday into Opal, you need to configure the Workday integration system using the Field Override Service. Follow the steps below to set up and map custom attributes effectively:
+
+#### 1. Create a Field Override Service
+
+1. **Access Integration Configuration:**
+
+   * Log in to Workday and navigate to the integration configuration section.
+
+2. **Initiate Field Override Service:**
+
+   * Search for and select "Create Integration Field Override Service."
+   * Start a new Field Override Service setup.
+
+3. **Configure Service Details:**
+
+   * Assign a meaningful name to the Field Override Service.
+   * Choose the "Worker" business object to associate with the service.
+
+4. **Add and Define Fields:**
+
+   * Click the "Plus" icon to add new fields.
+   * Enter names for each custom field that correspond to your desired attributes in Opal.
+   * Define the necessary settings for each field.
+
+5. **Save Configuration:**
+
+   * Click "OK" to save each field entry.
+   * Click "Done" once all fields are added and configured.
+
+#### 2. Set Up the Integration System
+
+1. **Create New Integration System:**
+
+   * From the Workday Home page, go to **Integration System** and select **Create Integration System**.
+
+2. **Name and Template:**
+
+   * Provide a name for your new Integration System.
+   * Choose **New Using Template** and select **Document Transformation** as the template.
+   * Confirm by clicking "OK."
+
+3. **Attach Integration Service:**
+
+   * Navigate to **Actions > Integration System > Configure Integration Attachment Service**.
+   * Create an Integration Attachment Service by selecting the "Attachment" column and choosing **Create Integration Attachment Service**.
+   * Attach an empty text file and confirm by clicking "OK."
+
+4. **Incorporate Field Override Service:**
+
+   * Go to **Custom Integration Services** in your new Workday Integration System.
+   * Click the "Plus" icon to add the Field Override Service created earlier.
+   * Confirm by clicking "OK."
+
+5. **Record System ID:**
+
+   * Note the System ID for the Integration System; it is needed for retrieving custom attributes.
+
+#### 3. Map and Configure Attributes
+
+1. **Locate Integration System:**
+
+   * Search for **View Integration System**.
+   * Enter the name of the Integration System you created and select "OK."
+
+2. **Map Custom Fields:**
+
+   * Go to **Integration System > Configure Integration Field Overrides**.
+   * Find the custom or calculated fields and map them to the correct values in the "Override External Field" section.
+   * Click "OK" to save the mappings.
+
+3. **Finalize Setup:**
+
+   * Click "Done" to complete the setup process.
+
+#### 4. Link the Integration System to Opal
+
+1. **Locate Integration System:**
+
+   * Search for **View Integration System**.
+   * Enter the name of the Integration System you created and select "OK."
+
+2. **Locate and Copy Integration System ID:**
+
+![](/images/docs/f55cfdb33e4a0699c1d160cc3caeb72bc006b1251b56fb1c2c166dfdc0ce0d7e-image.png)
+
+3. **Add the Integration System ID in your Opal Workday Connection**
+
+![](/images/docs/b9c93b39b52eae2701c2762ecfee5159a3e58cff67e39867ad62f0824eb821a2-image.png)
+
+4. **Configure Attribute Mappings in Opal**
+
+   * In Opal, go to **Settings > IDP & HR Integrations**
+   * Custom attributes can now be imported, using your configured field name as key
+
+***
+
+What’s Next
+
+Check out how to use Opal to manage access to Workday entitlements
+
+* [Table of Contents](#)
+
+* * [Requirements](#requirements)
+
+  * [HRIS/User attribute source configuration](#hrisuser-attribute-source-configuration)
+
+    * [Default attributes ingested](#default-attributes-ingested)
+    * [Ingest custom attributes](#ingest-custom-attributes)

@@ -1,0 +1,58 @@
+---
+title: "Special roles in Opal"
+description: "Suggest Edits"
+---
+
+The following roles in Opal are treated as resources—a user's access to a role may be time-bounded, indefinite, etc. These roles are not scoped by resource but apply across the Opal platform, while Group/Resource Admins' capabilities are limited to the group or resource.
+
+The following are special roles in Opal:
+
+* **Admin**: Super-admins who can add integrations to Opal, see and modify all settings, and manage all configurations for resources and groups
+* **Auditor**: Users who can start and stop user access reviews. In addition, they can assign any reviewer to review
+* **Read-only Admin**: Users who can see everything a super-admin can see, but otherwise have normal user privileges
+* **User Impersonation**: Users with the ability to "impersonate" another Opal user, entering read-only mode to see what they see
+* **Global Requester**: Gives users visibility into the entire catalog, regardless of visibility rules, and gives users the ability to request resources and groups [on behalf of](/docs/end-user-faq#request-access-in-the-opal-ui) other users
+
+![](/images/docs/a4eec22b55593d31c03b5faa4b35e2aa1522b6092d340ae127969a44ceb3e99d-opal-roles.png "Screen Shot 2022-08-05 at 2.38.13 PM.png")
+
+Additionally, the following roles can be assigned in the product:
+
+* **Group/Resource Admins:** Users with admin capabilities for the resources and groups that they own
+
+## Role capabilities
+
+Global permissions:
+
+![](/images/docs/7feac38-Screen_Shot_2022-08-05_at_2.38.13_PM.png "Screen Shot 2022-08-05 at 2.38.13 PM.png")
+
+Group/Resource permissions:
+
+![](/images/docs/af1e715-Screen_Shot_2022-09-14_at_10.19.10_AM.png "Screen Shot 2022-09-14 at 10.19.10 AM.png")
+
+User [Access Reviews](/docs/access-reviews):
+
+![](/images/docs/7b96638-Screen_Shot_2022-08-05_at_2.34.25_PM.png "Screen Shot 2022-08-05 at 2.34.25 PM.png")
+
+![](/images/docs/4c1a801-Screen_Shot_2022-08-05_at_2.34.32_PM.png "Screen Shot 2022-08-05 at 2.34.32 PM.png")
+
+## User Impersonation
+
+To enable the User Impersonation role, admins can go to **Organization Settings > Advanced** and toggle **Enable user impersonation**.
+
+![](/images/docs/25bb9d460b0dad69d4d0f5d4b71527c2965b184c9af30f7381b1e13dc93ee770-user-impersonation.png)
+
+Access requests for this resource require a specified user to impersonate, which you set as a **Role** when you add a user to the **User Impersonation** role.
+
+## Global requestor
+
+To enable the Global Requestor role, go to **Organization Settings > Access Requests** and toggle **Enable global requestor role**. See [request on behalf rules](/docs/request-on-behalf-rules) to learn about how visibility settings and request configurations affect the global requestor role.
+
+![](/images/docs/e72604252f0e77933b5b6b921bee481b018dc0d9041d2a43701f22d9b3e473af-global-requestor-enable.png)
+
+***
+
+* [Table of Contents](#)
+
+* * [Role capabilities](#role-capabilities)
+  * [User Impersonation](#user-impersonation)
+  * [Global requestor](#global-requestor)

@@ -1,0 +1,100 @@
+---
+title: "Risk Center"
+description: "Use the Risk Center to gain insights on your least privilege posture."
+---
+
+[Suggest Edits](/edit/least-privilege-posture-management)
+
+Opal automatically analyzes your access grants to detect vulnerabilities in your environment, and surfaces these in the **Risk Center**. The **Risk Center** includes insights on your current security posture, such as:
+
+* Trends in vulnerabilities, including unused, permanent, outside, or irregular access
+* Suggested remediation actions to reduce risk
+* A comprehensive view of access grants
+* Detailed views of overprovisioned Okta group rules
+
+![](/images/docs/c36537547f44fcf57f741887dbeb2697f2b3773af2e10abac72abee796474bda-updated-risk-center.png)
+
+### Assign resource sensitivity
+
+For more precise recommendations, be sure your assets—groups and resources—have appropriate **Sensitivity** levels. Sensitivity is used, along with access metadata, to determine suggested remediations.
+
+Resources are assigned an inferred sensitivity based on their type, but you can manually override a resource's sensitivity. Find the resource in the **Inventory** and select the edit icon.
+
+![](/images/docs/cf1ad5e-Screenshot_2024-06-15_at_1.08.00_PM.png)
+
+You can also edit risk sensitivities in bulk from the **Inventory** by selecting multiple resources or groups in an app.
+
+![](/images/docs/5fa211e87caf206b47a8014c8aa91a62eb3841bc3f54170d0ddb74b7927c3d30-Screenshot_2025-03-06_at_10.48.45_AM.png) ![](/images/docs/95d442c372fe9bb37f63fdce1e151d7da0bf59b91aa4e150495e81efb18852f2-Screenshot_2025-03-06_at_10.49.02_AM.png)
+
+### Vulnerability types
+
+See an overview of trends in vulnerabilities in the charts at the top of the Risk Center, and filter by vulnerability in the asset grants table.
+
+#### Permanent access
+
+Access duration, used to calculate permanent access and unused access, is imported from third-party IDPs and apps, and is updated when access is granted through Opal.
+
+#### Outside access
+
+Outside access is any access grant provisioned outside Opal's approval flow. Note that this refers to provisioned access, not provisioned users—users imported from your IDP are not flagged for outside access.
+
+#### Irregular access
+
+Irregular access is determined by calculating similarity scores for users, based on user attributes, and similarity scores for resources, based on resource types. Opal flags irregular access when access grants are dissimilar to existing access grants.
+
+#### Unused access
+
+Access duration, used to calculate permanent access and unused access, is imported from third-party IDPs and apps, and is updated when access is granted through Opal.
+
+#### Overprovisioned rules
+
+Okta group rules are automatically analyzed and flagged for overprovisioning. Select **View rule insights** on an Okta group rule in the access grants table for a [detailed view](#view-rule-insights) on the group rule.
+
+### Remediate vulnerabilities
+
+When you select suggested actions, filters are automatically applied to the access grant table for the given asset or vulnerability type. From the table, you can apply the suggested action, revoke access, and view rule insights for Okta group rules.
+
+It's often preferable to convert overprovisioned users to JIT, rather than revoke access, as it is a less jarring experience for end users who might be used to having longstanding access.
+
+Dismiss a suggestion to mark the identified vulnerabilities as safe. This prevents the suggestion from appearing for another 6 months.
+
+![](/images/docs/84e7d27e6a76da8ff5783e8ce18501b17eae9fb45cf152718b5009f11cf1c73a-apply-remediations.png)
+
+#### Remediate in bulk
+
+Select the checkbox on the **Access grants** table to remediate rows in bulk, then select the **Apply Suggested Remediations** button. Rows highlighted in yellow—in this example, all users—are marked for access calibration, with the **Expires** column detailing the change.
+
+#### View rule insights
+
+If you've [connected to Okta](/docs/okta-idphris-integration), Opal automatically imports and analyzes Okta group rules to proactively identify overprovisioned groups.
+
+In the **Vulnerabilities** filter, select **Overprovisioned rule** to view overprovisioned Okta group rules.
+
+![](/images/docs/37a99943ef65369e9812748223c92317849928fafe561ff1fae9d0a52638355b-rule-insights-1.png)
+
+Selecting **View Rule Insights** on a rule brings you to the **Rule Insights** page. There, you can see the rule conditions, the groups governed by your Okta rule, and the resulting users with unused access.
+
+![](/images/docs/10b2e54dea7778c054acece37bddd83c8196668ad16074c12dcaf1db0cf4e653-rule-insights-updated.png)
+
+Select **Show Remote Rule** to see the rule, which you may want to restructure in Okta.
+
+Filter by the group using the left panel. Select the **Key Insights** filters to see the overprovisioned users, grouped by user attribute.
+
+***
+
+* [Table of Contents](#)
+
+* * [Assign resource sensitivity](#assign-resource-sensitivity)
+
+  * [Vulnerability types](#vulnerability-types)
+
+    * [Permanent access](#permanent-access)
+    * [Outside access](#outside-access)
+    * [Irregular access](#irregular-access)
+    * [Unused access](#unused-access)
+    * [Overprovisioned rules](#overprovisioned-rules)
+
+  * [Remediate vulnerabilities](#remediate-vulnerabilities)
+
+    * [Remediate in bulk](#remediate-in-bulk)
+    * [View rule insights](#view-rule-insights)

@@ -1,0 +1,131 @@
+---
+title: "Add an IAM role"
+description: "Add your AWS IAM roles to Opal to allow your developers to request temporary access."
+---
+
+[Suggest Edits](/edit/adding-an-iam-role)
+
+<Info>
+  This guide assumes you've already [configured your AWS organization in Opal](/docs/setting-up-your-aws-organization-in-opal).
+</Info>
+
+## Add a role
+
+Use the following steps to connect an IAM role to Opal.
+
+### Trust policy
+
+You must use the following trust policy for your role, substituting as follows:
+
+* `${ACCOUNT_ID}`: The account ID of the account being configured.
+* `${IDP_ISSUER_URL}`: The Identity Provider's issuer URL
+* `${OPAL_CLIENT_ID}`: The Client ID assigned to Opal via your IdP.
+
+<CodeGroup>
+  ```json trust_policy.json
+  {
+      "Version": "2012-10-17",
+      "Statement": [
+          {
+              "Effect": "Allow",
+              "Principal": {
+                  "Federated": "arn:aws:iam::${ACCOUNT_ID}:oidc-provider/${IDP_ISSUER_URL}"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                  "StringEquals": {
+                      "${IDP_ISSUER_URL}:aud": "${OPAL_CLIENT_ID}"
+                  }
+              }
+          }
+      ]
+  }
+  ```
+</CodeGroup>
+
+### Create a role
+
+Here is an example invocation for creating a role with the above trust policy file:
+
+<CodeGroup>
+  ```shell Creating an IAM role for Opal
+  aws iam create-role \
+     --role-name MyRoleWithPoliciesToBeManagedByOpal \
+     --assume-role-policy-document file://trust_policy.json \
+     --tags Key=opal,Value="" \
+     --description "My role containing policies to be managed by Opal"
+  ```
+</CodeGroup>
+
+### Attach policies to a role
+
+Next, attach all the policies you want to show up in Opal under this role. You can do this in the AWS Console:
+
+<Frame caption="Attaching policies to an Opal role.">
+  <img src="/images/docs/24f44d3-Screen_Shot_2020-12-03_at_3.19.33_PM.png" />
+</Frame>
+
+### Terraform
+
+If you use Terraform, for an existing `aws_iam_role`, you can use the following arguments for the role you want to manage with Opal:
+
+```
+  assume_role_policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::${ACCOUNT_ID}:oidc-provider/${IDP_ISSUER_URL}"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "${IDP_ISSUER_URL}:aud": "${OPAL_CLIENT_ID}"
+                }
+            }
+        }
+    ]
+}
+POLICY
+
+  tags = {
+    opal = ""
+  }
+```
+
+You can add policies to the `aws_iam_role` via the `aws_iam_role_policy_attachment` resource.
+
+## Access roles in Opal
+
+Import roles by selecting the **...** > **Import items** from the **Inventory**.
+
+After you've imported roles to Opal, users can request them from the **Catalog** and you can manage them from the **Inventory**.
+
+![2312](/images/docs/b6489eef44cf3be25786315ec6844172a58bd6785a580d122fbe9da6f551a9be-aws-iam-role.png "SCR-20230313-mke.png")
+
+AWS IAM roles are session-based, so your end users need to initiate their role-based session by clicking on the **Connect** button on the resource.
+
+<Frame caption="Starting an IAM role session.">
+  <img src="/images/docs/a886c25f2f7cf4ec7b50eff93aea29578e06edb0b5e889d32f75541282ec7c86-aws-connect.png" />
+</Frame>
+
+Once a session is started, you can access the AWS Console (the Amazon GUI) directly or update your CLI with this role's permissions.
+
+<Frame caption="Using an AWS IAM role session in Opal.">
+  <img src="/images/docs/66f3d3d-Screenshot_2021-02-15_at_9.14.20_PM.png" />
+</Frame>
+
+***
+
+* [Table of Contents](#)
+
+* * [Add a role](#add-a-role)
+
+    * [Trust policy](#trust-policy)
+    * [Create a role](#create-a-role)
+    * [Attach policies to a role](#attach-policies-to-a-role)
+    * [Terraform](#terraform)
+
+  * [Access roles in Opal](#access-roles-in-opal)

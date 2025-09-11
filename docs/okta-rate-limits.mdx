@@ -1,0 +1,27 @@
+---
+title: "Okta rate limits"
+description: "Learn about rate limits that may affect your Okta integration with Opal."
+---
+
+[Suggest Edits](/edit/okta-rate-limits)
+
+## Okta per-token rate limits
+
+Rate limits hit with Opal's Okta integration are usually Okta's per-token rate limit. This token and rate limit is specific to Opal. If you hit this rate limit, you still have quota remaining for this particular endpoint for other tokens and flows.
+
+In Okta, you can adjust the rate limit quota allocated to Opal. The [recommended default](https://developer.okta.com/docs/reference/rate-limits/#api-rate-limits-by-api-token-or-oauth-2-0-app) is 50%.
+
+Opal tries to slow down as we approach our allocated rate limit based on the headers Okta returns. However, the information contained in headers can be limited, and it is expected that rate limits will be occasionally violated. Rate limit violations are handled gracefully on Opal's side with retries—no data is lost, and requests are retried as rate limits expire.
+
+## Mitigation steps
+
+Okta token rate limit violations are not pressing concerns, but you can increase the rate limit allocated to Opal to reduce the volume of errors and speed up sync. You can also contact Okta about a potential increase to your overall rate limit.
+
+If you're concerned about your overall Okta rate limit utilization, you can reduce the rate limit allocated to Opal. This frees up your global rate limit, but it will not reduce the volume of errors and will slow down Opal sync.
+
+***
+
+* [Table of Contents](#)
+
+* * [Okta per-token rate limits](#okta-per-token-rate-limits)
+  * [Mitigation steps](#mitigation-steps)

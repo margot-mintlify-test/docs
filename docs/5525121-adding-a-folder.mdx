@@ -1,0 +1,38 @@
+---
+title: "Add a folder"
+description: "Learn how to add a GCP folder to Opal so you can manage temporary access to them."
+---
+
+[Suggest Edits](/edit/5525121-adding-a-folder)
+
+Opal lets your developers find and request access to GCP folders. Folders let you grant access to multiple GCP projects and their underlying resources. Follow these steps to add GCP folders to your Opal dashboard.
+
+## 1. Go to the Resource Manager
+
+Access the [resource manager using this link](https://console.cloud.google.com/cloud-resource-manager) or find it by navigating to it: IAM & Admin > Manage Resources
+
+## 2. Prefix your folder
+
+Opal only adds permissions for folders that you prefix with `opal`. To do this, go to your folder's settings and update the name to start with `opal`.
+
+<Frame caption="Navigate to your folders settings.">
+  <img src="/images/docs/650c85d-Screen_Shot_2020-12-03_at_9.25.55_PM.png" />
+</Frame>
+
+<Frame caption="Prefix folders that you want to add with &#x22;opal&#x22;.">
+  <img src="/images/docs/50c6cc8-Screen_Shot_2020-12-03_at_9.26.34_PM.png" />
+</Frame>
+
+## Access a folder in Opal
+
+If you successfully labeled your folder in GCP, it shows in the **Resources** page after the next sync.
+
+If you already have access to the folder in GCP, through Opal or otherwise, you'll see a **Connected** label in the top right corner of the resource. The permissions to this folder are granted to the GCP user that matches your Opal email address.
+
+***
+
+* [Table of Contents](#)
+
+* * [1. Go to the Resource Manager](#1-go-to-the-resource-manager)
+  * [2. Prefix your folder](#2-prefix-your-folder)
+  * [Access a folder in Opal](#access-a-folder-in-opal)
