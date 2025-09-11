@@ -1,0 +1,19 @@
+---
+title: "Pagination"
+description: "Learn how to paginate bulk data requests to the Opal API."
+---
+
+# Overview
+
+All bulk data lists that you can interact with via the Opal API support pagination via the **next** and **previous** cursors attached to API responses and the **page\_size** query parameter.
+
+## Query Parameters
+
+* **cursor**: Denotes the starting position in the data list from where a paginated API endpoint should return bulk data. Get this value from the next or previous property of any previous paginated response.
+* **page\_size**: Limit on number of objects to return per request.
+
+## Getting the Cursor
+
+You can find **next** and **previous** cursors in the response payload of an API request to a paginated endpoint.
+
+These cursors can be attached to requests to paginated API endpoints to query the next (or previous) page of results.

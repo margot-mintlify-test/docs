@@ -1,0 +1,21 @@
+---
+title: "Opal API Rate Limits"
+---
+
+# Overview
+
+Opal uses rate limits to ensure stability and reliability of our systems.
+
+# Rate limits
+
+| Route Name                      | Requests Per Second |
+| ------------------------------- | ------------------- |
+| PUT, POST `/v1/resources`       | 50                  |
+| PUT, POST `/v1/groups`          | 50                  |
+| Default - Applies to all routes | 100                 |
+
+# Rate Limit Enforcement
+
+The above limits are org-wide, and apply to all API Tokens created for your organization. View your API tokens by navigating to settings, and then selecting "API Access Tokens".
+
+Requests above the rate limit will receive an `HTTP 429` Error.
