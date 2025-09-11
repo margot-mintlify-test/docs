@@ -1,75 +1,408 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Test Opal",
+  "name": "What is Opal?",
   "colors": {
-    "primary": "#0f99B8",
-    "light": "#CAF3F7",
-    "dark": "#0C7997"
+    "primary": "#0c7997",
+    "light": "#0c7997",
+    "dark": "#0c7997"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/d14f4de-small-logo-white.png",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Welcome",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "docs/opal-overview",
+              "docs/opal-101",
+              "docs/opal-architecture",
+              "docs/end-user-faq",
+              "docs/best-practices-for-access-requests",
+              "docs/best-practices-for-user-access-reviews"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Getting Started",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "docs/set-up-cloud",
+              {
+                "group": "Set up Self-Hosted",
+                "pages": [
+                  "docs/self-host-overview",
+                  "docs/self-host-opal-aws-guide",
+                  "docs/self-host-opal-gke-guide",
+                  "docs/disaster-recovery-guide",
+                  "docs/5526354-opal-on-premise-updating-opal",
+                  "docs/install-opal-using-helm",
+                  "docs/setup-an-airgapped-opal-environment"
+                ]
+              },
+              {
+                "group": "Connect Identity or HR Providers",
+                "pages": [
+                  "docs/connect-your-identity-provider-idp",
+                  "docs/add-your-first-idphr-provider",
+                  "docs/add-additional-idphr-providers",
+                  "docs/importing-user-secondary-email"
+                ]
+              },
+              {
+                "group": "Connect Productivity Tools",
+                "pages": [
+                  "docs/connect-your-productivity-tools",
+                  "docs/jira",
+                  "docs/5526194-slack",
+                  "docs/5662665-linear",
+                  "docs/servicenow",
+                  "docs/5526196-pagerduty",
+                  "docs/5526200-opsgenie",
+                  "docs/google-chat"
+                ]
+              },
+              {
+                "group": "Connect Apps and Infrastructure",
+                "pages": [
+                  "docs/5564104-set-up-connections",
+                  "docs/import-and-configure-resources-and-groups",
+                  "docs/ip-ranges"
+                ]
+              },
+              {
+                "group": "Configure SSO and MFA",
+                "pages": [
+                  "docs/configure-sso-and-mfa",
+                  {
+                    "group": "SSO with SAML",
+                    "pages": [
+                      "docs/sso-with-saml",
+                      "docs/google-saml-setup",
+                      "docs/okta-saml-setup"
+                    ]
+                  },
+                  "docs/okta-multifactor-authentication",
+                  "docs/5881390-okta-scim-integration",
+                  "docs/oidc-provider-setup-for-opal-actions"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Access Management with Opal",
+            "pages": [
+              "docs/organize-access-via-tags",
+              {
+                "group": "Curate end-user catalog",
+                "pages": [
+                  "docs/organize-access-via-tags",
+                  "docs/bundles",
+                  "docs/configure-reviewers",
+                  "docs/request-on-behalf",
+                  "docs/delegate-reviews"
+                ]
+              },
+              "docs/configuration-templates",
+              "docs/ticket-propagation-1",
+              "docs/access-rules",
+              "docs/least-privilege-posture-management",
+              {
+                "group": "Manage groups in Opal",
+                "pages": [
+                  "docs/manage-groups-in-opal",
+                  "docs/manage-breakglass-access",
+                  "docs/nested-groups",
+                  "docs/okta-group-aliasing",
+                  "docs/linked-groups",
+                  "docs/group-projects"
+                ]
+              },
+              "docs/notifications",
+              "docs/roles-in-opal",
+              "docs/custom-opal-roles"
+            ]
+          },
+          {
+            "group": "Auditing and Security",
+            "pages": [
+              "docs/access-reviews",
+              {
+                "group": "Create Access Reviews",
+                "pages": [
+                  "docs/access-reviews",
+                  "docs/assigning-and-completing-reviews",
+                  "docs/managing-user-access-reviews"
+                ]
+              },
+              "docs/event-types",
+              "docs/events-streaming",
+              "docs/metrics",
+              "docs/sync-schedules-and-triggers"
+            ]
+          },
+          {
+            "group": "Set Up Infra and App Integrations",
+            "pages": [
+              "docs/setting-up-your-aws-organization-in-opal",
+              {
+                "group": "Amazon Web Services (AWS)",
+                "pages": [
+                  "docs/setting-up-your-aws-organization-in-opal",
+                  "docs/aws-integration-on-prem-setup",
+                  "docs/aws-iam-identity-center-formerly-aws-sso",
+                  "docs/adding-an-iam-role",
+                  "docs/adding-an-rds-database",
+                  "docs/adding-an-ec2-instance",
+                  "docs/adding-an-eks-cluster",
+                  "docs/aws-real-time-sync"
+                ]
+              },
+              {
+                "group": "Google Cloud Platform (GCP)",
+                "pages": [
+                  "docs/google-cloud-platform",
+                  "docs/adding-an-organization",
+                  "docs/5525120-adding-a-project",
+                  "docs/5525121-adding-a-folder",
+                  "docs/adding-a-bigquery-dataset",
+                  "docs/5578896-adding-a-bucket",
+                  "docs/5580915-adding-a-sql-instance",
+                  "docs/5922976-adding-a-compute-instance",
+                  "docs/5608466-google-kubernetes-engine-getting-started",
+                  "docs/service-accounts"
+                ]
+              },
+              {
+                "group": "Okta",
+                "pages": [
+                  "docs/okta",
+                  "docs/okta-idphris-integration",
+                  "docs/okta-apps",
+                  "docs/okta-rate-limits"
+                ]
+              },
+              {
+                "group": "Google",
+                "pages": [
+                  "docs/google",
+                  "docs/google-idphris-integration",
+                  "docs/google-groups",
+                  "docs/google-workspace"
+                ]
+              },
+              {
+                "group": "Azure",
+                "pages": [
+                  "docs/azure-ad-1",
+                  "docs/azure-entra-idphris-integration",
+                  "docs/azure-infrastructure-setup",
+                  "docs/adding-azure-sql-databases",
+                  "docs/azure-real-time-sync"
+                ]
+              },
+              {
+                "group": "Active Directory",
+                "pages": [
+                  "docs/active-directory",
+                  "docs/active-directory-idphris-integration"
+                ]
+              },
+              "docs/astra",
+              "docs/databricks",
+              "docs/duo",
+              "docs/ldap",
+              "docs/github",
+              "docs/gitlab",
+              "docs/pagerduty",
+              "docs/salesforce",
+              {
+                "group": "Snowflake",
+                "pages": [
+                  "docs/snowflake",
+                  "docs/snowflake-user-provisioning"
+                ]
+              },
+              "docs/teleport",
+              "docs/tailscale",
+              {
+                "group": "Workday",
+                "pages": [
+                  "docs/workday",
+                  "docs/workday-idphris-integration",
+                  "docs/workday-groups-and-roles"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Set Up Custom Integrations",
+            "pages": [
+              "docs/custom-integrations-overview",
+              {
+                "group": "Custom Integrations overview",
+                "pages": [
+                  "docs/custom-integrations-overview",
+                  "docs/how-to-create-your-own-connector",
+                  "docs/api-spec",
+                  "docs/webhooks"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "For Developers",
+            "pages": [
+              "docs/opal-cli",
+              {
+                "group": "Opal CLI",
+                "pages": [
+                  "docs/opal-cli",
+                  "docs/opal-cli-changelog"
+                ]
+              },
+              "docs/use-terraform-with-opal",
+              "docs/mcp-server"
             ]
           }
         ]
       },
       {
-          "tab": "API Reference",
-          "openapi": "https://app.opal.dev/openapi.yaml"
-      },
-      {
-        "tab": "Changelog",
-        "pages": ["changelog"]
-      },
-      {
-        "tab": "Changelog 2",
-        "pages": ["changelog-2"]
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Concepts",
+            "pages": [
+              "reference/authentication",
+              "reference/pagination",
+              "reference/end-system-objects",
+              "reference/opal-api-rate-limits"
+            ]
+          },
+          {
+            "group": "SDKs",
+            "pages": [
+              "reference/opal-sdks",
+              "reference/postman-collection"
+            ]
+          },
+          {
+            "group": "Opal API",
+            "pages": [
+              "reference/create_access_rule",
+              {
+                "group": "access-rules",
+                "pages": [
+                  "reference/create_access_rule"
+                ]
+              },
+              {
+                "group": "apps",
+                "pages": [
+                  "reference/getapps"
+                ]
+              },
+              {
+                "group": "bundles",
+                "pages": [
+                  "reference/getbundles"
+                ]
+              },
+              {
+                "group": "configuration-templates",
+                "pages": [
+                  "reference/getconfigurationtemplates"
+                ]
+              },
+              {
+                "group": "events",
+                "pages": [
+                  "reference/events-1"
+                ]
+              },
+              {
+                "group": "groups",
+                "pages": [
+                  "reference/getgroups"
+                ]
+              },
+              {
+                "group": "group-bindings",
+                "pages": [
+                  "reference/getgroupbindings"
+                ]
+              },
+              {
+                "group": "idp-group-mappings",
+                "pages": [
+                  "reference/getidpgroupmappings"
+                ]
+              },
+              {
+                "group": "message-channels",
+                "pages": [
+                  "reference/get_message_channels"
+                ]
+              },
+              {
+                "group": "non-human-identities",
+                "pages": [
+                  "reference/get_nhis"
+                ]
+              },
+              {
+                "group": "on-call-schedules",
+                "pages": [
+                  "reference/get_on_call_schedules"
+                ]
+              },
+              {
+                "group": "owners",
+                "pages": [
+                  "reference/get_owners"
+                ]
+              },
+              {
+                "group": "requests",
+                "pages": [
+                  "reference/getrequests"
+                ]
+              },
+              {
+                "group": "resources",
+                "pages": [
+                  "reference/getresources"
+                ]
+              },
+              {
+                "group": "sessions",
+                "pages": [
+                  "reference/sessions-1"
+                ]
+              },
+              {
+                "group": "tags",
+                "pages": [
+                  "reference/get_tag_by_id"
+                ]
+              },
+              {
+                "group": "uars",
+                "pages": [
+                  "reference/getuars"
+                ]
+              },
+              {
+                "group": "users",
+                "pages": [
+                  "reference/user"
+                ]
+              }
+            ]
+          }
+        ]
       }
     ]
   },
-  "logo": {
-    "light": "/logo/logo-black.png",
-    "dark": "/logo/logo-white.png"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Log in",
-      "href": "https://app.opal.dev"
-    }
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
-  }
+  "logo": "/images/49be04f-small-logo-opal-security-white.png"
 }
